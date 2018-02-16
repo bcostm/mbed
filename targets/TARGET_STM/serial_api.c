@@ -369,7 +369,7 @@ void serial_baud(serial_t *obj, int baudrate)
     struct serial_s *obj_s = SERIAL_S(obj);
 
     obj_s->baudrate = baudrate;
-#if defined(LPUART1_BASE)
+#if defined(LPUART1_BASE) && !(TARGET_STM32H7)
         /* Note that LPUART clock source must be in the range [3 x baud rate, 4096 x baud rate], check Ref Manual */
     if (obj_s->uart == LPUART_1) {
         /* If baudrate is lower than 9600 try to change to LSE */
@@ -525,7 +525,7 @@ HAL_StatusTypeDef init_uart(serial_t *obj)
         huart->Init.Mode = UART_MODE_TX_RX;
     }
 
-#if defined(LPUART1_BASE)
+#if defined(LPUART1_BASE) && !(TARGET_STM32H7)
     if (huart->Instance == LPUART1) {
         if (obj_s->baudrate <= 9600) {
             HAL_UARTEx_EnableClockStopMode(huart);

@@ -48,7 +48,8 @@ void us_ticker_set_interrupt(timestamp_t timestamp)
 
 void us_ticker_fire_interrupt(void)
 {
-    LL_TIM_GenerateEvent_CC1(TimMasterHandle.Instance);
+//    LL_TIM_GenerateEvent_CC1(TimMasterHandle.Instance);
+    TimMasterHandle.Instance->EGR = TIM_EGR_CC1G;
 }
 
 /* NOTE: must be called with interrupts disabled! */
