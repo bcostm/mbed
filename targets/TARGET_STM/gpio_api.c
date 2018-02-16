@@ -140,11 +140,16 @@ void gpio_init(gpio_t *obj, PinName pin)
     obj->gpio  = gpio;
     obj->ll_pin  = ll_pin_defines[STM_PIN(obj->pin)];
     obj->reg_in  = &gpio->IDR;
-    obj->reg_set = &gpio->BSRR;
-#ifdef GPIO_IP_WITHOUT_BRR
-    obj->reg_clr = &gpio->BSRR;
+#ifdef STM32H7
+    obj->reg_set = (uint32_t *)&gpio->BSRRL;
+    obj->reg_clr = (uint32_t *)&gpio->BSRRH;
 #else
-    obj->reg_clr = &gpio->BRR;
+    obj->reg_set = (uint32_t *)&gpio->BSRR;
+#ifdef GPIO_IP_WITHOUT_BRR
+    obj->reg_clr = (uint32_t *)&gpio->BSRR;
+#else
+    obj->reg_clr = (uint32_t *)&gpio->BRR;
+#endif
 #endif
 }
 
