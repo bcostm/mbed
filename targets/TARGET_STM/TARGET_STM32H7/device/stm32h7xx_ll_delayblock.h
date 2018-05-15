@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_ll_delayblock.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of Delay Block module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */ 
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_LL_DLYB_H
-#define __STM32H7xx_LL_DLYB_H
+#ifndef STM32H7xx_LL_DLYB_H
+#define STM32H7xx_LL_DLYB_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -109,6 +107,6 @@ HAL_StatusTypeDef DelayBlock_Disable(DLYB_TypeDef *dlyb);
 }
 #endif
 
-#endif /* __STM32H7xx_LL_DLYB_H */
+#endif /* STM32H7xx_LL_DLYB_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

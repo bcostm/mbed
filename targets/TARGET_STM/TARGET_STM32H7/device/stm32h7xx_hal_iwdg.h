@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_iwdg.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of IWDG HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_IWDG_H
-#define __STM32H7xx_HAL_IWDG_H
+#ifndef STM32H7xx_HAL_IWDG_H
+#define STM32H7xx_HAL_IWDG_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -252,6 +250,6 @@ HAL_StatusTypeDef HAL_IWDG_Refresh(IWDG_HandleTypeDef *hiwdg);
 }
 #endif
 
-#endif /* __STM32H7xx_HAL_IWDG_H */
+#endif /* STM32H7xx_HAL_IWDG_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

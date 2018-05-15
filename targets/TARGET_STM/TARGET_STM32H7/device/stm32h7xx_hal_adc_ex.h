@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_adc_ex.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of ADC HAL extended module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_ADC_EX_H
-#define __STM32H7xx_ADC_EX_H
+#ifndef STM32H7xx_ADC_EX_H
+#define STM32H7xx_ADC_EX_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -74,7 +72,7 @@ typedef struct
 /**
   * @brief  ADC handle Structure definition
   */
-typedef struct
+typedef struct __ADC_HandleTypeDef
 {
   ADC_TypeDef                   *Instance;              /*!< Register base address */
 
@@ -89,7 +87,48 @@ typedef struct
   __IO uint32_t                 ErrorCode;              /*!< ADC Error code */
 
   ADC_InjectionConfigTypeDef    InjectionConfig ;       /*!< ADC injected channel configuration build-up structure */
+
+#if (USE_HAL_ADC_REGISTER_CALLBACKS == 1)
+  void (* ConvCpltCallback)(struct __ADC_HandleTypeDef *hadc);              /*!< ADC conversion complete callback */
+  void (* ConvHalfCpltCallback)(struct __ADC_HandleTypeDef *hadc);          /*!< ADC conversion DMA half-transfer callback */
+  void (* LevelOutOfWindowCallback)(struct __ADC_HandleTypeDef *hadc);      /*!< ADC analog watchdog 1 callback */
+  void (* ErrorCallback)(struct __ADC_HandleTypeDef *hadc);                 /*!< ADC error callback */
+  void (* InjectedConvCpltCallback)(struct __ADC_HandleTypeDef *hadc);      /*!< ADC group injected conversion complete callback */
+  void (* InjectedQueueOverflowCallback)(struct __ADC_HandleTypeDef *hadc); /*!< ADC group injected context queue overflow callback */
+  void (* LevelOutOfWindow2Callback)(struct __ADC_HandleTypeDef *hadc);     /*!< ADC analog watchdog 2 callback */
+  void (* LevelOutOfWindow3Callback)(struct __ADC_HandleTypeDef *hadc);     /*!< ADC analog watchdog 3 callback */
+  void (* EndOfSamplingCallback)(struct __ADC_HandleTypeDef *hadc);         /*!< ADC end of sampling callback */
+  void (* MspInitCallback)(struct __ADC_HandleTypeDef *hadc);               /*!< ADC Msp Init callback */
+  void (* MspDeInitCallback)(struct __ADC_HandleTypeDef *hadc);             /*!< ADC Msp DeInit callback */
+#endif /* USE_HAL_ADC_REGISTER_CALLBACKS */
+
 }ADC_HandleTypeDef;
+
+#if (USE_HAL_ADC_REGISTER_CALLBACKS == 1)
+/**
+  * @brief  HAL ADC Callback ID enumeration definition
+  */
+typedef enum
+{
+  HAL_ADC_CONVERSION_COMPLETE_CB_ID     = 0x00U,  /*!< ADC conversion complete callback ID */
+  HAL_ADC_CONVERSION_HALF_CB_ID         = 0x01U,  /*!< ADC conversion DMA half-transfer callback ID */
+  HAL_ADC_LEVEL_OUT_OF_WINDOW_1_CB_ID   = 0x02U,  /*!< ADC analog watchdog 1 callback ID */
+  HAL_ADC_ERROR_CB_ID                   = 0x03U,  /*!< ADC error callback ID */
+  HAL_ADC_INJ_CONVERSION_COMPLETE_CB_ID = 0x04U,  /*!< ADC group injected conversion complete callback ID */
+  HAL_ADC_INJ_QUEUE_OVEFLOW_CB_ID       = 0x05U,  /*!< ADC group injected context queue overflow callback ID */
+  HAL_ADC_LEVEL_OUT_OF_WINDOW_2_CB_ID   = 0x06U,  /*!< ADC analog watchdog 2 callback ID */
+  HAL_ADC_LEVEL_OUT_OF_WINDOW_3_CB_ID   = 0x07U,  /*!< ADC analog watchdog 3 callback ID */
+  HAL_ADC_END_OF_SAMPLING_CB_ID         = 0x08U,  /*!< ADC end of sampling callback ID */
+  HAL_ADC_MSPINIT_CB_ID                 = 0x09U,  /*!< ADC Msp Init callback ID          */
+  HAL_ADC_MSPDEINIT_CB_ID               = 0x0AU   /*!< ADC Msp DeInit callback ID        */
+} HAL_ADC_CallbackIDTypeDef;
+
+/**
+  * @brief  HAL ADC Callback pointer definition
+  */
+typedef  void (*pADC_CallbackTypeDef)(ADC_HandleTypeDef *hadc); /*!< pointer to a ADC callback function */
+
+#endif /* USE_HAL_ADC_REGISTER_CALLBACKS */
 
 /**
   * @brief  ADC Injected Conversion Oversampling structure definition
@@ -490,17 +529,17 @@ typedef struct
 /** @defgroup ADCEx_interrupts_definition ADC Extended Interrupts Definition
   * @{
   */
-#define ADC_IT_RDY           ADC_IER_RDY        /*!< ADC Ready (ADRDY) interrupt source */
-#define ADC_IT_EOSMP         ADC_IER_EOSMP      /*!< ADC End of Sampling interrupt source */
-#define ADC_IT_EOC           ADC_IER_EOC        /*!< ADC End of Regular Conversion interrupt source */
-#define ADC_IT_EOS           ADC_IER_EOS        /*!< ADC End of Regular sequence of Conversions interrupt source */
-#define ADC_IT_OVR           ADC_IER_OVR        /*!< ADC overrun interrupt source */
-#define ADC_IT_JEOC          ADC_IER_JEOC       /*!< ADC End of Injected Conversion interrupt source */
-#define ADC_IT_JEOS          ADC_IER_JEOS       /*!< ADC End of Injected sequence of Conversions interrupt source */
-#define ADC_IT_AWD1          ADC_IER_AWD1       /*!< ADC Analog watchdog 1 interrupt source (main analog watchdog) */
-#define ADC_IT_AWD2          ADC_IER_AWD2       /*!< ADC Analog watchdog 2 interrupt source (additional analog watchdog) */
-#define ADC_IT_AWD3          ADC_IER_AWD3       /*!< ADC Analog watchdog 3 interrupt source (additional analog watchdog) */
-#define ADC_IT_JQOVF         ADC_IER_JQOVF      /*!< ADC Injected Context Queue Overflow interrupt source */
+#define ADC_IT_RDY           ADC_IER_ADRDYIE    /*!< ADC Ready (ADRDY) interrupt source */
+#define ADC_IT_EOSMP         ADC_IER_EOSMPIE    /*!< ADC End of Sampling interrupt source */
+#define ADC_IT_EOC           ADC_IER_EOCIE      /*!< ADC End of Regular Conversion interrupt source */
+#define ADC_IT_EOS           ADC_IER_EOSIE      /*!< ADC End of Regular sequence of Conversions interrupt source */
+#define ADC_IT_OVR           ADC_IER_OVRIE      /*!< ADC overrun interrupt source */
+#define ADC_IT_JEOC          ADC_IER_JEOCIE     /*!< ADC End of Injected Conversion interrupt source */
+#define ADC_IT_JEOS          ADC_IER_JEOSIE     /*!< ADC End of Injected sequence of Conversions interrupt source */
+#define ADC_IT_AWD1          ADC_IER_AWD1IE     /*!< ADC Analog watchdog 1 interrupt source (main analog watchdog) */
+#define ADC_IT_AWD2          ADC_IER_AWD2IE     /*!< ADC Analog watchdog 2 interrupt source (additional analog watchdog) */
+#define ADC_IT_AWD3          ADC_IER_AWD3IE     /*!< ADC Analog watchdog 3 interrupt source (additional analog watchdog) */
+#define ADC_IT_JQOVF         ADC_IER_JQOVFIE    /*!< ADC Injected Context Queue Overflow interrupt source */
 
 #define ADC_IT_AWD           ADC_IT_AWD1        /*!< ADC Analog watchdog 1 interrupt source: Naming for compatibility with other STM32 devices having only one analog watchdog */
 /**
@@ -510,7 +549,7 @@ typedef struct
 /** @defgroup ADCEx_flags_definition ADC Extended Flags Definition
   * @{
   */
-#define ADC_FLAG_RDY           ADC_ISR_ADRD     /*!< ADC Ready (ADRDY) flag */
+#define ADC_FLAG_RDY           ADC_ISR_ADRDY    /*!< ADC Ready (ADRDY) flag */
 #define ADC_FLAG_EOSMP         ADC_ISR_EOSMP    /*!< ADC End of Sampling flag */
 #define ADC_FLAG_EOC           ADC_ISR_EOC      /*!< ADC End of Regular Conversion flag */
 #define ADC_FLAG_EOS           ADC_ISR_EOS      /*!< ADC End of Regular sequence of Conversions flag */
@@ -978,7 +1017,9 @@ typedef struct
   * @retval None
   */
 #define ADC_OFFSET_SHIFT_RESOLUTION(__HANDLE__, __OFFSET__) \
-        ((__OFFSET__) << ((((__HANDLE__)->Instance->CFGR & ADC_CFGR_RES) >> 2)*2))
+          ((((DBGMCU->IDCODE & 0xF0000000) == 0x10000000) || ((((__HANDLE__)->Instance->CFGR) & ADC_CFGR_RES_2) == RESET))?   \
+            ((__OFFSET__)<<(((((__HANDLE__)->Instance->CFGR) & ADC_CFGR_RES)>> 2 )*2)):                                       \
+            ((__OFFSET__)<<(((((__HANDLE__)->Instance->CFGR) & (ADC_CFGR_RES & 0xFFFFFFF3))>> 2 )*2)))
 
 /**
   * @brief Shift the AWD1 threshold in function of the selected ADC resolution.
@@ -994,7 +1035,9 @@ typedef struct
   * @retval None
   */
 #define ADC_AWD1THRESHOLD_SHIFT_RESOLUTION(__HANDLE__, __THRESHOLD__) \
-        ((__THRESHOLD__) << ((((__HANDLE__)->Instance->CFGR & ADC_CFGR_RES) >> 2)*2))
+          ((((DBGMCU->IDCODE & 0xF0000000) == 0x10000000) || ((((__HANDLE__)->Instance->CFGR) & ADC_CFGR_RES_2) == RESET))?  \
+            ((__THRESHOLD__)<<(((((__HANDLE__)->Instance->CFGR) & ADC_CFGR_RES)>> 2 )*2)):                                   \
+            ((__THRESHOLD__)<<(((((__HANDLE__)->Instance->CFGR) & (ADC_CFGR_RES & 0xFFFFFFF3))>> 2 )*2)))
 
 /**
   * @brief Shift the AWD2 and AWD3 threshold in function of the selected ADC resolution.
@@ -1010,7 +1053,9 @@ typedef struct
   * @retval None
   */
 #define ADC_AWD23THRESHOLD_SHIFT_RESOLUTION(__HANDLE__, __THRESHOLD__) \
-        ((__THRESHOLD__) << ((((__HANDLE__)->Instance->CFGR & ADC_CFGR_RES) >> 2)*2))
+          ((((DBGMCU->IDCODE & 0xF0000000) == 0x10000000) || ((((__HANDLE__)->Instance->CFGR) & ADC_CFGR_RES_2) == RESET))?  \
+            ((__THRESHOLD__)<<(((((__HANDLE__)->Instance->CFGR) & ADC_CFGR_RES)>> 2 )*2)):                                   \
+            ((__THRESHOLD__)<<(((((__HANDLE__)->Instance->CFGR) & (ADC_CFGR_RES & 0xFFFFFFF3))>> 2 )*2)))
 
 /**
   * @brief Report common register to ADC1 and ADC2
@@ -1290,14 +1335,6 @@ typedef struct
                                   ((EVENT) == ADC_JQOVF_EVENT)  )
 
 /**
-  * @brief Verify the ADC scan mode.
-  * @param SCAN_MODE: ADC scan mode.
-  * @retval SET (SCAN_MODE is valid) or RESET (SCAN_MODE is invalid)
-  */
-#define IS_ADC_SCAN_MODE(SCAN_MODE) (((SCAN_MODE) == ADC_SCAN_DISABLE) || \
-                                     ((SCAN_MODE) == ADC_SCAN_ENABLE)    )
-
-/**
   * @brief Verify the ADC oversampling ratio. 
   * @param RATIO: programmed ADC oversampling ratio.
   * @retval SET (RATIO is a valid value) or RESET (RATIO is invalid)
@@ -1453,7 +1490,7 @@ HAL_StatusTypeDef       HAL_ADCEx_EnterADCDeepPowerDownMode(ADC_HandleTypeDef* h
 }
 #endif
 
-#endif /*__STM32H7xx_ADC_EX_H */
+#endif /*STM32H7xx_ADC_EX_H */
 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

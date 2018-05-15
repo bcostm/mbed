@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_eth.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of ETH HAL module.
   ******************************************************************************
   * @attention
@@ -424,7 +422,7 @@ typedef enum
 /** 
   * @brief  ETH Handle Structure definition  
   */
-typedef struct
+typedef struct __ETH_HandleTypeDef
 {
   ETH_TypeDef                *Instance;                 /*!< Register base address       */
   
@@ -459,11 +457,53 @@ typedef struct
     
   __IO uint32_t              MACLPIEvent;               /*!< Holds the LPI event when the an LPI status interrupt occurs.
                                                              This parameter can be a value of @ref ETHEx_LPI_Event */
+                                                             
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+
+  void    (* TxCpltCallback)     ( struct __ETH_HandleTypeDef * heth);   /*!< ETH Tx Complete Callback */
+  void    (* RxCpltCallback)     ( struct __ETH_HandleTypeDef * heth);  /*!< ETH Rx  Complete Callback     */
+  void    (* DMAErrorCallback)   ( struct __ETH_HandleTypeDef * heth);  /*!< ETH DMA Error Callback   */
+  void    (* MACErrorCallback)   ( struct __ETH_HandleTypeDef * heth);  /*!< ETH MAC Error Callback     */
+  void    (* PMTCallback)        ( struct __ETH_HandleTypeDef * heth);  /*!< ETH Power Management Callback            */
+  void    (* EEECallback)        ( struct __ETH_HandleTypeDef * heth);  /*!< ETH EEE Callback   */
+  void    (* WakeUpCallback)     ( struct __ETH_HandleTypeDef * heth);  /*!< ETH Wake UP Callback   */
+
+  void    (* MspInitCallback)    ( struct __ETH_HandleTypeDef * heth);    /*!< ETH Msp Init callback              */
+  void    (* MspDeInitCallback)  ( struct __ETH_HandleTypeDef * heth);    /*!< ETH Msp DeInit callback            */
+
+#endif  /* USE_HAL_ETH_REGISTER_CALLBACKS */                                                             
 
 } ETH_HandleTypeDef;
 /** 
   * 
   */
+  
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+/**
+  * @brief  HAL ETH Callback ID enumeration definition
+  */
+typedef enum
+{
+  HAL_ETH_MSPINIT_CB_ID            = 0x00U,    /*!< ETH MspInit callback ID           */
+  HAL_ETH_MSPDEINIT_CB_ID          = 0x01U,    /*!< ETH MspDeInit callback ID         */
+	
+  HAL_ETH_TX_COMPLETE_CB_ID        = 0x02U,    /*!< ETH Tx Complete Callback ID       */
+  HAL_ETH_RX_COMPLETE_CB_ID        = 0x03U,    /*!< ETH Rx Complete Callback ID       */
+  HAL_ETH_DMA_ERROR_CB_ID          = 0x04U,    /*!< ETH DMA Error Callback ID         */
+  HAL_ETH_MAC_ERROR_CB_ID          = 0x05U,    /*!< ETH MAC Error Callback ID         */
+  HAL_ETH_PMT_CB_ID                = 0x06U,     /*!< ETH Power Management Callback ID  */
+  HAL_ETH_EEE_CB_ID                = 0x07U,     /*!< ETH EEE Callback ID               */
+  HAL_ETH_WAKEUP_CB_ID             = 0x08U     /*!< ETH Wake UP Callback ID           */
+
+
+}HAL_ETH_CallbackIDTypeDef;
+
+/**
+  * @brief  HAL ETH Callback pointer definition
+  */
+typedef  void (*pETH_CallbackTypeDef)(ETH_HandleTypeDef * heth); /*!< pointer to an ETH callback function */
+
+#endif /* USE_HAL_ETH_REGISTER_CALLBACKS */
 
 /** 
   * @brief  ETH MAC filter structure definition
@@ -872,6 +912,9 @@ typedef struct{
 #define HAL_ETH_ERROR_TIMEOUT      ((uint32_t)0x00000004U)   /*!< Timeout error       */
 #define HAL_ETH_ERROR_DMA          ((uint32_t)0x00000008U)   /*!< DMA transfer error  */
 #define HAL_ETH_ERROR_MAC          ((uint32_t)0x00000010U)   /*!< MAC transfer error  */
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+#define HAL_ETH_ERROR_INVALID_CALLBACK ((uint32_t)0x00000020U)    /*!< Invalid Callback error  */
+#endif /* USE_HAL_ETH_REGISTER_CALLBACKS */
 /**
   * @}
   */
@@ -1329,7 +1372,19 @@ typedef struct{
   * @param  __HANDLE__: specifies the ETH handle.
   * @retval None
   */
-#define __HAL_ETH_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_ETH_STATE_RESET)
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+#define __HAL_ETH_RESET_HANDLE_STATE(__HANDLE__)  do{                                                   \
+                                                       (__HANDLE__)->gState = HAL_ETH_STATE_RESET;      \
+                                                       (__HANDLE__)->RxState = HAL_ETH_STATE_RESET;     \
+                                                       (__HANDLE__)->MspInitCallback = NULL;             \
+                                                       (__HANDLE__)->MspDeInitCallback = NULL;           \
+                                                     } while(0)
+#else
+#define __HAL_ETH_RESET_HANDLE_STATE(__HANDLE__)  do{                                                   \
+                                                       (__HANDLE__)->gState = HAL_ETH_STATE_RESET;      \
+                                                       (__HANDLE__)->RxState = HAL_ETH_STATE_RESET;     \
+                                                     } while(0)
+#endif /*USE_HAL_ETH_REGISTER_CALLBACKS */
 
 /** 
   * @brief  Enables the specified ETHERNET DMA interrupts.
@@ -1442,6 +1497,31 @@ typedef struct{
   */
 #define __HAL_ETH_WAKEUP_EXTI_CLEAR_FLAG(__EXTI_LINE__) (EXTI_D1->PR3 = (__EXTI_LINE__))
 
+#if defined(DUAL_CORE)
+/**
+  * @brief Enable the ETH WAKEUP Exti Line by Core2.
+  * @param  __EXTI_LINE__: specifies the ETH WAKEUP Exti sources to be enabled.
+  *   @arg ETH_WAKEUP_EXTI_LINE     
+  * @retval None.
+  */
+#define __HAL_ETH_WAKEUP_EXTID2_ENABLE_IT(__EXTI_LINE__)   (EXTI_D2->IMR3 |= (__EXTI_LINE__)) 
+
+/**
+  * @brief checks whether the specified ETH WAKEUP Exti interrupt flag is set or not.
+  * @param  __EXTI_LINE__: specifies the ETH WAKEUP Exti sources to be cleared.
+  *   @arg ETH_WAKEUP_EXTI_LINE  
+  * @retval EXTI ETH WAKEUP Line Status.
+  */
+#define __HAL_ETH_WAKEUP_EXTID2_GET_FLAG(__EXTI_LINE__)  (EXTI_D2->PR3 & (__EXTI_LINE__))
+
+/**
+  * @brief Clear the ETH WAKEUP Exti flag.
+  * @param  __EXTI_LINE__: specifies the ETH WAKEUP Exti sources to be cleared.
+  *   @arg ETH_WAKEUP_EXTI_LINE  
+  * @retval None.
+  */
+#define __HAL_ETH_WAKEUP_EXTID2_CLEAR_FLAG(__EXTI_LINE__) (EXTI_D2->PR3 = (__EXTI_LINE__))
+#endif
 
 /**
   * @brief  enable rising edge interrupt on selected EXTI line.
@@ -1500,6 +1580,13 @@ HAL_StatusTypeDef HAL_ETH_DeInit(ETH_HandleTypeDef *heth);
 void              HAL_ETH_MspInit(ETH_HandleTypeDef *heth);                    
 void              HAL_ETH_MspDeInit(ETH_HandleTypeDef *heth);  
 HAL_StatusTypeDef HAL_ETH_DescAssignMemory(ETH_HandleTypeDef *heth, uint32_t Index, uint8_t *pBuffer1,uint8_t *pBuffer2);
+
+/* Callbacks Register/UnRegister functions  ***********************************/
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+HAL_StatusTypeDef HAL_ETH_RegisterCallback(ETH_HandleTypeDef *heth, HAL_ETH_CallbackIDTypeDef CallbackID, pETH_CallbackTypeDef pCallback);
+HAL_StatusTypeDef HAL_ETH_UnRegisterCallback(ETH_HandleTypeDef *heth, HAL_ETH_CallbackIDTypeDef CallbackID);
+#endif /* USE_HAL_ETH_REGISTER_CALLBACKS */
+
 /**
   * @}
   */

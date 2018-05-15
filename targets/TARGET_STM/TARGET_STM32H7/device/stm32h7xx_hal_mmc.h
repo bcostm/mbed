@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_mmc.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of MMC HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */ 
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_MMC_H
-#define __STM32H7xx_HAL_MMC_H
+#ifndef STM32H7xx_HAL_MMC_H
+#define STM32H7xx_HAL_MMC_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -239,8 +237,6 @@ typedef struct
 /** @defgroup MMC_Exported_Constants Exported Constants
   * @{
   */ 
-
-#define BLOCKSIZE   ((uint32_t)512U) /*!< Block size is 512 bytes */
 
 /** @defgroup MMC_Exported_Constansts_Group1 MMC Error status enumeration Structure definition 
   * @{
@@ -702,6 +698,6 @@ HAL_StatusTypeDef HAL_MMC_Abort_IT(MMC_HandleTypeDef *hmmc);
 #endif
 
 
-#endif /* __STM32H7xx_HAL_MMC_H */ 
+#endif /* STM32H7xx_HAL_MMC_H */ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

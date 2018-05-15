@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_dma.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of DMA HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_DMA_H
-#define __STM32H7xx_HAL_DMA_H
+#ifndef STM32H7xx_HAL_DMA_H
+#define STM32H7xx_HAL_DMA_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -1040,8 +1038,8 @@ uint32_t             HAL_DMA_GetError(DMA_HandleTypeDef *hdma);
 
 #define IS_BDMA_D3_REQUEST(REQUEST) (((REQUEST) <= BDMA_REQUEST_ADC3))
 
-#define IS_D2_DMA_INSTANCE(__HANDLE__) (((uint32_t)((__HANDLE__)->Instance) >= ((uint32_t)DMA1_Stream0)) && ((uint32_t)((__HANDLE__)->Instance) <= ((uint32_t)DMA2_Stream7)))
-#define IS_D3_DMA_INSTANCE(__HANDLE__) (((uint32_t)((__HANDLE__)->Instance) >= ((uint32_t)BDMA_Channel0)) && ((uint32_t)((__HANDLE__)->Instance) <= ((uint32_t)BDMA_Channel7)))
+#define IS_D2_DMA_INSTANCE(__HANDLE__) (((uint32_t)(uint32_t *)((__HANDLE__)->Instance) >= ((uint32_t)DMA1_Stream0)) && ((uint32_t)(uint32_t *)((__HANDLE__)->Instance) <= ((uint32_t)DMA2_Stream7)))
+#define IS_D3_DMA_INSTANCE(__HANDLE__) (((uint32_t)(uint32_t *)((__HANDLE__)->Instance) >= ((uint32_t)BDMA_Channel0)) && ((uint32_t)(uint32_t *)((__HANDLE__)->Instance) <= ((uint32_t)BDMA_Channel7)))
 
 
 #define IS_DMA_DIRECTION(DIRECTION) (((DIRECTION) == DMA_PERIPH_TO_MEMORY ) || \
@@ -1115,6 +1113,6 @@ uint32_t             HAL_DMA_GetError(DMA_HandleTypeDef *hdma);
 }
 #endif
 
-#endif /* __STM32H7xx_HAL_DMA_H */
+#endif /* STM32H7xx_HAL_DMA_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

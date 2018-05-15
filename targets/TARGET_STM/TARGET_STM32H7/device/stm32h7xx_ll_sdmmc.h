@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_ll_sdmmc.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of SDMMC HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */ 
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_LL_SDMMC_H
-#define __STM32H7xx_LL_SDMMC_H
+#ifndef STM32H7xx_LL_SDMMC_H
+#define STM32H7xx_LL_SDMMC_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -141,6 +139,9 @@ typedef struct
 /** @defgroup SDMMC_LL_Exported_Constants SDMMC_LL Exported Constants
   * @{
   */
+
+#define BLOCKSIZE   ((uint32_t)512U) /*!< Block size is 512 bytes */
+
 
 #define SDMMC_ERROR_NONE                     ((uint32_t)0x00000000U)    /*!< No error                                                     */
 #define SDMMC_ERROR_CMD_CRC_FAIL             ((uint32_t)0x00000001U)    /*!< Command response received (but CRC check failed)              */
@@ -1073,6 +1074,6 @@ uint32_t SDMMC_CmdSendEXTCSD(SDMMC_TypeDef *SDMMCx, uint32_t Argument);
 }
 #endif
 
-#endif /* __STM32H7xx_LL_SDMMC_H */
+#endif /* STM32H7xx_LL_SDMMC_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_sd.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of SD HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */ 
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_SD_H
-#define __STM32H7xx_HAL_SD_H
+#ifndef STM32H7xx_HAL_SD_H
+#define STM32H7xx_HAL_SD_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -265,8 +263,6 @@ typedef struct
 /** @defgroup SD_Exported_Constants Exported Constants
   * @{
   */ 
-
-#define BLOCKSIZE   ((uint32_t)512U) /*!< Block size is 512 bytes */
 
 /** @defgroup SD_Exported_Constansts_Group1 SD Error status enumeration Structure definition 
   * @{
@@ -734,6 +730,6 @@ HAL_StatusTypeDef HAL_SD_Abort_IT(SD_HandleTypeDef *hsd);
 #endif
 
 
-#endif /* __STM32H7xx_HAL_SD_H */ 
+#endif /* STM32H7xx_HAL_SD_H */ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

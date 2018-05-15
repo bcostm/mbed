@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_spi.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of SPI HAL module.
   ******************************************************************************
   * @attention
@@ -102,15 +100,13 @@ typedef struct
                                                      This parameter must be an odd number between Min_Data = 0 and Max_Data = 65535 */
 
     uint32_t CRCLength;                         /*!< Specifies the CRC Length used for the CRC calculation.
-                                                     CRC Length is only used with Data8 and Data16, not other data size
                                                      This parameter can be a value of @ref SPI_CRC_length */
 
     uint32_t NSSPMode;                          /*!< Specifies whether the NSSP signal is enabled or not .
                                                      This parameter can be a value of @ref SPI_NSSP_Mode
-                                                     This mode is activated by the NSSP bit in the SPIx_CR2 register and
+                                                     This mode is activated by the SSOM bit in the SPIx_CR2 register and
                                                      it takes effect only if the SPI interface is configured as Motorola SPI
-                                                     master (FRF=0) with capture on the first edge (SPIx_CR1 CPHA = 0,
-                                                     CPOL setting is ignored). */
+                                                     master (FRF=0). */
 
     uint32_t NSSPolarity;                       /*!< Specifies which level of SS input/output external signal (present on SS pin) is
                                                      considered as active one.
@@ -197,8 +193,46 @@ typedef struct __SPI_HandleTypeDef
 
     __IO uint32_t              ErrorCode;                    /*!< SPI Error code                           */
 
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+  void (* TxCpltCallback)(struct __SPI_HandleTypeDef *hspi);       /*!< SPI Tx Completed callback          */
+  void (* RxCpltCallback)(struct __SPI_HandleTypeDef *hspi);       /*!< SPI Rx Completed callback          */
+  void (* TxRxCpltCallback)(struct __SPI_HandleTypeDef *hspi);     /*!< SPI TxRx Completed callback        */
+  void (* TxHalfCpltCallback)(struct __SPI_HandleTypeDef *hspi);   /*!< SPI Tx Half Completed callback     */
+  void (* RxHalfCpltCallback)(struct __SPI_HandleTypeDef *hspi);   /*!< SPI Rx Half Completed callback     */
+  void (* TxRxHalfCpltCallback)(struct __SPI_HandleTypeDef *hspi); /*!< SPI TxRx Half Completed callback   */
+  void (* ErrorCallback)(struct __SPI_HandleTypeDef *hspi);        /*!< SPI Error callback                 */
+  void (* AbortCpltCallback)(struct __SPI_HandleTypeDef *hspi);    /*!< SPI Abort callback                 */
+  void (* MspInitCallback)(struct __SPI_HandleTypeDef *hspi);      /*!< SPI Msp Init callback              */
+  void (* MspDeInitCallback)(struct __SPI_HandleTypeDef *hspi);    /*!< SPI Msp DeInit callback            */
+
+#endif  /* USE_HAL_SPI_REGISTER_CALLBACKS */
 } SPI_HandleTypeDef;
 
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+/**
+  * @brief  HAL SPI Callback ID enumeration definition
+  */
+typedef enum
+{
+  HAL_SPI_TX_COMPLETE_CB_ID             = 0x00U,    /*!< SPI Tx Completed callback ID         */
+  HAL_SPI_RX_COMPLETE_CB_ID             = 0x01U,    /*!< SPI Rx Completed callback ID         */
+  HAL_SPI_TX_RX_COMPLETE_CB_ID          = 0x02U,    /*!< SPI TxRx Completed callback ID       */
+  HAL_SPI_TX_HALF_COMPLETE_CB_ID        = 0x03U,    /*!< SPI Tx Half Completed callback ID    */
+  HAL_SPI_RX_HALF_COMPLETE_CB_ID        = 0x04U,    /*!< SPI Rx Half Completed callback ID    */
+  HAL_SPI_TX_RX_HALF_COMPLETE_CB_ID     = 0x05U,    /*!< SPI TxRx Half Completed callback ID  */
+  HAL_SPI_ERROR_CB_ID                   = 0x06U,    /*!< SPI Error callback ID                */
+  HAL_SPI_ABORT_CB_ID                   = 0x07U,    /*!< SPI Abort callback ID                */
+  HAL_SPI_MSPINIT_CB_ID                 = 0x08U,    /*!< SPI Msp Init callback ID             */
+  HAL_SPI_MSPDEINIT_CB_ID               = 0x09U     /*!< SPI Msp DeInit callback ID           */
+
+} HAL_SPI_CallbackIDTypeDef;
+
+/**
+  * @brief  HAL SPI Callback pointer definition
+  */
+typedef  void (*pSPI_CallbackTypeDef)(SPI_HandleTypeDef *hspi); /*!< pointer to an SPI callback function */
+
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 /**
   * @}
   */
@@ -233,6 +267,9 @@ typedef struct __SPI_HandleTypeDef
 #define HAL_SPI_ERROR_TIMEOUT           (0x00000100U)   /*!< Timeout error                          */
 #define HAL_SPI_ERROR_UNKNOW            (0x00000200U)   /*!< Unknow error                           */
 #define HAL_SPI_ERROR_NOT_SUPPORTED     (0x00000400U)   /*!< Requested operation not supported      */
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+#define HAL_SPI_ERROR_INVALID_CALLBACK  (0x00000800U)   /*!< Invalid Callback error                 */
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 /**
   * @}
   */
@@ -604,7 +641,15 @@ typedef struct __SPI_HandleTypeDef
   *         This parameter can be SPI where x: 1, 2, 3, 4, 5 or 6 to select the SPI peripheral.
   * @retval None
   */
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+#define __HAL_SPI_RESET_HANDLE_STATE(__HANDLE__)                do{                                                  \
+                                                                    (__HANDLE__)->State = HAL_SPI_STATE_RESET;       \
+                                                                    (__HANDLE__)->MspInitCallback = NULL;            \
+                                                                    (__HANDLE__)->MspDeInitCallback = NULL;          \
+                                                                  } while(0)
+#else
 #define __HAL_SPI_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_SPI_STATE_RESET)
+#endif
 
 /** @brief  Enable the specified SPI interrupts.
   * @param  __HANDLE__: specifies the SPI Handle.
@@ -743,6 +788,12 @@ HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi);
 HAL_StatusTypeDef HAL_SPI_DeInit(SPI_HandleTypeDef *hspi);
 void HAL_SPI_MspInit(SPI_HandleTypeDef *hspi);
 void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi);
+
+/* Callbacks Register/UnRegister functions  ***********************************/
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+HAL_StatusTypeDef HAL_SPI_RegisterCallback(SPI_HandleTypeDef *hspi, HAL_SPI_CallbackIDTypeDef CallbackID, pSPI_CallbackTypeDef pCallback);
+HAL_StatusTypeDef HAL_SPI_UnRegisterCallback(SPI_HandleTypeDef *hspi, HAL_SPI_CallbackIDTypeDef CallbackID);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 /**
   * @}
   */

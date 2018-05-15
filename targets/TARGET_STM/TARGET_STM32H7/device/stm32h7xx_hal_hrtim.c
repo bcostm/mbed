@@ -2,10 +2,8 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_hrtim.c
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   HRTIM HAL module driver.
-  *          This file provides firmware functions to manage the following 
+  *          This file provides firmware functions to manage the following
   *          functionalities of the High Resolution Timer (HRTIM) peripheral:
   *           + HRTIM Initialization
   *           + Timer Time Base Unit Configuration
@@ -43,7 +41,7 @@
   *           + Waveform Burst DMA Operation Configuration
   *           + Waveform Burst DMA Operation Start
   *           + Waveform Timer Counter Software Reset
-  *           + Waveform Capture Software Trigger 
+  *           + Waveform Capture Software Trigger
   *           + Waveform Burst Mode Controller Software Trigger
   *           + Waveform Timer Pre-loadable Registers Update Enabling
   *           + Waveform Timer Pre-loadable Registers Software Update
@@ -56,7 +54,7 @@
                       ##### Simple mode v.s. waveform mode #####
 ==============================================================================
   [..] The HRTIM HAL API is split into 2 categories:
-    (#)Simple functions: these functions allow for using a HRTIM timer as a  
+    (#)Simple functions: these functions allow for using a HRTIM timer as a
         general purpose timer with high resolution capabilities.
        Following simple modes are proposed:
          (+)Output compare mode
@@ -64,12 +62,12 @@
          (+)Input capture mode
          (+)One pulse mode
        HRTIM simple modes are managed through the set of functions named
-       HAL_HRTIM_Simple<Function>. These functions are similar in name and usage 
-       to the one defined for the TIM peripheral. When a HRTIM timer operates in 
+       HAL_HRTIM_Simple<Function>. These functions are similar in name and usage
+       to the one defined for the TIM peripheral. When a HRTIM timer operates in
        simple mode, only a very limited set of HRTIM features are used.
-    (#)Waveform functions: These functions allow taking advantage of the HRTIM 
-       flexibility to produce numerous types of control signal. When a HRTIM timer 
-       operates in waveform mode, all the HRTIM features are accessible without 
+    (#)Waveform functions: These functions allow taking advantage of the HRTIM
+       flexibility to produce numerous types of control signal. When a HRTIM timer
+       operates in waveform mode, all the HRTIM features are accessible without
        any restriction.  HRTIM waveform modes are managed through the set of
        functions named HAL_HRTIM_Waveform<Function>
 
@@ -79,16 +77,16 @@
     [..]
      (#)Initialize the HRTIM low level resources by implementing the
         HAL_HRTIM_MspInit() function:
-        (##)Enable the HRTIM clock source using __HRTIMx_CLK_ENABLE() 
+        (##)Enable the HRTIM clock source using __HRTIMx_CLK_ENABLE()
         (##)Connect HRTIM pins to MCU I/Os
             (+++) Enable the clock for the HRTIM GPIOs using the following
-                  function: __GPIOx_CLK_ENABLE()   
+                  function: __HAL_RCC_GPIOx_CLK_ENABLE()
             (+++) Configure these GPIO pins in Alternate Function mode using
                   HAL_GPIO_Init()
         (##)When using DMA to control data transfer (e.g HAL_HRTIM_SimpleBaseStart_DMA())
             (+++)Enable the DMAx interface clock using __DMAx_CLK_ENABLE()
             (+++)Initialize the DMA handle
-            (+++)Associate the initialized DMA handle to the appropriate DMA 
+            (+++)Associate the initialized DMA handle to the appropriate DMA
                  handle of the HRTIM handle using  __HAL_LINKDMA()
             (+++)Initialize the DMA channel using HAL_DMA_Init()
             (+++)Configure the priority and enable the NVIC for the transfer
@@ -98,7 +96,7 @@
             (+++)Configure the priority and enable the NVIC for the concerned
                  HRTIM interrupt using HAL_NVIC_SetPriority() and HAL_NVIC_EnableIRQ()
 
-    (#)Initialize the HRTIM HAL using HAL_HRTIM_Init(). The HRTIM configuration 
+    (#)Initialize the HRTIM HAL using HAL_HRTIM_Init(). The HRTIM configuration
        structure (field of the HRTIM handle) specifies which global interrupt of
        whole HRTIM must be enabled (Burst mode period, System fault, Faults).
        It also contains the HRTIM external synchronization configuration. HRTIM
@@ -108,13 +106,13 @@
      (#) Configure HRTIM resources shared by all HRTIM timers
         (##)Burst Mode Controller:
                 (+++)HAL_HRTIM_BurstModeConfig(): configures the HRTIM burst mode
-                     controller: operating mode (continuous or -shot mode), clock
+                     controller: operating mode (continuous or one-shot mode), clock
                      (source, prescaler) , trigger(s), period, idle duration.
         (##)External Events Conditionning:
                 (+++)HAL_HRTIM_EventConfig(): configures the conditioning of an
                      external event channel: source, polarity, edge-sensitivity.
                      External event can be used as triggers (timer reset, input
-                     capture, burst mode, ADC triggers, delayed protection, …)
+                     capture, burst mode, ADC triggers, delayed protection)
                      They can also be used to set or reset timer outputs. Up to
                      10 event channels are available.
                 (+++)HAL_HRTIM_EventPrescalerConfig(): configures the external
@@ -137,20 +135,23 @@
      (#) Configure HRTIM timer time base using HAL_HRTIM_TimeBaseConfig(). This
          function must be called whatever the HRTIM timer operating mode is
          (simple v.s. waveform). It  configures mainly:
-        (##)The HRTIM  timer counter operating mode (continuous, one shot)
+        (##)The HRTIM  timer counter operating mode (continuous v.s. one shot)
         (##)The HRTIM  timer clock prescaler
-        (##)The HRTIM  timer period 
+        (##)The HRTIM  timer period
         (##)The HRTIM  timer repetition counter
 
-     (#) If the HRTIM timer operates in simple mode:
-        (##)Simple time base: HAL_HRTIM_SimpleBaseStart(),HAL_HRTIM_SimpleBaseStop(),
-                  HAL_HRTIM_SimpleBaseStart_IT(),HAL_HRTIM_SimpleBaseStop_IT(), 
-                  HAL_HRTIM_SimpleBaseStart_DMA(),HAL_HRTIM_SimpleBaseStop_DMA(). 
-        (##)Simple output compare: HAL_HRTIM_SimpleOCChannelConfig(),
+     *** If the HRTIM timer operates in simple mode ***
+     ===================================================
+     [..]
+     (#) Start or Stop simple timers
+              (++)Simple time base: HAL_HRTIM_SimpleBaseStart(),HAL_HRTIM_SimpleBaseStop(),
+                  HAL_HRTIM_SimpleBaseStart_IT(),HAL_HRTIM_SimpleBaseStop_IT(),
+                  HAL_HRTIM_SimpleBaseStart_DMA(),HAL_HRTIM_SimpleBaseStop_DMA().
+              (++)Simple output compare: HAL_HRTIM_SimpleOCChannelConfig(),
                   HAL_HRTIM_SimpleOCStart(),HAL_HRTIM_SimpleOCStop(),
                   HAL_HRTIM_SimpleOCStart_IT(),HAL_HRTIM_SimpleOCStop_IT(),
                   HAL_HRTIM_SimpleOCStart_DMA(),HAL_HRTIM_SimpleOCStop_DMA(),
-        (##)Simple PWM output: HAL_HRTIM_SimplePWMChannelConfig(),
+              (++)Simple PWM output: HAL_HRTIM_SimplePWMChannelConfig(),
                   HAL_HRTIM_SimplePWMStart(),HAL_HRTIM_SimplePWMStop(),
                   HAL_HRTIM_SimplePWMStart_IT(),HAL_HRTIM_SimplePWMStop_IT(),
                   HAL_HRTIM_SimplePWMStart_DMA(),HAL_HRTIM_SimplePWMStop_DMA(),
@@ -177,21 +178,21 @@
                           (source and outputs on which the delayed protection are applied),
                         - Specifying the HRTIM timer update and reset triggers,
                         - Specifying the HRTIM timer registers update policy (preload enabling, …).
-                (+++)HAL_HRTIM_TimerEventFilteringConfig(): configures external 
+                (+++)HAL_HRTIM_TimerEventFilteringConfig(): configures external
                      event blanking and windowingcircuitry of a HRTIM timer:
-                        - Blanking:  to mask external events during a defined 
+                        - Blanking:  to mask external events during a defined
                           time period
                         - Windowing:  to enable external events only during
                           a defined time period
                 (+++)HAL_HRTIM_DeadTimeConfig(): configures the deadtime insertion
                      unit for a HRTIM timer. Allows to generate a couple of
-                     complementary signals from a single reference waveform, 
+                     complementary signals from a single reference waveform,
                      with programmable delays between active state.
                 (+++)HAL_HRTIM_ChopperModeConfig(): configures the parameters of
                      the high-frequency carrier signal added on top of the timing
                      unit output. Chopper mode can be enabled or disabled for each
                      timer output separately (see  HAL_HRTIM_WaveformOutputConfig()).
-                (+++)HAL_HRTIM_BurstDMAConfig(): configures the burst DMA burst 
+                (+++)HAL_HRTIM_BurstDMAConfig(): configures the burst DMA burst
                      controller. Allows having multiple HRTIM registers updated
                      with a single DMA request. The burst DMA operation is started
                      by calling HAL_HRTIM_BurstDMATransfer().
@@ -206,40 +207,40 @@
                      of a HRTIM timer. This operation consists in specifying the
                      source(s)  triggering the capture (timer register update event,
                      external event, timer output set/reset event, other HRTIM
-                     timer related events). 
+                     timer related events).
                 (+++)HAL_HRTIM_WaveformOutputConfig(): configuration HRTIM timer
-                     output manly consists in: 
+                     output manly consists in:
                         - Setting the output polarity (active high or active low),
-                        - Defining the set/reset crossbar for the output, 
+                        - Defining the set/reset crossbar for the output,
                         - Specifying the fault level (active or inactive) in IDLE
                           and FAULT states.,
         (##)Set waveform timer output(s) level
                 (+++)HAL_HRTIM_WaveformSetOutputLevel(): forces the output to its
-                     active or inactive level. For example, when deadtime insertion 
+                     active or inactive level. For example, when deadtime insertion
                      is enabled it is necessary to force the output level by software
                      to have the outputs in a complementary state as soon as the RUN mode is entered.
         (##)Enable/Disable waveform timer output(s)
                 (+++)HAL_HRTIM_WaveformOutputStart(),HAL_HRTIM_WaveformOutputStop().
-        (##)Start/Stop waveform HRTIM timer(s). 
+        (##)Start/Stop waveform HRTIM timer(s).
                 (+++)HAL_HRTIM_WaveformCounterStart(),HAL_HRTIM_WaveformCounterStop(),
                 (+++)HAL_HRTIM_WaveformCounterStart_IT(),HAL_HRTIM_WaveformCounterStop_IT(),
                 (+++)HAL_HRTIM_WaveformCounterStart()_DMA,HAL_HRTIM_WaveformCounterStop_DMA(),
 
         (##)Burst mode controller enabling:
-                (+++)HAL_HRTIM_BurstModeCtl(): activates or de-activates the 
+                (+++)HAL_HRTIM_BurstModeCtl(): activates or de-activates the
                      burst mode controller.
 
         (##)Some HRTIM operations can be triggered by software:
-                (+++)HAL_HRTIM_BurstModeSoftwareTrigger(): calling this function 
+                (+++)HAL_HRTIM_BurstModeSoftwareTrigger(): calling this function
                      trigs the burst operation.
-                (+++)HAL_HRTIM_SoftwareCapture(): calling this function trigs the 
+                (+++)HAL_HRTIM_SoftwareCapture(): calling this function trigs the
                      capture of the HRTIM timer counter.
-                (+++)HAL_HRTIM_SoftwareUpdate(): calling this function trigs the 
+                (+++)HAL_HRTIM_SoftwareUpdate(): calling this function trigs the
                      update of the pre-loadable registers of the HRTIM timer ()
-                (+++)HAL_HRTIM_SoftwareReset():calling this function resets the 
+                (+++)HAL_HRTIM_SoftwareReset():calling this function resets the
                      HRTIM timer counter.
 
-        (##)Some functions can be used anytime to retrieve HRTIM timer related 
+        (##)Some functions can be used anytime to retrieve HRTIM timer related
             information
                 (+++)HAL_HRTIM_GetCapturedValue(): returns actual value of the
                      capture register of the designated capture unit.
@@ -247,16 +248,16 @@
                      (ACTIVE/INACTIVE) of the designated timer output.
                 (+++)HAL_HRTIM_WaveformGetOutputState():returns actual state
                      (IDLE/RUN/FAULT) of the designated timer output.
-                (+++)HAL_HRTIM_GetDelayedProtectionStatus():returns actual level 
+                (+++)HAL_HRTIM_GetDelayedProtectionStatus():returns actual level
                      (ACTIVE/INACTIVE) of the designated output when the delayed
                       protection was triggered.
                 (+++)HAL_HRTIM_GetBurstStatus(): returns the actual status
                      (ACTIVE/INACTIVE) of the burst mode controller.
                 (+++)HAL_HRTIM_GetCurrentPushPullStatus(): when the push-pull mode
                      is enabled for the HRTIM timer (see HAL_HRTIM_WaveformTimerConfig()),
-                     the push-pull indicates on which output the signal is currently 
+                     the push-pull indicates on which output the signal is currently
                      active (e.g signal applied on output 1 and output 2 forced
-                     inactive or vice versa). 
+                     inactive or vice versa).
                 (+++)HAL_HRTIM_GetIdlePushPullStatus(): when the push-pull mode
                      is enabled for the HRTIM timer (see HAL_HRTIM_WaveformTimerConfig()),
                      the idle push-pull  status indicates during which period the
@@ -266,7 +267,72 @@
 
         (##)Some functions can be used anytime to retrieve actual HRTIM status
                 (+++)HAL_HRTIM_GetState(): returns actual HRTIM instance HAL state.
-  
+
+     *** Callback registration ***
+     =============================
+     [..]
+     The compilation flag USE_HAL_HRTIM_REGISTER_CALLBACKS when set to 1
+     allows the user to configure dynamically the driver callbacks.
+     Use Functions HAL_HRTIM_RegisterCallback() or HAL_HRTIM_TIMxRegisterCallback()
+     to register an interrupt callback.
+
+     Function HAL_HRTIM_RegisterCallback() allows to register following callbacks:
+       (+) Fault1Callback               : Fault 1 interrupt callback function
+       (+) Fault2Callback               : Fault 2 interrupt callback function
+       (+) Fault3Callback               : Fault 3 interrupt callback function
+       (+) Fault4Callback               : Fault 4 interrupt callback function
+       (+) Fault5Callback               : Fault 5 interrupt callback function
+       (+) SystemFaultCallback          : System fault interrupt callback function
+       (+) BurstModePeriodCallback      : Burst mode period interrupt callback function
+       (+) SynchronizationEventCallback : Sync Input interrupt callback function
+       (+) ErrorCallback                : DMA error callback function
+       (+) MspInitCallback              : HRTIM MspInit callback function
+       (+) MspDeInitCallback            : HRTIM MspInit callback function
+
+     Function HAL_HRTIM_TIMxRegisterCallback() allows to register following callbacks:
+       (+) RegistersUpdateCallback   : Timer x Update interrupt callback function
+       (+) RepetitionEventCallback   : Timer x Repetition interrupt callback function
+       (+) Compare1EventCallback     : Timer x Compare 1 match interrupt callback function
+       (+) Compare2EventCallback     : Timer x Compare 2 match interrupt callback function
+       (+) Compare3EventCallback     : Timer x Compare 3 match interrupt callback function
+       (+) Compare4EventCallback     : Timer x Compare 4 match interrupt callback function
+       (+) Capture1EventCallback     : Timer x Capture 1 interrupts callback function
+       (+) Capture2EventCallback     : Timer x Capture 2 interrupts callback function
+       (+) DelayedProtectionCallback : Timer x Delayed protection interrupt callback function
+       (+) CounterResetCallback      : Timer x counter reset/roll-over interrupt callback function
+       (+) Output1SetCallback        : Timer x output 1 set interrupt callback function
+       (+) Output1ResetCallback      : Timer x output 1 reset interrupt callback function
+       (+) Output2SetCallback        : Timer x output 2 set interrupt callback function
+       (+) Output2ResetCallback      : Timer x output 2 reset interrupt callback function
+       (+) BurstDMATransferCallback  : Timer x Burst DMA completed interrupt callback function
+
+     Both functions take as parameters the HAL peripheral handle, the Callback ID
+     and a pointer to the user callback function.
+
+     Use function HAL_HRTIM_UnRegisterCallback or HAL_HRTIM_TIMxUnRegisterCallback
+     to reset a callback to the default weak function. Both functions take  as parameters
+     the HAL peripheral handle and the Callback ID.
+
+     By default, after the HAL_HRTIM_Init() and when the state is HAL_HRTIM_STATE_RESET
+     all callbacks are set to the corresponding weak functions (e.g HAL_HRTIM_Fault1Callback)
+     Exception done for MspInit and MspDeInit functions that are reset to the legacy
+     weak functions in the HAL_HRTIM_Init()/ HAL_HRTIM_DeInit() only when these
+     callbacks are null (not registered beforehand). If MspInit or MspDeInit are
+     not null, the HAL_HRTIM_Init()/ HAL_HRTIM_DeInit() keep and use the user
+     MspInit/MspDeInit callbacks (registered beforehand) whatever the state.
+
+     Callbacks can be registered/unregistered in HAL_HRTIM_STATE_READY state only.
+     Exception done MspInit/MspDeInit functions that can be registered/unregistered
+     in HAL_HRTIM_STATE_READY or HAL_HRTIM_STATE_RESET states, thus registered
+     (user) MspInit/DeInit callbacks can be used during the Init/DeInit.
+     Then, the user first registers the MspInit/MspDeInit user callbacks
+     using HAL_HRTIM_RegisterCallback() before calling HAL_HRTIM_DeInit()
+     or @ref HAL_HRTIM_Init() function.
+
+     When the compilation flag USE_HAL_HRTIM_REGISTER_CALLBACKS is set to 0 or
+     not defined, the callback registration feature is not available and all
+     callbacks are set to the corresponding weak functions.
+
   @endverbatim
 
   ******************************************************************************
@@ -296,7 +362,7 @@
   * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
   * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   *
-  ******************************************************************************  
+  ******************************************************************************
   */
 
 /* Includes ------------------------------------------------------------------*/
@@ -308,7 +374,7 @@
 
 #ifdef HAL_HRTIM_MODULE_ENABLED
 
-/** @defgroup HRTIM HRTIM 
+/** @defgroup HRTIM HRTIM
   * @brief HRTIM HAL module driver
   * @{
   */
@@ -339,7 +405,7 @@
 /** @defgroup HRTIM_Private_Variables HRTIM Private Variables
   * @{
   */
-static uint32_t TimerIdxToTimerId[] = 
+static uint32_t TimerIdxToTimerId[] =
 {
   HRTIM_TIMERID_TIMER_A,
   HRTIM_TIMERID_TIMER_B,
@@ -356,18 +422,18 @@ static uint32_t TimerIdxToTimerId[] =
 /** @defgroup HRTIM_Private_Functions HRTIM Private Functions
   * @{
   */
-static void HRTIM_MasterBase_Config(HRTIM_HandleTypeDef * hhrtim, 
+static void HRTIM_MasterBase_Config(HRTIM_HandleTypeDef * hhrtim,
                                     HRTIM_TimeBaseCfgTypeDef * pTimeBaseCfg);
 
-static void HRTIM_TimingUnitBase_Config(HRTIM_HandleTypeDef * hhrtim, 
+static void HRTIM_TimingUnitBase_Config(HRTIM_HandleTypeDef * hhrtim,
                                         uint32_t TimerIdx,
                                         HRTIM_TimeBaseCfgTypeDef * pTimeBaseCfg);
 
-static void HRTIM_MasterWaveform_Config(HRTIM_HandleTypeDef * hhrtim, 
+static void HRTIM_MasterWaveform_Config(HRTIM_HandleTypeDef * hhrtim,
                                         HRTIM_TimerCfgTypeDef * pTimerCfg);
 
-static void HRTIM_TimingUnitWaveform_Config(HRTIM_HandleTypeDef * hhrtim, 
-                                            uint32_t TimerIdx, 
+static void HRTIM_TimingUnitWaveform_Config(HRTIM_HandleTypeDef * hhrtim,
+                                            uint32_t TimerIdx,
                                             HRTIM_TimerCfgTypeDef * pTimerCfg);
 
 static void HRTIM_CompareUnitConfig(HRTIM_HandleTypeDef * hhrtim,
@@ -391,7 +457,7 @@ static void HRTIM_EventConfig(HRTIM_HandleTypeDef * hhrtim,
 
 static void HRTIM_TIM_ResetConfig(HRTIM_HandleTypeDef * hhrtim,
                                   uint32_t TimerIdx,
-                                  uint32_t Event);  
+                                  uint32_t Event);
 
 static uint32_t HRTIM_GetITFromOCMode(HRTIM_HandleTypeDef * hhrtim,
                                       uint32_t TimerIdx,
@@ -432,26 +498,26 @@ static void HRTIM_BurstDMACplt(DMA_HandleTypeDef *hdma);
   * @{
   */
 
-/** @defgroup HRTIM_Exported_Functions_Group1 Initialization and de-initialization functions  
- *  @brief    Initialization and Configuration functions 
+/** @defgroup HRTIM_Exported_Functions_Group1 Initialization and de-initialization functions
+ *  @brief    Initialization and Configuration functions
  *
-@verbatim    
+@verbatim
  ===============================================================================
               ##### Initialization and Time Base Configuration functions #####
  ===============================================================================
     [..]  This section provides functions allowing to:
-      (+) Initialize a HRTIM instance 
-      (+) De-initialize a HRTIM instance 
-      (+) Initialize the HRTIM MSP 
-      (+) De-initialize the HRTIM MSP 
-      (+) Configure the time base unit of a HRTIM timer 
+      (+) Initialize a HRTIM instance
+      (+) De-initialize a HRTIM instance
+      (+) Initialize the HRTIM MSP
+      (+) De-initialize the HRTIM MSP
+      (+) Configure the time base unit of a HRTIM timer
 
 @endverbatim
   * @{
   */
 
 /**
-  * @brief  Initializes a HRTIM instance 
+  * @brief  Initializes a HRTIM instance
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @retval HAL status
   */
@@ -459,36 +525,72 @@ HAL_StatusTypeDef HAL_HRTIM_Init(HRTIM_HandleTypeDef * hhrtim)
 {
   uint8_t timer_idx;
   uint32_t hrtim_mcr;
-  
+
   /* Check the HRTIM handle allocation */
   if(hhrtim == NULL)
   {
     return HAL_ERROR;
   }
-  
+
   /* Check the parameters */
   assert_param(IS_HRTIM_ALL_INSTANCE(hhrtim->Instance));
-  assert_param(IS_HRTIM_IT(hhrtim->Init.HRTIMInterruptResquests)); 
- 
+  assert_param(IS_HRTIM_IT(hhrtim->Init.HRTIMInterruptResquests));
+
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+  if (hhrtim->State == HAL_HRTIM_STATE_RESET)
+  {
+    /* Initialize callback function pointers to their default values */
+    hhrtim->Fault1Callback               = HAL_HRTIM_Fault1Callback;
+    hhrtim->Fault2Callback               = HAL_HRTIM_Fault2Callback;
+    hhrtim->Fault3Callback               = HAL_HRTIM_Fault3Callback;
+    hhrtim->Fault4Callback               = HAL_HRTIM_Fault4Callback;
+    hhrtim->Fault5Callback               = HAL_HRTIM_Fault5Callback;
+    hhrtim->SystemFaultCallback          = HAL_HRTIM_SystemFaultCallback;
+    hhrtim->BurstModePeriodCallback      = HAL_HRTIM_BurstModePeriodCallback;
+    hhrtim->SynchronizationEventCallback = HAL_HRTIM_SynchronizationEventCallback;
+    hhrtim->ErrorCallback                = HAL_HRTIM_ErrorCallback;
+    hhrtim->RegistersUpdateCallback      = HAL_HRTIM_RegistersUpdateCallback;
+    hhrtim->RepetitionEventCallback      = HAL_HRTIM_RepetitionEventCallback;
+    hhrtim->Compare1EventCallback        = HAL_HRTIM_Compare1EventCallback;
+    hhrtim->Compare2EventCallback        = HAL_HRTIM_Compare2EventCallback;
+    hhrtim->Compare3EventCallback        = HAL_HRTIM_Compare3EventCallback;
+    hhrtim->Compare4EventCallback        = HAL_HRTIM_Compare4EventCallback;
+    hhrtim->Capture1EventCallback        = HAL_HRTIM_Capture1EventCallback;
+    hhrtim->Capture2EventCallback        = HAL_HRTIM_Capture2EventCallback;
+    hhrtim->DelayedProtectionCallback    = HAL_HRTIM_DelayedProtectionCallback;
+    hhrtim->CounterResetCallback         = HAL_HRTIM_CounterResetCallback;
+    hhrtim->Output1SetCallback           = HAL_HRTIM_Output1SetCallback;
+    hhrtim->Output1ResetCallback         = HAL_HRTIM_Output1ResetCallback;
+    hhrtim->Output2SetCallback           = HAL_HRTIM_Output2SetCallback;
+    hhrtim->Output2ResetCallback         = HAL_HRTIM_Output2ResetCallback;
+    hhrtim->BurstDMATransferCallback     = HAL_HRTIM_BurstDMATransferCallback;
+
+    if (hhrtim->MspInitCallback == NULL)
+    {
+      hhrtim->MspInitCallback = HAL_HRTIM_MspInit;
+    }
+  }
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
+
   /* Set the HRTIM state */
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-  
+
   /* Initialize the DMA handles */
-  hhrtim->hdmaMaster = (DMA_HandleTypeDef *)NULL;    
-  hhrtim->hdmaTimerA = (DMA_HandleTypeDef *)NULL;     
-  hhrtim->hdmaTimerB = (DMA_HandleTypeDef *)NULL;  
-  hhrtim->hdmaTimerC = (DMA_HandleTypeDef *)NULL;  
-  hhrtim->hdmaTimerD = (DMA_HandleTypeDef *)NULL;  
-  hhrtim->hdmaTimerE = (DMA_HandleTypeDef *)NULL;  
-  
+  hhrtim->hdmaMaster = (DMA_HandleTypeDef *)NULL;
+  hhrtim->hdmaTimerA = (DMA_HandleTypeDef *)NULL;
+  hhrtim->hdmaTimerB = (DMA_HandleTypeDef *)NULL;
+  hhrtim->hdmaTimerC = (DMA_HandleTypeDef *)NULL;
+  hhrtim->hdmaTimerD = (DMA_HandleTypeDef *)NULL;
+  hhrtim->hdmaTimerE = (DMA_HandleTypeDef *)NULL;
+
   /* HRTIM output synchronization configuration (if required) */
   if ((hhrtim->Init.SyncOptions & HRTIM_SYNCOPTION_MASTER) != RESET)
   {
     /* Check parameters */
     assert_param(IS_HRTIM_SYNCOUTPUTSOURCE(hhrtim->Init.SyncOutputSource));
     assert_param(IS_HRTIM_SYNCOUTPUTPOLARITY(hhrtim->Init.SyncOutputPolarity));
-    
-    /* The synchronization output initialization procedure must be done prior 
+
+    /* The synchronization output initialization procedure must be done prior
        to the configuration of the MCU outputs (done within HAL_HRTIM_MspInit)
     */
     if (hhrtim->Instance == HRTIM1)
@@ -496,49 +598,53 @@ HAL_StatusTypeDef HAL_HRTIM_Init(HRTIM_HandleTypeDef * hhrtim)
       /* Enable the HRTIM peripheral clock */
       __HAL_RCC_HRTIM1_CLK_ENABLE();
     }
-    
+
     hrtim_mcr = hhrtim->Instance->sMasterRegs.MCR;
-    
+
     /* Set the event to be sent on the synchronization output */
     hrtim_mcr &= ~(HRTIM_MCR_SYNC_SRC);
     hrtim_mcr |= (hhrtim->Init.SyncOutputSource & HRTIM_MCR_SYNC_SRC);
-    
+
     /* Set the polarity of the synchronization output */
     hrtim_mcr &= ~(HRTIM_MCR_SYNC_OUT);
     hrtim_mcr |= (hhrtim->Init.SyncOutputPolarity & HRTIM_MCR_SYNC_OUT);
-    
-    /* Update the HRTIM registers */  
-    hhrtim->Instance->sMasterRegs.MCR = hrtim_mcr;    
+
+    /* Update the HRTIM registers */
+    hhrtim->Instance->sMasterRegs.MCR = hrtim_mcr;
   }
 
   /* Init the low level hardware : GPIO, CLOCK, NVIC and DMA */
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+  hhrtim->MspInitCallback(hhrtim);
+#else
   HAL_HRTIM_MspInit(hhrtim);
-  
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
+
   /* HRTIM input synchronization configuration (if required) */
   if ((hhrtim->Init.SyncOptions & HRTIM_SYNCOPTION_SLAVE) != RESET)
   {
     /* Check parameters */
     assert_param(IS_HRTIM_SYNCINPUTSOURCE(hhrtim->Init.SyncInputSource));
-    
+
     hrtim_mcr = hhrtim->Instance->sMasterRegs.MCR;
 
     /* Set the synchronization input source */
     hrtim_mcr &= ~(HRTIM_MCR_SYNC_IN);
     hrtim_mcr |= (hhrtim->Init.SyncInputSource & HRTIM_MCR_SYNC_IN);
-    
-    /* Update the HRTIM registers */  
-    hhrtim->Instance->sMasterRegs.MCR = hrtim_mcr;    
+
+    /* Update the HRTIM registers */
+    hhrtim->Instance->sMasterRegs.MCR = hrtim_mcr;
   }
-  
+
   /* Initialize the HRTIM state*/
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
+
   /* Initialize the lock status of the HRTIM HAL API */
   __HAL_UNLOCK(hhrtim);
 
-  /* Tnitialize timer related parameters */ 
-  for (timer_idx = HRTIM_TIMERINDEX_TIMER_A ; 
-       timer_idx <= HRTIM_TIMERINDEX_MASTER ; 
+  /* Tnitialize timer related parameters */
+  for (timer_idx = HRTIM_TIMERINDEX_TIMER_A ;
+       timer_idx <= HRTIM_TIMERINDEX_MASTER ;
        timer_idx++)
   {
     hhrtim->TimerParam[timer_idx].CaptureTrigger1 = HRTIM_CAPTURETRIGGER_NONE;
@@ -548,12 +654,12 @@ HAL_StatusTypeDef HAL_HRTIM_Init(HRTIM_HandleTypeDef * hhrtim)
     hhrtim->TimerParam[timer_idx].DMASrcAddress = 0;
     hhrtim->TimerParam[timer_idx].DMASize = 0;
   }
-  
+
   return HAL_OK;
 }
 
 /**
-  * @brief  De-initializes a HRTIM instance 
+  * @brief  De-initializes a HRTIM instance
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @retval HAL status
   */
@@ -564,18 +670,27 @@ HAL_StatusTypeDef HAL_HRTIM_DeInit (HRTIM_HandleTypeDef * hhrtim)
   {
     return HAL_ERROR;
   }
-  
+
   /* Check the parameters */
   assert_param(IS_HRTIM_ALL_INSTANCE(hhrtim->Instance));
 
   /* Set the HRTIM state */
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-  
+
   /* DeInit the low level hardware */
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+  if (hhrtim->MspDeInitCallback == NULL)
+  {
+    hhrtim->MspDeInitCallback = HAL_HRTIM_MspDeInit;
+  }
+
+  hhrtim->MspDeInitCallback(hhrtim);
+#else
   HAL_HRTIM_MspDeInit(hhrtim);
-  
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
+
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
+
   return HAL_OK;
 }
 
@@ -590,7 +705,7 @@ __weak void HAL_HRTIM_MspInit(HRTIM_HandleTypeDef * hhrtim)
   UNUSED(hhrtim);
   /* NOTE: This function should not be modified, when the callback is needed,
            the HAL_HRTIM_MspInit could be implemented in the user file
-   */ 
+   */
 }
 
 /**
@@ -605,11 +720,11 @@ __weak void HAL_HRTIM_MspDeInit(HRTIM_HandleTypeDef * hhrtim)
 
   /* NOTE: This function should not be modified, when the callback is needed,
            the HAL_HRTIM_MspDeInit could be implemented in the user file
-   */ 
+   */
 }
 
 /**
-  * @brief  Configures the time base unit of a timer 
+  * @brief  Configures the time base unit of a timer
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -620,11 +735,11 @@ __weak void HAL_HRTIM_MspDeInit(HRTIM_HandleTypeDef * hhrtim)
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  pTimeBaseCfg: pointer to the time base configuration structure
-  * @note This function must be called prior starting the timer 
+  * @note This function must be called prior starting the timer
   * @note   The time-base unit initialization parameters specify:
   *           The timer counter operating mode (continuous, one shot),
   *           The timer clock prescaler,
-  *           The timer period, 
+  *           The timer period,
   *           The timer repetition counter.
   * @retval HAL status
   */
@@ -634,14 +749,14 @@ HAL_StatusTypeDef HAL_HRTIM_TimeBaseConfig(HRTIM_HandleTypeDef *hhrtim,
 {
   /* Check the parameters */
   assert_param(IS_HRTIM_TIMERINDEX(TimerIdx));
-  assert_param(IS_HRTIM_PRESCALERRATIO(pTimeBaseCfg->PrescalerRatio)); 
-  assert_param(IS_HRTIM_MODE(pTimeBaseCfg->Mode)); 
-  
+  assert_param(IS_HRTIM_PRESCALERRATIO(pTimeBaseCfg->PrescalerRatio));
+  assert_param(IS_HRTIM_MODE(pTimeBaseCfg->Mode));
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
   }
- 
+
   /* Set the HRTIM state */
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
@@ -655,30 +770,30 @@ HAL_StatusTypeDef HAL_HRTIM_TimeBaseConfig(HRTIM_HandleTypeDef *hhrtim,
     /* Configure timing unit time base unit */
     HRTIM_TimingUnitBase_Config(hhrtim, TimerIdx, pTimeBaseCfg);
   }
-      
+
   /* Set HRTIM state */
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  return HAL_OK; 
+
+  return HAL_OK;
 }
 
 /**
   * @}
   */
 
-/** @defgroup HRTIM_Exported_Functions_Group2 Simple time base mode functions  
+/** @defgroup HRTIM_Exported_Functions_Group2 Simple time base mode functions
  *  @brief    Simple time base mode functions.
  *
-@verbatim    
+@verbatim
  ===============================================================================
               ##### Simple time base mode functions #####
  ===============================================================================
     [..]  This section provides functions allowing to:
-      (+) Start simple time base 
-      (+) Stop simple time base 
-      (+) Start simple time base and enable interrupt 
-      (+) Stop simple time base and disable interrupt 
-      (+) Start simple time base and enable DMA transfer 
+      (+) Start simple time base
+      (+) Stop simple time base
+      (+) Start simple time base and enable interrupt
+      (+) Stop simple time base and disable interrupt
+      (+) Start simple time base and enable DMA transfer
       (+) Stop simple time base and disable DMA transfer
       -@-  When a HRTIM timer operates in simple time base mode, the timer
        counter counts from 0 to the period value.
@@ -702,22 +817,22 @@ HAL_StatusTypeDef HAL_HRTIM_TimeBaseConfig(HRTIM_HandleTypeDef *hhrtim,
   */
 HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStart(HRTIM_HandleTypeDef * hhrtim,
                                            uint32_t TimerIdx)
-{  
+{
    /* Check the parameters */
   assert_param(IS_HRTIM_TIMERINDEX(TimerIdx));
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
+  __HAL_UNLOCK(hhrtim);
 
   return HAL_OK;
 }
@@ -743,16 +858,16 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStop(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
+  __HAL_UNLOCK(hhrtim);
 
   return HAL_OK;
 }
@@ -779,9 +894,9 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStart_IT(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-  
+
   /* Enable the repetition interrupt */
   if (TimerIdx == HRTIM_TIMERINDEX_MASTER)
   {
@@ -791,14 +906,14 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStart_IT(HRTIM_HandleTypeDef * hhrtim,
   {
     __HAL_HRTIM_TIMER_ENABLE_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_REP);
   }
-  
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
+  __HAL_UNLOCK(hhrtim);
 
   return HAL_OK;
 }
@@ -825,9 +940,9 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStop_IT(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-  
+
   /* Disable the repetition interrupt */
   if (TimerIdx == HRTIM_TIMERINDEX_MASTER)
   {
@@ -837,14 +952,14 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStop_IT(HRTIM_HandleTypeDef * hhrtim,
   {
     __HAL_HRTIM_TIMER_DISABLE_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_REP);
   }
-  
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
+  __HAL_UNLOCK(hhrtim);
 
   return HAL_OK;
 }
@@ -873,32 +988,32 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStart_DMA(HRTIM_HandleTypeDef * hhrtim,
                                                uint32_t Length)
 {
   DMA_HandleTypeDef * hdma;
-  
+
   /* Check the parameters */
   assert_param(IS_HRTIM_TIMERINDEX(TimerIdx));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
   }
   if(hhrtim->State == HAL_HRTIM_STATE_READY)
   {
-    if((SrcAddr == 0 ) || (DestAddr == 0 ) || (Length == 0)) 
+    if((SrcAddr == 0 ) || (DestAddr == 0 ) || (Length == 0))
     {
-      return HAL_ERROR;                                    
+      return HAL_ERROR;
     }
     else
     {
       hhrtim->State = HAL_HRTIM_STATE_BUSY;
     }
   }
-  
+
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   /* Get the timer DMA handler */
   hdma = HRTIM_GetDMAHandleFromTimerIdx(hhrtim, TimerIdx);
-  
+
   /* Set the DMA transfer completed callback */
   if (TimerIdx == HRTIM_TIMERINDEX_MASTER)
   {
@@ -908,13 +1023,13 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStart_DMA(HRTIM_HandleTypeDef * hhrtim,
   {
     hdma->XferCpltCallback = HRTIM_DMATimerxCplt;
   }
-  
+
   /* Set the DMA error callback */
   hdma->XferErrorCallback = HRTIM_DMAError ;
-  
+
   /* Enable the DMA channel */
   HAL_DMA_Start_IT(hdma, SrcAddr, DestAddr, Length);
-  
+
   /* Enable the timer repetition DMA request */
   if (TimerIdx == HRTIM_TIMERINDEX_MASTER)
   {
@@ -924,15 +1039,15 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStart_DMA(HRTIM_HandleTypeDef * hhrtim,
   {
     __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_REP);
   }
-  
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
 
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -957,15 +1072,15 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStop_DMA(HRTIM_HandleTypeDef * hhrtim,
 
   /* Check the parameters */
   assert_param(IS_HRTIM_TIMERINDEX(TimerIdx));
-    
+
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   if (TimerIdx == HRTIM_TIMERINDEX_MASTER)
   {
     /* Disable the DMA */
     HAL_DMA_Abort(hhrtim->hdmaMaster);
-    
+
     /* Disable the timer repetition DMA request */
     __HAL_HRTIM_MASTER_DISABLE_DMA(hhrtim, HRTIM_MASTER_DMA_MREP);
   }
@@ -973,21 +1088,21 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   {
     /* Get the timer DMA handler */
     hdma = HRTIM_GetDMAHandleFromTimerIdx(hhrtim, TimerIdx);
-    
+
     /* Disable the DMA */
     HAL_DMA_Abort(hdma);
-    
+
     /* Disable the timer repetition DMA request */
     __HAL_HRTIM_TIMER_DISABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_REP);
   }
-  
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
 
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
+  __HAL_UNLOCK(hhrtim);
 
   return HAL_OK;
 }
@@ -996,23 +1111,23 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   * @}
   */
 
-/** @defgroup HRTIM_Exported_Functions_Group3 Simple output compare mode functions  
+/** @defgroup HRTIM_Exported_Functions_Group3 Simple output compare mode functions
  *  @brief    Simple output compare functions
  *
-@verbatim    
+@verbatim
  ===============================================================================
               ##### Simple output compare functions #####
  ===============================================================================
     [..]  This section provides functions allowing to:
-      (+) Configure simple output channel 
-      (+) Start simple output compare 
-      (+) Stop simple output compare 
-      (+) Start simple output compare and enable interrupt 
-      (+) Stop simple output compare and disable interrupt 
-      (+) Start simple output compare and enable DMA transfer 
+      (+) Configure simple output channel
+      (+) Start simple output compare
+      (+) Stop simple output compare
+      (+) Start simple output compare and enable interrupt
+      (+) Stop simple output compare and disable interrupt
+      (+) Start simple output compare and enable DMA transfer
       (+) Stop simple output compare and disable DMA transfer
        -@- When a HRTIM timer operates in simple output compare mode
-           the output level is set to a programmable value when a match 
+           the output level is set to a programmable value when a match
            is found between the compare register and the counter.
            Compare unit 1 is automatically associated to output 1
            Compare unit 2 is automatically associated to output 2
@@ -1022,7 +1137,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   */
 
 /**
-  * @brief  Configures an output in simple output compare mode 
+  * @brief  Configures an output in simple output compare mode
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -1041,7 +1156,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleBaseStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   *                    @arg HRTIM_OUTPUT_TD1: Timer D - Output 1
   *                    @arg HRTIM_OUTPUT_TD2: Timer D - Output 2
   *                    @arg HRTIM_OUTPUT_TE1: Timer E - Output 1
-  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2 
+  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2
   * @param  pSimpleOCChannelCfg: pointer to the simple output compare output configuration structure
   * @note When the timer operates in simple output compare mode:
   *         Output 1 is implicitly controlled by the compare unit 1
@@ -1060,13 +1175,13 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCChannelConfig(HRTIM_HandleTypeDef * hhrtim,
   uint32_t CompareUnit = 0xFFFFFFFFU;
   HRTIM_CompareCfgTypeDef CompareCfg = {0};
   HRTIM_OutputCfgTypeDef OutputCfg = {0};
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, OCChannel));
   assert_param(IS_HRTIM_BASICOCMODE(pSimpleOCChannelCfg->Mode));
   assert_param(IS_HRTIM_OUTPUTPOLARITY(pSimpleOCChannelCfg->Polarity));
   assert_param(IS_HRTIM_OUTPUTIDLELEVEL(pSimpleOCChannelCfg->IdleLevel));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -1074,8 +1189,8 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCChannelConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Set HRTIM state */
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-  
-  /* Configure timer compare unit */  
+
+  /* Configure timer compare unit */
   switch (OCChannel)
   {
   case HRTIM_OUTPUT_TA1:
@@ -1097,16 +1212,16 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCChannelConfig(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   CompareCfg.CompareValue = pSimpleOCChannelCfg->Pulse;
   CompareCfg.AutoDelayedMode = HRTIM_AUTODELAYEDMODE_REGULAR;
   CompareCfg.AutoDelayedTimeout = 0;
-  
+
   HRTIM_CompareUnitConfig(hhrtim,
                           TimerIdx,
                           CompareUnit,
                           &CompareCfg);
-  
+
   /* Configure timer output */
   OutputCfg.Polarity = pSimpleOCChannelCfg->Polarity;
   OutputCfg.IdleLevel = pSimpleOCChannelCfg->IdleLevel;
@@ -1114,7 +1229,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCChannelConfig(HRTIM_HandleTypeDef * hhrtim,
   OutputCfg.IdleMode = HRTIM_OUTPUTIDLEMODE_NONE;
   OutputCfg.ChopperModeEnable = HRTIM_OUTPUTCHOPPERMODE_DISABLED;
   OutputCfg.BurstModeEntryDelayed = HRTIM_OUTPUTBURSTMODEENTRY_REGULAR;
-  
+
   switch (pSimpleOCChannelCfg->Mode)
   {
   case HRTIM_BASICOCMODE_TOGGLE:
@@ -1157,20 +1272,20 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCChannelConfig(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   HRTIM_OutputConfig(hhrtim,
                      TimerIdx,
                      OCChannel,
-                     &OutputCfg);  
-  
+                     &OutputCfg);
+
   /* Set HRTIM state */
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  return HAL_OK; 
+
+  return HAL_OK;
 }
 
 /**
-  * @brief  Starts the output compare signal generation on the designed timer output 
+  * @brief  Starts the output compare signal generation on the designed timer output
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -1202,25 +1317,25 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCStart(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Enable the timer output */
   hhrtim->Instance->sCommonRegs.OENR |= OCChannel;
-    
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
 /**
-  * @brief  Stops the output compare signal generation on the designed timer output 
+  * @brief  Stops the output compare signal generation on the designed timer output
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -1252,20 +1367,20 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCStop(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Disable the timer output */
   hhrtim->Instance->sCommonRegs.ODISR |= OCChannel;
-    
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -1303,32 +1418,32 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCStart_IT(HRTIM_HandleTypeDef * hhrtim,
                                             uint32_t OCChannel)
 {
   uint32_t interrupt;
-  
+
    /* Check the parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, OCChannel));
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Get the interrupt to enable (depends on the output compare mode) */
   interrupt = HRTIM_GetITFromOCMode(hhrtim, TimerIdx, OCChannel);
-  
+
   /* Enable the timer output */
   hhrtim->Instance->sCommonRegs.OENR |= OCChannel;
-    
+
   /* Enable the timer interrupt (depends on the output compare mode) */
   __HAL_HRTIM_TIMER_ENABLE_IT(hhrtim, TimerIdx, interrupt);
-  
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -1362,32 +1477,32 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCStop_IT(HRTIM_HandleTypeDef * hhrtim,
                                            uint32_t OCChannel)
 {
   uint32_t interrupt;
-  
+
    /* Check the parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, OCChannel));
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Disable the timer output */
   hhrtim->Instance->sCommonRegs.ODISR |= OCChannel;
-    
+
   /* Get the interrupt to disable (depends on the output compare mode) */
   interrupt = HRTIM_GetITFromOCMode(hhrtim, TimerIdx, OCChannel);
 
   /* Disable the timer interrupt */
   __HAL_HRTIM_TIMER_DISABLE_IT(hhrtim, TimerIdx, interrupt);
-  
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -1421,7 +1536,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCStop_IT(HRTIM_HandleTypeDef * hhrtim,
   * @note  DMA request enabling depends on the chosen output compare mode
   *          Output toggle: compare match DMA request is enabled
   *          Output set active:  output set DMA request is enabled
-  *          Output set inactive:  output reset DMA request is enabled 
+  *          Output set inactive:  output reset DMA request is enabled
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HRTIM_SimpleOCStart_DMA(HRTIM_HandleTypeDef * hhrtim,
@@ -1433,58 +1548,58 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCStart_DMA(HRTIM_HandleTypeDef * hhrtim,
 {
   DMA_HandleTypeDef * hdma;
   uint32_t dma_request;
-  
+
   /* Check the parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, OCChannel));
-  
+
   if((hhrtim->State == HAL_HRTIM_STATE_BUSY))
   {
      return HAL_BUSY;
   }
   if((hhrtim->State == HAL_HRTIM_STATE_READY))
   {
-    if((SrcAddr == 0 ) || (DestAddr == 0 ) || (Length == 0)) 
+    if((SrcAddr == 0 ) || (DestAddr == 0 ) || (Length == 0))
     {
-      return HAL_ERROR;                                    
+      return HAL_ERROR;
     }
     else
     {
       hhrtim->State = HAL_HRTIM_STATE_BUSY;
     }
   }
-  
+
   /* Process Locked */
   __HAL_LOCK(hhrtim);
- 
+
    /* Enable the timer output */
   hhrtim->Instance->sCommonRegs.OENR |= OCChannel;
 
   /* Get the DMA request to enable */
   dma_request = HRTIM_GetDMAFromOCMode(hhrtim, TimerIdx, OCChannel);
-  
+
   /* Get the timer DMA handler */
   hdma = HRTIM_GetDMAHandleFromTimerIdx(hhrtim, TimerIdx);
 
   /* Set the DMA error callback */
   hdma->XferErrorCallback = HRTIM_DMAError ;
-  
+
   /* Set the DMA transfer completed callback */
   hdma->XferCpltCallback = HRTIM_DMATimerxCplt;
-  
+
   /* Enable the DMA channel */
   HAL_DMA_Start_IT(hdma, SrcAddr, DestAddr, Length);
-  
+
   /* Enable the timer DMA request */
   __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim, TimerIdx, dma_request);
-    
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
 
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
- 
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -1519,38 +1634,38 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCStop_DMA(HRTIM_HandleTypeDef * hhrtim,
 {
   DMA_HandleTypeDef * hdma;
   uint32_t dma_request;
- 
+
   /* Check the parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, OCChannel));
-    
+
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Disable the timer output */
   hhrtim->Instance->sCommonRegs.ODISR |= OCChannel;
-    
+
   /* Get the timer DMA handler */
   hdma = HRTIM_GetDMAHandleFromTimerIdx(hhrtim, TimerIdx);
-  
+
   /* Disable the DMA */
   HAL_DMA_Abort(hdma);
-  
+
   /* Get the DMA request to disable */
   dma_request = HRTIM_GetDMAFromOCMode(hhrtim, TimerIdx, OCChannel);
 
   /* Disable the timer DMA request */
   __HAL_HRTIM_TIMER_DISABLE_DMA(hhrtim, TimerIdx, dma_request);
-  
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
 
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -1558,25 +1673,25 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   * @}
   */
 
-/** @defgroup HRTIM_Exported_Functions_Group4 Simple PWM output mode functions  
+/** @defgroup HRTIM_Exported_Functions_Group4 Simple PWM output mode functions
  *  @brief    Simple PWM output functions
 
-@verbatim    
+@verbatim
  ===============================================================================
               ##### Simple PWM output functions #####
  ===============================================================================
     [..]  This section provides functions allowing to:
-      (+) Configure simple PWM output channel 
-      (+) Start simple PWM output 
-      (+) Stop simple PWM output 
-      (+) Start simple PWM output and enable interrupt 
-      (+) Stop simple PWM output and disable interrupt 
-      (+) Start simple PWM output and enable DMA transfer 
+      (+) Configure simple PWM output channel
+      (+) Start simple PWM output
+      (+) Stop simple PWM output
+      (+) Start simple PWM output and enable interrupt
+      (+) Stop simple PWM output and disable interrupt
+      (+) Start simple PWM output and enable DMA transfer
       (+) Stop simple PWM output and disable DMA transfer
-      -@- When a HRTIM timer operates in simple PWM output mode 
+      -@- When a HRTIM timer operates in simple PWM output mode
           the output level is set to a programmable value when a match is
           found between the compare register and the counter and reset when
-          the timer period is reached. Duty cycle is determined by the 
+          the timer period is reached. Duty cycle is determined by the
           comparison value.
           Compare unit 1 is automatically associated to output 1
           Compare unit 2 is automatically associated to output 2
@@ -1606,7 +1721,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   *                    @arg HRTIM_OUTPUT_TD1: Timer D - Output 1
   *                    @arg HRTIM_OUTPUT_TD2: Timer D - Output 2
   *                    @arg HRTIM_OUTPUT_TE1: Timer E - Output 1
-  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2 
+  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2
   * @param  pSimplePWMChannelCfg: pointer to the simple PWM output configuration structure
   * @note When the timer operates in simple PWM output mode:
   *         Output 1 is implicitly controlled by the compare unit 1
@@ -1614,7 +1729,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOCStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   *       Output Set/Reset crossbar is set as follows:
   *         Output 1: SETx1R = CMP1, RSTx1R = PER
   *         Output 2: SETx2R = CMP2, RST2R = PER
-  * @note When Simple PWM mode is used the registers preload mechanism is 
+  * @note When Simple PWM mode is used the registers preload mechanism is
   *       enabled (otherwise the behavior is not guaranteed).
   * @retval HAL status
   */
@@ -1632,7 +1747,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMChannelConfig(HRTIM_HandleTypeDef * hhrtim,
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, PWMChannel));
   assert_param(IS_HRTIM_OUTPUTPOLARITY(pSimplePWMChannelCfg->Polarity));
   assert_param(IS_HRTIM_OUTPUTIDLELEVEL(pSimplePWMChannelCfg->IdleLevel));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -1641,7 +1756,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMChannelConfig(HRTIM_HandleTypeDef * hhrtim,
   /* Process Locked */
   __HAL_LOCK(hhrtim);  hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
-  /* Configure timer compare unit */  
+  /* Configure timer compare unit */
   switch (PWMChannel)
   {
   case HRTIM_OUTPUT_TA1:
@@ -1663,16 +1778,16 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMChannelConfig(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   CompareCfg.CompareValue = pSimplePWMChannelCfg->Pulse;
   CompareCfg.AutoDelayedMode = HRTIM_AUTODELAYEDMODE_REGULAR;
   CompareCfg.AutoDelayedTimeout = 0;
-  
+
   HRTIM_CompareUnitConfig(hhrtim,
                           TimerIdx,
                           CompareUnit,
                           &CompareCfg);
-  
+
   /* Configure timer output */
   OutputCfg.Polarity = pSimplePWMChannelCfg->Polarity;
   OutputCfg.IdleLevel = pSimplePWMChannelCfg->IdleLevel;
@@ -1680,7 +1795,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMChannelConfig(HRTIM_HandleTypeDef * hhrtim,
   OutputCfg.IdleMode = HRTIM_OUTPUTIDLEMODE_NONE;
   OutputCfg.ChopperModeEnable = HRTIM_OUTPUTCHOPPERMODE_DISABLED;
   OutputCfg.BurstModeEntryDelayed = HRTIM_OUTPUTBURSTMODEENTRY_REGULAR;
-  
+
   if (CompareUnit == HRTIM_COMPAREUNIT_1)
   {
     OutputCfg.SetSource = HRTIM_OUTPUTSET_TIMCMP1;
@@ -1690,22 +1805,22 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMChannelConfig(HRTIM_HandleTypeDef * hhrtim,
     OutputCfg.SetSource = HRTIM_OUTPUTSET_TIMCMP2;
   }
   OutputCfg.ResetSource = HRTIM_OUTPUTSET_TIMPER;
-  
+
   HRTIM_OutputConfig(hhrtim,
                      TimerIdx,
                      PWMChannel,
-                     &OutputCfg);  
+                     &OutputCfg);
 /* Enable the registers preload mechanism */
   hrtim_timcr   = hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxCR;
   hrtim_timcr |= HRTIM_TIMCR_PREEN;
-  hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxCR  = hrtim_timcr; 
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
+  hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxCR  = hrtim_timcr;
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -1741,20 +1856,20 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStart(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Enable the timer output */
   hhrtim->Instance->sCommonRegs.OENR |= PWMChannel;
-    
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -1791,20 +1906,20 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStop(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Disable the timer output */
   hhrtim->Instance->sCommonRegs.ODISR |= PWMChannel;
-    
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -1842,9 +1957,9 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStart_IT(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Enable the timer output */
   hhrtim->Instance->sCommonRegs.OENR |= PWMChannel;
 
@@ -1870,15 +1985,15 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStart_IT(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -1916,12 +2031,12 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStop_IT(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Disable the timer output */
   hhrtim->Instance->sCommonRegs.ODISR |= PWMChannel;
-    
+
   /* Disable the timer interrupt (depends on the PWM output) */
   switch (PWMChannel)
   {
@@ -1944,15 +2059,15 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStop_IT(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -1996,41 +2111,41 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStart_DMA(HRTIM_HandleTypeDef * hhrtim,
 
   /* Check the parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, PWMChannel));
-  
+
   if((hhrtim->State == HAL_HRTIM_STATE_BUSY))
   {
      return HAL_BUSY;
   }
   if((hhrtim->State == HAL_HRTIM_STATE_READY))
   {
-    if((SrcAddr == 0 ) || (DestAddr == 0 ) || (Length == 0)) 
+    if((SrcAddr == 0 ) || (DestAddr == 0 ) || (Length == 0))
     {
-      return HAL_ERROR;                                    
+      return HAL_ERROR;
     }
     else
     {
       hhrtim->State = HAL_HRTIM_STATE_BUSY;
     }
   }
-  
+
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   /* Enable the timer output */
   hhrtim->Instance->sCommonRegs.OENR |= PWMChannel;
-  
+
   /* Get the timer DMA handler */
   hdma = HRTIM_GetDMAHandleFromTimerIdx(hhrtim, TimerIdx);
 
   /* Set the DMA error callback */
   hdma->XferErrorCallback = HRTIM_DMAError ;
-  
+
   /* Set the DMA transfer completed callback */
   hdma->XferCpltCallback = HRTIM_DMATimerxCplt;
-  
+
   /* Enable the DMA channel */
   HAL_DMA_Start_IT(hdma, SrcAddr, DestAddr, Length);
-  
+
   /* Enable the timer DMA request */
   switch (PWMChannel)
   {
@@ -2040,7 +2155,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStart_DMA(HRTIM_HandleTypeDef * hhrtim,
   case HRTIM_OUTPUT_TD1:
   case HRTIM_OUTPUT_TE1:
     {
-      __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_CMP1);      
+      __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_CMP1);
     }
     break;
   case HRTIM_OUTPUT_TA2:
@@ -2049,18 +2164,18 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStart_DMA(HRTIM_HandleTypeDef * hhrtim,
   case HRTIM_OUTPUT_TD2:
   case HRTIM_OUTPUT_TE2:
     {
-      __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_CMP2);      
+      __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_CMP2);
     }
     break;
   }
-   
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
 
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
+  __HAL_UNLOCK(hhrtim);
 
   return HAL_OK;
 }
@@ -2098,21 +2213,21 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStop_DMA(HRTIM_HandleTypeDef * hhrtim,
 
   /* Check the parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, PWMChannel));
-    
+
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Disable the timer output */
   hhrtim->Instance->sCommonRegs.ODISR |= PWMChannel;
-    
+
   /* Get the timer DMA handler */
   hdma = HRTIM_GetDMAHandleFromTimerIdx(hhrtim, TimerIdx);
-  
+
   /* Disable the DMA */
   HAL_DMA_Abort(hdma);
-  
+
   /* Disable the timer DMA request */
   switch (PWMChannel)
   {
@@ -2135,15 +2250,15 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStop_DMA(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
 
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -2151,24 +2266,24 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   * @}
   */
 
-/** @defgroup HRTIM_Exported_Functions_Group5 Simple input capture functions  
+/** @defgroup HRTIM_Exported_Functions_Group5 Simple input capture functions
  *  @brief    Simple input capture functions
 
-@verbatim    
+@verbatim
  ===============================================================================
               ##### Simple input capture functions #####
  ===============================================================================
     [..]  This section provides functions allowing to:
       (+) Configure simple input capture channel
-      (+) Start simple input capture 
-      (+) Stop simple input capture 
-      (+) Start simple input capture and enable interrupt 
-      (+) Stop simple input capture and disable interrupt 
-      (+) Start simple input capture and enable DMA transfer 
+      (+) Start simple input capture
+      (+) Stop simple input capture
+      (+) Start simple input capture and enable interrupt
+      (+) Stop simple input capture and disable interrupt
+      (+) Start simple input capture and enable DMA transfer
       (+) Stop simple input capture and disable DMA transfer
-      -@- When a HRTIM timer operates in simple input capture mode 
+      -@- When a HRTIM timer operates in simple input capture mode
           the Capture Register (HRTIM_CPT1/2xR) is used to latch the
-         value of the timer counter counter after a transition detected 
+         value of the timer counter counter after a transition detected
          on a given external event input.
 
 @endverbatim
@@ -2176,7 +2291,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   */
 
 /**
-  * @brief  Configures a simple capture 
+  * @brief  Configures a simple capture
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -2186,7 +2301,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimplePWMStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  CaptureChannel: Capture unit
-  *                    This parameter can be one of the following values: 
+  *                    This parameter can be one of the following values:
   *                    @arg HRTIM_CAPTUREUNIT_1: Capture unit 1
   *                    @arg HRTIM_CAPTUREUNIT_2: Capture unit 2
   * @param  pSimpleCaptureChannelCfg: pointer to the simple capture configuration structure
@@ -2202,7 +2317,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureChannelConfig(HRTIM_HandleTypeDef * hhr
                                                       HRTIM_SimpleCaptureChannelCfgTypeDef* pSimpleCaptureChannelCfg)
 {
   HRTIM_EventCfgTypeDef EventCfg;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_TIMING_UNIT(TimerIdx));
   assert_param(IS_HRTIM_CAPTUREUNIT(CaptureChannel));
@@ -2210,9 +2325,9 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureChannelConfig(HRTIM_HandleTypeDef * hhr
   assert_param(IS_HRTIM_EVENTPOLARITY(pSimpleCaptureChannelCfg->EventSensitivity,
                                       pSimpleCaptureChannelCfg->EventPolarity));
   assert_param(IS_HRTIM_EVENTSENSITIVITY(pSimpleCaptureChannelCfg->EventSensitivity));
-  assert_param(IS_HRTIM_EVENTFILTER(pSimpleCaptureChannelCfg->Event, 
+  assert_param(IS_HRTIM_EVENTFILTER(pSimpleCaptureChannelCfg->Event,
                                     pSimpleCaptureChannelCfg->EventFilter));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -2229,23 +2344,23 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureChannelConfig(HRTIM_HandleTypeDef * hhr
   EventCfg.Polarity = pSimpleCaptureChannelCfg->EventPolarity;
   EventCfg.Sensitivity = pSimpleCaptureChannelCfg->EventSensitivity;
   EventCfg.Source = HRTIM_EVENTSRC_1;
-    
+
   HRTIM_EventConfig(hhrtim,
                     pSimpleCaptureChannelCfg->Event,
                     &EventCfg);
 
-  /* Memorize capture trigger (will be configured when the capture is started */  
+  /* Memorize capture trigger (will be configured when the capture is started */
   HRTIM_CaptureUnitConfig(hhrtim,
                           TimerIdx,
                           CaptureChannel,
                           pSimpleCaptureChannelCfg->Event);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -2259,12 +2374,12 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureChannelConfig(HRTIM_HandleTypeDef * hhr
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  CaptureChannel: Timer output
-  *                    This parameter can be one of the following values: 
+  *                    This parameter can be one of the following values:
   *                    @arg HRTIM_CAPTUREUNIT_1: Capture unit 1
   *                    @arg HRTIM_CAPTUREUNIT_2: Capture unit 2
   * @retval HAL status
-  * @note  The external event triggering the capture is available for all timing 
-  *        units. It can be used directly and is active as soon as the timing 
+  * @note  The external event triggering the capture is available for all timing
+  *        units. It can be used directly and is active as soon as the timing
   *        unit counter is enabled.
   */
 HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStart(HRTIM_HandleTypeDef * hhrtim,
@@ -2277,9 +2392,9 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStart(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-    
+
   /* Set the capture unit trigger */
   switch (CaptureChannel)
   {
@@ -2294,20 +2409,20 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStart(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
 /**
-  * @brief  Disables a simple capture on the designed capture unit 
+  * @brief  Disables a simple capture on the designed capture unit
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -2317,7 +2432,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStart(HRTIM_HandleTypeDef * hhrtim,
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  CaptureChannel: Timer output
-  *                    This parameter can be one of the following values: 
+  *                    This parameter can be one of the following values:
   *                    @arg HRTIM_CAPTUREUNIT_1: Capture unit 1
   *                    @arg HRTIM_CAPTUREUNIT_2: Capture unit 2
   * @retval HAL status
@@ -2332,9 +2447,9 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-    
+
   /* Set the capture unit trigger */
   switch (CaptureChannel)
   {
@@ -2349,19 +2464,19 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   /* Disable the timer counter */
   if ((hhrtim->Instance->sTimerxRegs[TimerIdx].CPT1xCR == HRTIM_CAPTURETRIGGER_NONE) &&
       (hhrtim->Instance->sTimerxRegs[TimerIdx].CPT2xCR == HRTIM_CAPTURETRIGGER_NONE))
   {
     __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
   }
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -2377,7 +2492,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop(HRTIM_HandleTypeDef * hhrtim,
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  CaptureChannel: Timer output
-  *                    This parameter can be one of the following values: 
+  *                    This parameter can be one of the following values:
   *                    @arg HRTIM_CAPTUREUNIT_1: Capture unit 1
   *                    @arg HRTIM_CAPTUREUNIT_2: Capture unit 2
   * @retval HAL status
@@ -2392,16 +2507,16 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStart_IT(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-    
+
   /* Set the capture unit trigger */
   switch (CaptureChannel)
   {
   case HRTIM_CAPTUREUNIT_1:
     {
       hhrtim->Instance->sTimerxRegs[TimerIdx].CPT1xCR = hhrtim->TimerParam[TimerIdx].CaptureTrigger1;
-      
+
       /* Enable the capture unit 1 interrupt */
       __HAL_HRTIM_TIMER_ENABLE_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_CPT1);
     }
@@ -2409,21 +2524,21 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStart_IT(HRTIM_HandleTypeDef * hhrtim,
   case HRTIM_CAPTUREUNIT_2:
     {
       hhrtim->Instance->sTimerxRegs[TimerIdx].CPT2xCR = hhrtim->TimerParam[TimerIdx].CaptureTrigger2;
-      
+
       /* Enable the capture unit 2 interrupt */
       __HAL_HRTIM_TIMER_ENABLE_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_CPT2);
     }
     break;
   }
-  
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -2439,7 +2554,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStart_IT(HRTIM_HandleTypeDef * hhrtim,
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  CaptureChannel: Timer output
-  *                    This parameter can be one of the following values: 
+  *                    This parameter can be one of the following values:
   *                    @arg HRTIM_CAPTUREUNIT_1: Capture unit 1
   *                    @arg HRTIM_CAPTUREUNIT_2: Capture unit 2
   * @retval HAL status
@@ -2454,16 +2569,16 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop_IT(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-    
+
   /* Set the capture unit trigger */
   switch (CaptureChannel)
   {
   case HRTIM_CAPTUREUNIT_1:
     {
       hhrtim->Instance->sTimerxRegs[TimerIdx].CPT1xCR = HRTIM_CAPTURETRIGGER_NONE;
-      
+
       /* Disable the capture unit 1 interrupt */
       __HAL_HRTIM_TIMER_DISABLE_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_CPT1);
     }
@@ -2477,19 +2592,19 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop_IT(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   /* Disable the timer counter */
   if ((hhrtim->Instance->sTimerxRegs[TimerIdx].CPT1xCR == HRTIM_CAPTURETRIGGER_NONE) &&
       (hhrtim->Instance->sTimerxRegs[TimerIdx].CPT2xCR == HRTIM_CAPTURETRIGGER_NONE))
   {
     __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
   }
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -2505,7 +2620,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop_IT(HRTIM_HandleTypeDef * hhrtim,
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  CaptureChannel: Timer output
-  *                    This parameter can be one of the following values: 
+  *                    This parameter can be one of the following values:
   *                    @arg HRTIM_CAPTUREUNIT_1: Capture unit 1
   *                    @arg HRTIM_CAPTUREUNIT_2: Capture unit 2
   * @param  SrcAddr: DMA transfer source address
@@ -2529,50 +2644,50 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStart_DMA(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-    
+
   /* Get the timer DMA handler */
   hdma = HRTIM_GetDMAHandleFromTimerIdx(hhrtim, TimerIdx);
-  
+
   /* Set the DMA error callback */
   hdma->XferErrorCallback = HRTIM_DMAError ;
-  
+
   /* Set the DMA transfer completed callback */
   hdma->XferCpltCallback = HRTIM_DMATimerxCplt;
-  
+
   /* Enable the DMA channel */
   HAL_DMA_Start_IT(hdma, SrcAddr, DestAddr, Length);
-  
+
   switch (CaptureChannel)
   {
   case HRTIM_CAPTUREUNIT_1:
     {
       /* Set the capture unit trigger */
       hhrtim->Instance->sTimerxRegs[TimerIdx].CPT1xCR = hhrtim->TimerParam[TimerIdx].CaptureTrigger1;
-      
-      __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_CPT1);      
+
+      __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_CPT1);
     }
     break;
   case HRTIM_CAPTUREUNIT_2:
     {
       /* Set the capture unit trigger */
       hhrtim->Instance->sTimerxRegs[TimerIdx].CPT2xCR = hhrtim->TimerParam[TimerIdx].CaptureTrigger2;
-      
+
       /* Enable the timer DMA request */
-      __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_CPT2);      
+      __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_CPT2);
     }
     break;
   }
-  
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -2588,7 +2703,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStart_DMA(HRTIM_HandleTypeDef * hhrtim,
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  CaptureChannel: Timer output
-  *                    This parameter can be one of the following values: 
+  *                    This parameter can be one of the following values:
   *                    @arg HRTIM_CAPTUREUNIT_1: Capture unit 1
   *                    @arg HRTIM_CAPTUREUNIT_2: Capture unit 2
   * @retval HAL status
@@ -2605,22 +2720,22 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop_DMA(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-    
+
   /* Get the timer DMA handler */
   hdma = HRTIM_GetDMAHandleFromTimerIdx(hhrtim, TimerIdx);
-  
+
   /* Disable the DMA */
   HAL_DMA_Abort(hdma);
-  
+
   switch (CaptureChannel)
   {
   case HRTIM_CAPTUREUNIT_1:
     {
       /* Reset the capture unit trigger */
       hhrtim->Instance->sTimerxRegs[TimerIdx].CPT1xCR = HRTIM_CAPTURETRIGGER_NONE;
-      
+
       /* Disable the capture unit 1 DMA request */
       __HAL_HRTIM_TIMER_DISABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_CPT1);
     }
@@ -2629,25 +2744,25 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop_DMA(HRTIM_HandleTypeDef * hhrtim,
     {
       /* Reset the capture unit trigger */
       hhrtim->Instance->sTimerxRegs[TimerIdx].CPT2xCR = HRTIM_CAPTURETRIGGER_NONE;
-      
+
       /* Disable the capture unit 2 DMA request */
       __HAL_HRTIM_TIMER_DISABLE_DMA(hhrtim, TimerIdx, HRTIM_TIM_DMA_CPT2);
     }
     break;
   }
-  
+
   /* Disable the timer counter */
   if ((hhrtim->Instance->sTimerxRegs[TimerIdx].CPT1xCR == HRTIM_CAPTURETRIGGER_NONE) &&
       (hhrtim->Instance->sTimerxRegs[TimerIdx].CPT2xCR == HRTIM_CAPTURETRIGGER_NONE))
   {
     __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
   }
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -2655,22 +2770,22 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   * @}
   */
 
-/** @defgroup HRTIM_Exported_Functions_Group6 Simple one pulse functions  
+/** @defgroup HRTIM_Exported_Functions_Group6 Simple one pulse functions
  *  @brief    Simple one pulse functions
- 
-@verbatim    
+
+@verbatim
  ===============================================================================
               ##### Simple one pulse functions #####
  ===============================================================================
     [..]  This section provides functions allowing to:
-      (+) Configure one pulse channel 
-      (+) Start one pulse generation 
-      (+) Stop one pulse generation 
-      (+) Start one pulse generation and enable interrupt 
+      (+) Configure one pulse channel
+      (+) Start one pulse generation
+      (+) Stop one pulse generation
+      (+) Start one pulse generation and enable interrupt
       (+) Stop one pulse generation and disable interrupt
-      -@- When a HRTIM timer operates in simple one pulse mode 
-          the timer counter is started in response to transition detected 
-          on a given external event input to generate a pulse with a 
+      -@- When a HRTIM timer operates in simple one pulse mode
+          the timer counter is started in response to transition detected
+          on a given external event input to generate a pulse with a
           programmable length after a programmable delay.
 
 @endverbatim
@@ -2678,7 +2793,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   */
 
 /**
-  * @brief  Configures an output simple one pulse mode 
+  * @brief  Configures an output simple one pulse mode
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -2698,7 +2813,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   *                    @arg HRTIM_OUTPUT_TD1: Timer D - Output 1
   *                    @arg HRTIM_OUTPUT_TD2: Timer D - Output 2
   *                    @arg HRTIM_OUTPUT_TE1: Timer E - Output 1
-  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2 
+  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2
   * @param  pSimpleOnePulseChannelCfg: pointer to the basic one pulse output configuration structure
   * @note When the timer operates in basic one pulse mode:
   *         the timer counter is implicitely started by the reset event,
@@ -2710,9 +2825,9 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleCaptureStop_DMA(HRTIM_HandleTypeDef * hhrtim,
   *         Output 1: SETx1R = CMP1, RSTx1R = PER
   *         Output 2: SETx2R = CMP2, RST2R = PER
   * @retval HAL status
-  * @note If HAL_HRTIM_SimpleOnePulseChannelConfig is called for both timer 
-  *       outputs, the reset event related configuration data provided in the 
-  *       second call will override the reset event related configuration data 
+  * @note If HAL_HRTIM_SimpleOnePulseChannelConfig is called for both timer
+  *       outputs, the reset event related configuration data provided in the
+  *       second call will override the reset event related configuration data
   *       provided in the first call.
   */
 HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseChannelConfig(HRTIM_HandleTypeDef * hhrtim,
@@ -2724,7 +2839,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseChannelConfig(HRTIM_HandleTypeDef * hh
   HRTIM_CompareCfgTypeDef CompareCfg;
   HRTIM_OutputCfgTypeDef OutputCfg;
   HRTIM_EventCfgTypeDef EventCfg;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, OnePulseChannel));
   assert_param(IS_HRTIM_OUTPUTPOLARITY(pSimpleOnePulseChannelCfg->OutputPolarity));
@@ -2735,7 +2850,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseChannelConfig(HRTIM_HandleTypeDef * hh
   assert_param(IS_HRTIM_EVENTSENSITIVITY(pSimpleOnePulseChannelCfg->EventSensitivity));
   assert_param(IS_HRTIM_EVENTFILTER(pSimpleOnePulseChannelCfg->Event,
                                     pSimpleOnePulseChannelCfg->EventFilter));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -2743,10 +2858,10 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseChannelConfig(HRTIM_HandleTypeDef * hh
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
-  /* Configure timer compare unit */  
+  /* Configure timer compare unit */
   switch (OnePulseChannel)
   {
   case HRTIM_OUTPUT_TA1:
@@ -2768,16 +2883,16 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseChannelConfig(HRTIM_HandleTypeDef * hh
     }
     break;
   }
-  
+
   CompareCfg.CompareValue = pSimpleOnePulseChannelCfg->Pulse;
   CompareCfg.AutoDelayedMode = HRTIM_AUTODELAYEDMODE_REGULAR;
   CompareCfg.AutoDelayedTimeout = 0;
-  
+
   HRTIM_CompareUnitConfig(hhrtim,
                           TimerIdx,
                           CompareUnit,
                           &CompareCfg);
-  
+
   /* Configure timer output */
   OutputCfg.Polarity = pSimpleOnePulseChannelCfg->OutputPolarity;
   OutputCfg.IdleLevel = pSimpleOnePulseChannelCfg->OutputIdleLevel;
@@ -2785,7 +2900,7 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseChannelConfig(HRTIM_HandleTypeDef * hh
   OutputCfg.IdleMode = HRTIM_OUTPUTIDLEMODE_NONE;
   OutputCfg.ChopperModeEnable = HRTIM_OUTPUTCHOPPERMODE_DISABLED;
   OutputCfg.BurstModeEntryDelayed = HRTIM_OUTPUTBURSTMODEENTRY_REGULAR;
-  
+
   if (CompareUnit == HRTIM_COMPAREUNIT_1)
   {
     OutputCfg.SetSource = HRTIM_OUTPUTSET_TIMCMP1;
@@ -2795,34 +2910,34 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseChannelConfig(HRTIM_HandleTypeDef * hh
     OutputCfg.SetSource = HRTIM_OUTPUTSET_TIMCMP2;
   }
   OutputCfg.ResetSource = HRTIM_OUTPUTSET_TIMPER;
-  
+
   HRTIM_OutputConfig(hhrtim,
                      TimerIdx,
                      OnePulseChannel,
-                     &OutputCfg);  
-  
+                     &OutputCfg);
+
   /* Configure external event channel */
   EventCfg.FastMode = HRTIM_EVENTFASTMODE_DISABLE;
   EventCfg.Filter = pSimpleOnePulseChannelCfg->EventFilter;
   EventCfg.Polarity = pSimpleOnePulseChannelCfg->EventPolarity;
   EventCfg.Sensitivity = pSimpleOnePulseChannelCfg->EventSensitivity;
   EventCfg.Source = HRTIM_EVENTSRC_1;
-    
+
   HRTIM_EventConfig(hhrtim,
                     pSimpleOnePulseChannelCfg->Event,
                     &EventCfg);
 
   /* Configure the timer reset register */
   HRTIM_TIM_ResetConfig(hhrtim,
-                        TimerIdx, 
-                        pSimpleOnePulseChannelCfg->Event);  
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
+                        TimerIdx,
+                        pSimpleOnePulseChannelCfg->Event);
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -2858,25 +2973,25 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseStart(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Enable the timer output */
   hhrtim->Instance->sCommonRegs.OENR |= OnePulseChannel;
-    
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
 /**
-  * @brief  Disables the simple one pulse signal generation on the designed output  
+  * @brief  Disables the simple one pulse signal generation on the designed output
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -2908,20 +3023,20 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseStop(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Disable the timer output */
   hhrtim->Instance->sCommonRegs.ODISR |= OnePulseChannel;
-  
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -2959,9 +3074,9 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseStart_IT(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Enable the timer output */
   hhrtim->Instance->sCommonRegs.OENR |= OnePulseChannel;
 
@@ -2987,15 +3102,15 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseStart_IT(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -3033,12 +3148,12 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseStop_IT(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Disable the timer output */
   hhrtim->Instance->sCommonRegs.ODISR |= OnePulseChannel;
-    
+
   /* Disable the timer interrupt (depends on the OnePulse output) */
   switch (OnePulseChannel)
   {
@@ -3061,15 +3176,15 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseStop_IT(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, TimerIdxToTimerId[TimerIdx]);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -3077,33 +3192,33 @@ HAL_StatusTypeDef HAL_HRTIM_SimpleOnePulseStop_IT(HRTIM_HandleTypeDef * hhrtim,
   * @}
   */
 
-/** @defgroup HRTIM_Exported_Functions_Group7 Configuration functions  
+/** @defgroup HRTIM_Exported_Functions_Group7 Configuration functions
  *  @brief    HRTIM configuration functions
 
-@verbatim    
+@verbatim
  ===============================================================================
               ##### HRTIM configuration functions #####
  ===============================================================================
-    [..]  This section provides functions allowing to configure the HRTIM 
+    [..]  This section provides functions allowing to configure the HRTIM
       resources shared by all the HRTIM timers operating in waveform mode:
-      (+) Configure the burst mode controller 
-      (+) Configure an external event conditionning 
-      (+) Configure the external events sampling clock  
-      (+) Configure a fault conditionning 
-      (+) Enable or disable fault inputs 
-      (+) Configure the faults sampling clock  
-      (+) Configure an ADC trigger  
+      (+) Configure the burst mode controller
+      (+) Configure an external event conditionning
+      (+) Configure the external events sampling clock
+      (+) Configure a fault conditionning
+      (+) Enable or disable fault inputs
+      (+) Configure the faults sampling clock
+      (+) Configure an ADC trigger
 
 @endverbatim
   * @{
   */
 
 /**
-  * @brief  Configures the burst mode feature of the HRTIM 
+  * @brief  Configures the burst mode feature of the HRTIM
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  pBurstModeCfg: pointer to the burst mode configuration structure
   * @retval HAL status
-  * @note This function must be called before starting the burst mode 
+  * @note This function must be called before starting the burst mode
   *       controller
   */
 HAL_StatusTypeDef HAL_HRTIM_BurstModeConfig(HRTIM_HandleTypeDef * hhrtim,
@@ -3125,45 +3240,45 @@ HAL_StatusTypeDef HAL_HRTIM_BurstModeConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-  
+
   hrtim_bmcr = hhrtim->Instance->sCommonRegs.BMCR;
 
   /* Set the burst mode operating mode */
   hrtim_bmcr &= ~(HRTIM_BMCR_BMOM);
   hrtim_bmcr |= pBurstModeCfg->Mode;
-  
+
   /* Set the burst mode clock source */
   hrtim_bmcr &= ~(HRTIM_BMCR_BMCLK);
   hrtim_bmcr |= pBurstModeCfg->ClockSource;
-  
+
   /* Set the burst mode prescaler */
   hrtim_bmcr &= ~(HRTIM_BMCR_BMPRSC);
   hrtim_bmcr |= pBurstModeCfg->Prescaler;
- 
+
   /* Enable/disable burst mode registers preload */
   hrtim_bmcr &= ~(HRTIM_BMCR_BMPREN);
   hrtim_bmcr |= pBurstModeCfg->PreloadEnable;
- 
+
   /* Set the burst mode trigger */
   hhrtim->Instance->sCommonRegs.BMTRGR = pBurstModeCfg->Trigger;
-  
+
   /* Set the burst mode compare value */
   hhrtim->Instance->sCommonRegs.BMCMPR = pBurstModeCfg->IdleDuration;
-  
+
   /* Set the burst mode period */
   hhrtim->Instance->sCommonRegs.BMPER = pBurstModeCfg->Period;
-  
-  /* Update the HRTIM registers */  
+
+  /* Update the HRTIM registers */
   hhrtim->Instance->sCommonRegs.BMCR = hrtim_bmcr;
 
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -3190,12 +3305,12 @@ HAL_StatusTypeDef HAL_HRTIM_EventConfig(HRTIM_HandleTypeDef * hhrtim,
                                         HRTIM_EventCfgTypeDef* pEventCfg)
 {
   /* Check parameters */
-  assert_param(IS_HRTIM_EVENTSRC(pEventCfg->Source)); 
-  assert_param(IS_HRTIM_EVENTPOLARITY(pEventCfg->Sensitivity, pEventCfg->Polarity)); 
-  assert_param(IS_HRTIM_EVENTSENSITIVITY(pEventCfg->Sensitivity)); 
-  assert_param(IS_HRTIM_EVENTFASTMODE(Event, pEventCfg->FastMode)); 
-  assert_param(IS_HRTIM_EVENTFILTER(Event, pEventCfg->Filter)); 
-  
+  assert_param(IS_HRTIM_EVENTSRC(pEventCfg->Source));
+  assert_param(IS_HRTIM_EVENTPOLARITY(pEventCfg->Sensitivity, pEventCfg->Polarity));
+  assert_param(IS_HRTIM_EVENTSENSITIVITY(pEventCfg->Sensitivity));
+  assert_param(IS_HRTIM_EVENTFASTMODE(Event, pEventCfg->FastMode));
+  assert_param(IS_HRTIM_EVENTFILTER(Event, pEventCfg->Filter));
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -3203,18 +3318,18 @@ HAL_StatusTypeDef HAL_HRTIM_EventConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Configure the event channel */
   HRTIM_EventConfig(hhrtim, Event, pEventCfg);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -3236,7 +3351,7 @@ HAL_StatusTypeDef HAL_HRTIM_EventPrescalerConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Check parameters */
   assert_param(IS_HRTIM_EVENTPRESCALER(Prescaler));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -3244,25 +3359,25 @@ HAL_StatusTypeDef HAL_HRTIM_EventPrescalerConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Set the external event prescaler */
   hrtim_eecr3 = hhrtim->Instance->sCommonRegs.EECR3;
   hrtim_eecr3 &= ~(HRTIM_EECR3_EEVSD);
   hrtim_eecr3 |= Prescaler;
-  
+
   /* Update the HRTIM registers */
   hhrtim->Instance->sCommonRegs.EECR3 = hrtim_eecr3;
 
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
- 
+
 /**
   * @brief  Configures the conditioning of fault input
   * @param  hhrtim: pointer to HAL HRTIM handle
@@ -3291,7 +3406,7 @@ HAL_StatusTypeDef HAL_HRTIM_FaultConfig(HRTIM_HandleTypeDef * hhrtim,
   assert_param(IS_HRTIM_FAULTPOLARITY(pFaultCfg->Polarity));
   assert_param(IS_HRTIM_FAULTFILTER(pFaultCfg->Filter));
   assert_param(IS_HRTIM_FAULTLOCK(pFaultCfg->Lock));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -3299,13 +3414,13 @@ HAL_StatusTypeDef HAL_HRTIM_FaultConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Configure fault channel */
   hrtim_fltinr1 = hhrtim->Instance->sCommonRegs.FLTINR1;
   hrtim_fltinr2 = hhrtim->Instance->sCommonRegs.FLTINR2;
-  
+
   switch (Fault)
   {
   case HRTIM_FAULT_1:
@@ -3362,11 +3477,11 @@ HAL_StatusTypeDef HAL_HRTIM_FaultConfig(HRTIM_HandleTypeDef * hhrtim,
   hhrtim->Instance->sCommonRegs.FLTINR2 = hrtim_fltinr2;
 
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -3389,7 +3504,7 @@ HAL_StatusTypeDef HAL_HRTIM_FaultPrescalerConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Check parameters */
   assert_param(IS_HRTIM_FAULTPRESCALER(Prescaler));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -3397,25 +3512,25 @@ HAL_StatusTypeDef HAL_HRTIM_FaultPrescalerConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Set the external event prescaler */
   hrtim_fltinr2 = hhrtim->Instance->sCommonRegs.FLTINR2;
   hrtim_fltinr2 &= ~(HRTIM_FLTINR2_FLTSD);
   hrtim_fltinr2 |= Prescaler;
-  
+
   /* Update the HRTIM registers */
   hhrtim->Instance->sCommonRegs.FLTINR2 = hrtim_fltinr2;
 
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
- 
+
 /**
   * @brief  Enables or disables the HRTIMx Fault mode.
   * @param  hhrtim: pointer to HAL HRTIM handle
@@ -3432,13 +3547,13 @@ HAL_StatusTypeDef HAL_HRTIM_FaultPrescalerConfig(HRTIM_HandleTypeDef * hhrtim,
   *                    @arg HRTIM_FAULTMODECTL_DISABLED: Fault(s) disabled
   * @retval None
   */
-void HAL_HRTIM_FaultModeCtl(HRTIM_HandleTypeDef * hhrtim, 
-                        uint32_t Faults, 
+void HAL_HRTIM_FaultModeCtl(HRTIM_HandleTypeDef * hhrtim,
+                        uint32_t Faults,
                         uint32_t Enable)
 {
   uint32_t hrtim_fltinr1;
   uint32_t hrtim_fltinr2;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_FAULT(Faults));
   assert_param(IS_HRTIM_FAULTMODECTL(Enable));
@@ -3446,7 +3561,7 @@ void HAL_HRTIM_FaultModeCtl(HRTIM_HandleTypeDef * hhrtim,
   /* Configure fault channel */
   hrtim_fltinr1 = hhrtim->Instance->sCommonRegs.FLTINR1;
   hrtim_fltinr2 = hhrtim->Instance->sCommonRegs.FLTINR2;
-  
+
   if ((Faults & HRTIM_FAULT_1) != RESET)
   {
     hrtim_fltinr1 &= ~HRTIM_FLTINR1_FLT1E;
@@ -3464,7 +3579,7 @@ void HAL_HRTIM_FaultModeCtl(HRTIM_HandleTypeDef * hhrtim,
   }
   if ((Faults & HRTIM_FAULT_4) != RESET)
   {
-    hrtim_fltinr1 &= ~HRTIM_FLTINR1_FLT4E; 
+    hrtim_fltinr1 &= ~HRTIM_FLTINR1_FLT4E;
     hrtim_fltinr1 |= (Enable << 24);
   }
   if ((Faults & HRTIM_FAULT_5) != RESET)
@@ -3472,11 +3587,11 @@ void HAL_HRTIM_FaultModeCtl(HRTIM_HandleTypeDef * hhrtim,
     hrtim_fltinr2 &= ~HRTIM_FLTINR2_FLT5E;
     hrtim_fltinr2 |= Enable;
   }
-  
+
   /* Update the HRTIMx registers */
   hhrtim->Instance->sCommonRegs.FLTINR1 = hrtim_fltinr1;
   hhrtim->Instance->sCommonRegs.FLTINR2 = hrtim_fltinr2;
-}      
+}
 
 /**
   * @brief  Configures both the ADC trigger register update source and the ADC
@@ -3497,11 +3612,11 @@ HAL_StatusTypeDef HAL_HRTIM_ADCTriggerConfig(HRTIM_HandleTypeDef * hhrtim,
                                              HRTIM_ADCTriggerCfgTypeDef* pADCTriggerCfg)
 {
   uint32_t hrtim_cr1;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_ADCTRIGGER(ADCTrigger));
   assert_param(IS_HRTIM_ADCTRIGGERUPDATE(pADCTriggerCfg->UpdateSource));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -3509,19 +3624,19 @@ HAL_StatusTypeDef HAL_HRTIM_ADCTriggerConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Set the ADC trigger update source */
   hrtim_cr1 = hhrtim->Instance->sCommonRegs.CR1;
-  
+
   switch (ADCTrigger)
   {
   case HRTIM_ADCTRIGGER_1:
     {
       hrtim_cr1 &= ~(HRTIM_CR1_ADC1USRC);
       hrtim_cr1 |= (pADCTriggerCfg->UpdateSource & HRTIM_CR1_ADC1USRC);
-      
+
       /* Set the ADC trigger 1 source */
       hhrtim->Instance->sCommonRegs.ADC1R = pADCTriggerCfg->Trigger;
     }
@@ -3529,7 +3644,7 @@ HAL_StatusTypeDef HAL_HRTIM_ADCTriggerConfig(HRTIM_HandleTypeDef * hhrtim,
   case HRTIM_ADCTRIGGER_2:
     {
       hrtim_cr1 &= ~(HRTIM_CR1_ADC2USRC);
-      hrtim_cr1 |= ((pADCTriggerCfg->UpdateSource << 3) & HRTIM_CR1_ADC2USRC); 
+      hrtim_cr1 |= ((pADCTriggerCfg->UpdateSource << 3) & HRTIM_CR1_ADC2USRC);
 
       /* Set the ADC trigger 2 source */
       hhrtim->Instance->sCommonRegs.ADC2R = pADCTriggerCfg->Trigger;
@@ -3538,8 +3653,8 @@ HAL_StatusTypeDef HAL_HRTIM_ADCTriggerConfig(HRTIM_HandleTypeDef * hhrtim,
   case HRTIM_ADCTRIGGER_3:
     {
       hrtim_cr1 &= ~(HRTIM_CR1_ADC3USRC);
-      hrtim_cr1 |= ((pADCTriggerCfg->UpdateSource << 6) & HRTIM_CR1_ADC3USRC); 
-      
+      hrtim_cr1 |= ((pADCTriggerCfg->UpdateSource << 6) & HRTIM_CR1_ADC3USRC);
+
       /* Set the ADC trigger 3 source */
       hhrtim->Instance->sCommonRegs.ADC3R = pADCTriggerCfg->Trigger;
     }
@@ -3547,23 +3662,23 @@ HAL_StatusTypeDef HAL_HRTIM_ADCTriggerConfig(HRTIM_HandleTypeDef * hhrtim,
   case HRTIM_ADCTRIGGER_4:
     {
       hrtim_cr1 &= ~(HRTIM_CR1_ADC4USRC);
-      hrtim_cr1 |= ((pADCTriggerCfg->UpdateSource << 9) & HRTIM_CR1_ADC4USRC); 
-      
+      hrtim_cr1 |= ((pADCTriggerCfg->UpdateSource << 9) & HRTIM_CR1_ADC4USRC);
+
       /* Set the ADC trigger 4 source */
       hhrtim->Instance->sCommonRegs.ADC4R = pADCTriggerCfg->Trigger;
     }
     break;
   }
-  
+
   /* Update the HRTIM registers */
   hhrtim->Instance->sCommonRegs.CR1 = hrtim_cr1;
 
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -3573,30 +3688,30 @@ HAL_StatusTypeDef HAL_HRTIM_ADCTriggerConfig(HRTIM_HandleTypeDef * hhrtim,
 /** @defgroup HRTIM_Exported_Functions_Group8 Timer waveform configuration and functions
  *  @brief    HRTIM timer configuration and control functions
 
-@verbatim    
+@verbatim
  ===============================================================================
               ##### HRTIM timer configuration and control functions #####
  ===============================================================================
-    [..]  This section provides functions used to configure and control a 
+    [..]  This section provides functions used to configure and control a
         HRTIM timer operating in waveform mode:
       (+) Configure HRTIM timer general behavior
       (+) Configure HRTIM timer event filtering
-      (+) Configure HRTIM timer deadtime insertion 
-      (+) Configure HRTIM timer chopper mode  
-      (+) Configure HRTIM timer burst DMA 
+      (+) Configure HRTIM timer deadtime insertion
+      (+) Configure HRTIM timer chopper mode
+      (+) Configure HRTIM timer burst DMA
       (+) Configure HRTIM timer compare unit
-      (+) Configure HRTIM timer capture unit 
-      (+) Configure HRTIM timer output 
+      (+) Configure HRTIM timer capture unit
+      (+) Configure HRTIM timer output
       (+) Set HRTIM timer output level
       (+) Enable HRTIM timer output
       (+) Disable HRTIM timer output
       (+) Start HRTIM timer
       (+) Stop HRTIM timer
-      (+) Start HRTIM timer and enable interrupt 
+      (+) Start HRTIM timer and enable interrupt
       (+) Stop HRTIM timer and disable interrupt
-      (+) Start HRTIM timer and enable DMA transfer  
-      (+) Stop HRTIM timer and disable DMA transfer  
-      (+) Enable or disable the burst mode controller  
+      (+) Start HRTIM timer and enable DMA transfer
+      (+) Stop HRTIM timer and disable DMA transfer
+      (+) Enable or disable the burst mode controller
       (+) Start the burst mode controller (by software)
       (+) Trigger a Capture (by software)
       (+) Update the HRTIM timer preloadable registers (by software)
@@ -3610,7 +3725,7 @@ HAL_StatusTypeDef HAL_HRTIM_ADCTriggerConfig(HRTIM_HandleTypeDef * hhrtim,
   */
 
 /**
-  * @brief  Configures the general behavior of a timer operating in waveform mode 
+  * @brief  Configures the general behavior of a timer operating in waveform mode
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -3632,7 +3747,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformTimerConfig(HRTIM_HandleTypeDef * hhrtim,
 {
   /* Check parameters */
   assert_param(IS_HRTIM_TIMERINDEX(TimerIdx));
-  
+
   /* Relevant for all HRTIM timers, including the master */
   assert_param(IS_HRTIM_HALFMODE(pTimerCfg->HalfModeEnable));
   assert_param(IS_HRTIM_SYNCSTART(pTimerCfg->StartOnSync));
@@ -3641,7 +3756,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformTimerConfig(HRTIM_HandleTypeDef * hhrtim,
   assert_param(IS_HRTIM_PRELOAD(pTimerCfg->PreloadEnable));
   assert_param(IS_HRTIM_TIMERBURSTMODE(pTimerCfg->BurstMode));
   assert_param(IS_HRTIM_UPDATEONREPETITION(pTimerCfg->RepetitionUpdate));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -3649,23 +3764,23 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformTimerConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-  
+
   if (TimerIdx == HRTIM_TIMERINDEX_MASTER)
   {
     /* Check parameters */
     assert_param(IS_HRTIM_UPDATEGATING_MASTER(pTimerCfg->UpdateGating));
     assert_param(IS_HRTIM_MASTER_IT(pTimerCfg->InterruptRequests));
     assert_param(IS_HRTIM_MASTER_DMA(pTimerCfg->DMARequests));
-    
+
     /* Configure master timer */
     HRTIM_MasterWaveform_Config(hhrtim, pTimerCfg);
   }
   else
   {
     /* Check parameters */
-    assert_param(IS_HRTIM_UPDATEGATING_TIM(pTimerCfg->UpdateGating));  
+    assert_param(IS_HRTIM_UPDATEGATING_TIM(pTimerCfg->UpdateGating));
     assert_param(IS_HRTIM_TIM_IT(pTimerCfg->InterruptRequests));
     assert_param(IS_HRTIM_TIM_DMA(pTimerCfg->DMARequests));
     assert_param(IS_HRTIM_TIMPUSHPULLMODE(pTimerCfg->PushPull));
@@ -3675,14 +3790,14 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformTimerConfig(HRTIM_HandleTypeDef * hhrtim,
                                                pTimerCfg->DeadTimeInsertion));
     assert_param(IS_HRTIM_TIMDELAYEDPROTECTION(pTimerCfg->PushPull,
                                                pTimerCfg->DelayedProtectionMode));
-    assert_param(IS_HRTIM_TIMUPDATETRIGGER(pTimerCfg->UpdateTrigger)); 
+    assert_param(IS_HRTIM_TIMUPDATETRIGGER(pTimerCfg->UpdateTrigger));
     assert_param(IS_HRTIM_TIMRESETTRIGGER(pTimerCfg->ResetTrigger));
     assert_param(IS_HRTIM_TIMUPDATEONRESET(pTimerCfg->ResetUpdate));
-    
+
     /* Configure timing unit */
     HRTIM_TimingUnitWaveform_Config(hhrtim, TimerIdx, pTimerCfg);
   }
-  
+
   /* Update timer parameters */
   hhrtim->TimerParam[TimerIdx].InterruptRequests = pTimerCfg->InterruptRequests;
   hhrtim->TimerParam[TimerIdx].DMARequests = pTimerCfg->DMARequests;
@@ -3692,17 +3807,17 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformTimerConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Force a software update */
   HRTIM_ForceRegistersUpdate(hhrtim, TimerIdx);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
-  * @brief  Configures the event filtering capabilities of a timer (blanking, windowing) 
+  * @brief  Configures the event filtering capabilities of a timer (blanking, windowing)
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -3734,13 +3849,13 @@ HAL_StatusTypeDef HAL_HRTIM_TimerEventFilteringConfig(HRTIM_HandleTypeDef * hhrt
                                                       HRTIM_TimerEventFilteringCfgTypeDef* pTimerEventFilteringCfg)
 {
   uint32_t hrtim_eefr;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_TIMING_UNIT(TimerIdx));
   assert_param(IS_HRTIM_EVENT(Event));
   assert_param(IS_HRTIM_TIMEVENTFILTER(pTimerEventFilteringCfg->Filter));
   assert_param(IS_HRTIM_TIMEVENTLATCH(pTimerEventFilteringCfg->Latch));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -3748,7 +3863,7 @@ HAL_StatusTypeDef HAL_HRTIM_TimerEventFilteringConfig(HRTIM_HandleTypeDef * hhrt
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Configure timer event filtering capabilities */
@@ -3841,17 +3956,17 @@ HAL_StatusTypeDef HAL_HRTIM_TimerEventFilteringConfig(HRTIM_HandleTypeDef * hhrt
     }
     break;
   }
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
-  * @brief  Configures the deadtime insertion feature for a timer 
+  * @brief  Configures the deadtime insertion feature for a timer
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -3869,7 +3984,7 @@ HAL_StatusTypeDef HAL_HRTIM_DeadTimeConfig(HRTIM_HandleTypeDef * hhrtim,
                                            HRTIM_DeadTimeCfgTypeDef* pDeadTimeCfg)
 {
   uint32_t hrtim_dtr;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_TIMING_UNIT(TimerIdx));
   assert_param(IS_HRTIM_TIMDEADTIME_PRESCALERRATIO(pDeadTimeCfg->Prescaler));
@@ -3879,7 +3994,7 @@ HAL_StatusTypeDef HAL_HRTIM_DeadTimeConfig(HRTIM_HandleTypeDef * hhrtim,
   assert_param(IS_HRTIM_TIMDEADTIME_FALLINGSIGN(pDeadTimeCfg->FallingSign));
   assert_param(IS_HRTIM_TIMDEADTIME_FALLINGLOCK(pDeadTimeCfg->FallingLock));
   assert_param(IS_HRTIM_TIMDEADTIME_FALLINGSIGNLOCK(pDeadTimeCfg->FallingSignLock));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -3887,16 +4002,16 @@ HAL_StatusTypeDef HAL_HRTIM_DeadTimeConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   hrtim_dtr = hhrtim->Instance->sTimerxRegs[TimerIdx].DTxR;
-     
+
   /* Clear timer deadtime configuration */
   hrtim_dtr &= ~(HRTIM_DTR_DTR | HRTIM_DTR_SDTR | HRTIM_DTR_DTPRSC |
                  HRTIM_DTR_DTRSLK | HRTIM_DTR_DTRLK | HRTIM_DTR_DTF |
                  HRTIM_DTR_SDTF | HRTIM_DTR_DTFSLK | HRTIM_DTR_DTFLK);
-  
+
   /* Set timer deadtime configuration */
   hrtim_dtr |= pDeadTimeCfg->Prescaler;
   hrtim_dtr |= pDeadTimeCfg->RisingValue;
@@ -3907,20 +4022,20 @@ HAL_StatusTypeDef HAL_HRTIM_DeadTimeConfig(HRTIM_HandleTypeDef * hhrtim,
   hrtim_dtr |= pDeadTimeCfg->FallingSign;
   hrtim_dtr |= pDeadTimeCfg->FallingSignLock;
   hrtim_dtr |= pDeadTimeCfg->FallingLock;
-    
-  /* Update the HRTIM registers */  
-  hhrtim->Instance->sTimerxRegs[TimerIdx].DTxR = hrtim_dtr;
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  /* Update the HRTIM registers */
+  hhrtim->Instance->sTimerxRegs[TimerIdx].DTxR = hrtim_dtr;
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
-  * @brief  Configures the chopper mode feature for a timer 
+  * @brief  Configures the chopper mode feature for a timer
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -3938,13 +4053,13 @@ HAL_StatusTypeDef HAL_HRTIM_ChopperModeConfig(HRTIM_HandleTypeDef * hhrtim,
                                               HRTIM_ChopperModeCfgTypeDef* pChopperModeCfg)
 {
   uint32_t hrtim_chpr;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_TIMING_UNIT(TimerIdx));
   assert_param(IS_HRTIM_CHOPPER_PRESCALERRATIO(pChopperModeCfg->CarrierFreq));
   assert_param(IS_HRTIM_CHOPPER_DUTYCYCLE(pChopperModeCfg->DutyCycle));
   assert_param(IS_HRTIM_CHOPPER_PULSEWIDTH(pChopperModeCfg->StartPulse));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -3952,32 +4067,32 @@ HAL_StatusTypeDef HAL_HRTIM_ChopperModeConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   hrtim_chpr = hhrtim->Instance->sTimerxRegs[TimerIdx].CHPxR;
-     
+
   /* Clear timer chopper mode configuration */
   hrtim_chpr &= ~(HRTIM_CHPR_CARFRQ | HRTIM_CHPR_CARDTY | HRTIM_CHPR_STRPW);
-  
+
   /* Set timer choppe mode configuration */
   hrtim_chpr |= pChopperModeCfg->CarrierFreq;
   hrtim_chpr |= (pChopperModeCfg->DutyCycle);
   hrtim_chpr |= (pChopperModeCfg->StartPulse);
-    
-  /* Update the HRTIM registers */  
-  hhrtim->Instance->sTimerxRegs[TimerIdx].CHPxR = hrtim_chpr;
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  /* Update the HRTIM registers */
+  hhrtim->Instance->sTimerxRegs[TimerIdx].CHPxR = hrtim_chpr;
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
-  * @brief  Configures the burst DMA controller for a timer 
+  * @brief  Configures the burst DMA controller for a timer
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                  This parameter can be one of the following values:
@@ -4019,7 +4134,7 @@ HAL_StatusTypeDef HAL_HRTIM_BurstDMAConfig(HRTIM_HandleTypeDef * hhrtim,
 {
   /* Check parameters */
   assert_param(IS_HRTIM_TIMER_BURSTDMA(TimerIdx, RegistersToUpdate));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -4027,11 +4142,11 @@ HAL_StatusTypeDef HAL_HRTIM_BurstDMAConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Set the burst DMA timer update register */
-  switch (TimerIdx) 
+  switch (TimerIdx)
   {
   case HRTIM_TIMERINDEX_TIMER_A:
     {
@@ -4064,17 +4179,17 @@ HAL_StatusTypeDef HAL_HRTIM_BurstDMAConfig(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
-  * @brief  Configures the compare unit of a timer operating in waveform mode 
+  * @brief  Configures the compare unit of a timer operating in waveform mode
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -4085,14 +4200,14 @@ HAL_StatusTypeDef HAL_HRTIM_BurstDMAConfig(HRTIM_HandleTypeDef * hhrtim,
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  CompareUnit: Compare unit to configure
-  *                    This parameter can be one of the following values: 
+  *                    This parameter can be one of the following values:
   *                    @arg HRTIM_COMPAREUNIT_1: Compare unit 1
   *                    @arg HRTIM_COMPAREUNIT_2: Compare unit 2
   *                    @arg HRTIM_COMPAREUNIT_3: Compare unit 3
   *                    @arg HRTIM_COMPAREUNIT_4: Compare unit 4
   * @param  pCompareCfg: pointer to the compare unit configuration structure
-  * @note When auto delayed mode is required for compare unit 2 or compare unit 4, 
-  *       application has to configure separately the capture unit. Capture unit 
+  * @note When auto delayed mode is required for compare unit 2 or compare unit 4,
+  *       application has to configure separately the capture unit. Capture unit
   *       to configure in that case depends on the compare unit auto delayed mode
   *       is applied to (see below):
   *         Auto delayed on output compare 2: capture unit 1 must be configured
@@ -4107,7 +4222,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCompareConfig(HRTIM_HandleTypeDef * hhrtim,
 {
   /* Check parameters */
   assert_param(IS_HRTIM_TIMERINDEX(TimerIdx));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -4115,9 +4230,9 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCompareConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-  
+
   /* Configure the compare unit */
   if (TimerIdx == HRTIM_TIMERINDEX_MASTER)
   {
@@ -4159,10 +4274,10 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCompareConfig(HRTIM_HandleTypeDef * hhrtim,
       {
         /* Check parameters */
         assert_param(IS_HRTIM_COMPAREUNIT_AUTODELAYEDMODE(CompareUnit, pCompareCfg->AutoDelayedMode));
-        
+
         /* Set the compare value */
         hhrtim->Instance->sTimerxRegs[TimerIdx].CMP2xR = pCompareCfg->CompareValue;
-        
+
         if (pCompareCfg->AutoDelayedMode != HRTIM_AUTODELAYEDMODE_REGULAR)
         {
           /* Configure auto-delayed mode */
@@ -4170,7 +4285,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCompareConfig(HRTIM_HandleTypeDef * hhrtim,
           /* to the other to reinitialize properly the auto-delayed mechanism */
           hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxCR &= ~HRTIM_TIMCR_DELCMP2;
           hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxCR |= pCompareCfg->AutoDelayedMode;
-          
+
           /* Set the compare value for timeout compare unit (if any) */
           if (pCompareCfg->AutoDelayedMode == HRTIM_AUTODELAYEDMODE_AUTODELAYED_TIMEOUTCMP1)
           {
@@ -4193,10 +4308,10 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCompareConfig(HRTIM_HandleTypeDef * hhrtim,
       {
         /* Check parameters */
         assert_param(IS_HRTIM_COMPAREUNIT_AUTODELAYEDMODE(CompareUnit, pCompareCfg->AutoDelayedMode));
-        
+
         /* Set the compare value */
         hhrtim->Instance->sTimerxRegs[TimerIdx].CMP4xR = pCompareCfg->CompareValue;
-        
+
         if (pCompareCfg->AutoDelayedMode != HRTIM_AUTODELAYEDMODE_REGULAR)
         {
           /* Configure auto-delayed mode */
@@ -4204,7 +4319,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCompareConfig(HRTIM_HandleTypeDef * hhrtim,
           /* to the other to reinitialize properly the auto-delayed mechanism */
           hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxCR &= ~HRTIM_TIMCR_DELCMP4;
           hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxCR |= (pCompareCfg->AutoDelayedMode << 2);
-          
+
           /* Set the compare value for timeout compare unit (if any) */
           if (pCompareCfg->AutoDelayedMode == HRTIM_AUTODELAYEDMODE_AUTODELAYED_TIMEOUTCMP1)
           {
@@ -4220,15 +4335,15 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCompareConfig(HRTIM_HandleTypeDef * hhrtim,
     }
   }
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
-  * @brief  Configures the capture unit of a timer operating in waveform mode 
+  * @brief  Configures the capture unit of a timer operating in waveform mode
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -4238,7 +4353,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCompareConfig(HRTIM_HandleTypeDef * hhrtim,
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  CaptureUnit: Capture unit to configure
-  *                    This parameter can be one of the following values: 
+  *                    This parameter can be one of the following values:
   *                    @arg HRTIM_CAPTUREUNIT_1: Capture unit 1
   *                    @arg HRTIM_CAPTUREUNIT_2: Capture unit 2
   * @param  pCaptureCfg: pointer to the compare unit configuration structure
@@ -4252,7 +4367,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCaptureConfig(HRTIM_HandleTypeDef * hhrtim,
 {
   /* Check parameters */
   assert_param(IS_HRTIM_TIMER_CAPTURETRIGGER(TimerIdx, pCaptureCfg->Trigger));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -4260,7 +4375,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCaptureConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Configure the capture unit */
@@ -4277,17 +4392,17 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCaptureConfig(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
-  * @brief  Configures the output of a timer operating in waveform mode 
+  * @brief  Configures the output of a timer operating in waveform mode
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -4307,10 +4422,10 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCaptureConfig(HRTIM_HandleTypeDef * hhrtim,
   *                    @arg HRTIM_OUTPUT_TD1: Timer D - Output 1
   *                    @arg HRTIM_OUTPUT_TD2: Timer D - Output 2
   *                    @arg HRTIM_OUTPUT_TE1: Timer E - Output 1
-  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2  
+  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2
   * @param  pOutputCfg: pointer to the timer output configuration structure
   * @retval HAL status
-  * @note This function must be called before configuring the timer and after 
+  * @note This function must be called before configuring the timer and after
   *       configuring the deadtime insertion feature (if required).
   */
 HAL_StatusTypeDef HAL_HRTIM_WaveformOutputConfig(HRTIM_HandleTypeDef * hhrtim,
@@ -4334,25 +4449,25 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformOutputConfig(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Configure the timer output */
   HRTIM_OutputConfig(hhrtim,
                      TimerIdx,
                      Output,
-                     pOutputCfg);  
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
+                     pOutputCfg);
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
-  * @brief  Forces the timer output to its active or inactive state 
+  * @brief  Forces the timer output to its active or inactive state
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -4372,13 +4487,13 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformOutputConfig(HRTIM_HandleTypeDef * hhrtim,
   *                    @arg HRTIM_OUTPUT_TD1: Timer D - Output 1
   *                    @arg HRTIM_OUTPUT_TD2: Timer D - Output 2
   *                    @arg HRTIM_OUTPUT_TE1: Timer E - Output 1
-  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2 
+  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2
   * @param OutputLevel: indicates whether the output is forced to its active or inactive level
   *                    This parameter can be one of the following values:
   *                    @arg HRTIM_OUTPUTLEVEL_ACTIVE: output is forced to its active level
   *                    @arg HRTIM_OUTPUTLEVEL_INACTIVE: output is forced to its inactive level
   * @retval HAL status
-  * @note The 'software set/reset trigger' bit in the output set/reset registers 
+  * @note The 'software set/reset trigger' bit in the output set/reset registers
   *       is automatically reset by hardware
   */
 HAL_StatusTypeDef HAL_HRTIM_WaveformSetOutputLevel(HRTIM_HandleTypeDef * hhrtim,
@@ -4389,7 +4504,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformSetOutputLevel(HRTIM_HandleTypeDef * hhrtim,
   /* Check parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, Output));
   assert_param(IS_HRTIM_OUTPUTLEVEL(OutputLevel));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -4397,7 +4512,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformSetOutputLevel(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Force timer output level */
@@ -4440,13 +4555,13 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformSetOutputLevel(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -4464,7 +4579,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformSetOutputLevel(HRTIM_HandleTypeDef * hhrtim,
   *                    @arg HRTIM_OUTPUT_TD1: Timer D - Output 1
   *                    @arg HRTIM_OUTPUT_TD2: Timer D - Output 2
   *                    @arg HRTIM_OUTPUT_TE1: Timer E - Output 1
-  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2 
+  *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HRTIM_WaveformOutputStart(HRTIM_HandleTypeDef * hhrtim,
@@ -4475,17 +4590,17 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformOutputStart(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Enable the HRTIM outputs */
   hhrtim->Instance->sCommonRegs.OENR |= (OutputsToStart);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -4515,17 +4630,17 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformOutputStop(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Enable the HRTIM outputs */
   hhrtim->Instance->sCommonRegs.ODISR |= (OutputsToStop);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -4535,12 +4650,12 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformOutputStop(HRTIM_HandleTypeDef * hhrtim,
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  Timers: Timer counter(s) to start
   *                   This parameter can be any combination of the following values:
-  *                   @arg HRTIM_TIMERID_MASTER 
-  *                   @arg HRTIM_TIMERID_TIMER_A 
-  *                   @arg HRTIM_TIMERID_TIMER_B 
-  *                   @arg HRTIM_TIMERID_TIMER_C 
-  *                   @arg HRTIM_TIMERID_TIMER_D 
-  *                   @arg HRTIM_TIMERID_TIMER_E 
+  *                   @arg HRTIM_TIMERID_MASTER
+  *                   @arg HRTIM_TIMERID_TIMER_A
+  *                   @arg HRTIM_TIMERID_TIMER_B
+  *                   @arg HRTIM_TIMERID_TIMER_C
+  *                   @arg HRTIM_TIMERID_TIMER_D
+  *                   @arg HRTIM_TIMERID_TIMER_E
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStart(HRTIM_HandleTypeDef * hhrtim,
@@ -4551,17 +4666,17 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStart(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Enable timer(s) counter */
   hhrtim->Instance->sMasterRegs.MCR |= (Timers);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -4571,14 +4686,14 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStart(HRTIM_HandleTypeDef * hhrtim,
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  Timers: Timer counter(s) to stop
   *                   This parameter can be any combination of the following values:
-  *                   @arg HRTIM_TIMER_MASTER 
-  *                   @arg HRTIM_TIMER_A 
-  *                   @arg HRTIM_TIMER_B 
-  *                   @arg HRTIM_TIMER_C 
-  *                   @arg HRTIM_TIMER_D 
-  *                   @arg HRTIM_TIMER_E 
+  *                   @arg HRTIM_TIMER_MASTER
+  *                   @arg HRTIM_TIMER_A
+  *                   @arg HRTIM_TIMER_B
+  *                   @arg HRTIM_TIMER_C
+  *                   @arg HRTIM_TIMER_D
+  *                   @arg HRTIM_TIMER_E
   * @retval HAL status
-  * @note The counter of a timer is stopped only if all timer outputs are disabled   
+  * @note The counter of a timer is stopped only if all timer outputs are disabled
   */
 HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStop(HRTIM_HandleTypeDef * hhrtim,
                                                 uint32_t Timers)
@@ -4588,17 +4703,17 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStop(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Disable timer(s) counter */
   hhrtim->Instance->sMasterRegs.MCR &= ~(Timers);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -4608,14 +4723,14 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStop(HRTIM_HandleTypeDef * hhrtim,
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  Timers: Timer counter(s) to start
   *                   This parameter can be any combination of the following values:
-  *                   @arg HRTIM_TIMERID_MASTER 
-  *                   @arg HRTIM_TIMERID_A 
-  *                   @arg HRTIM_TIMERID_B 
-  *                   @arg HRTIM_TIMERID_C 
-  *                   @arg HRTIM_TIMERID_D 
-  *                   @arg HRTIM_TIMERID_E 
+  *                   @arg HRTIM_TIMERID_MASTER
+  *                   @arg HRTIM_TIMERID_A
+  *                   @arg HRTIM_TIMERID_B
+  *                   @arg HRTIM_TIMERID_C
+  *                   @arg HRTIM_TIMERID_D
+  *                   @arg HRTIM_TIMERID_E
   * @note HRTIM interrupts (e.g. faults interrupts) and interrupts related
-  *       to the timers to start are enabled within this function. 
+  *       to the timers to start are enabled within this function.
   *       Interrupts to enable are selected through HAL_HRTIM_WaveformTimerConfig
   *       function.
   * @retval HAL status
@@ -4624,46 +4739,46 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStart_IT(HRTIM_HandleTypeDef * hhrtim
                                                     uint32_t Timers)
 {
   uint8_t timer_idx;
-  
+
    /* Check the parameters */
   assert_param(IS_HRTIM_TIMERID(Timers));
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-  
+
   /* Enable HRTIM interrupts (if required) */
   __HAL_HRTIM_ENABLE_IT(hhrtim, hhrtim->Init.HRTIMInterruptResquests);
-  
+
   /* Enable master timer related interrupts (if required) */
   if ((Timers & HRTIM_TIMERID_MASTER) != RESET)
   {
-    __HAL_HRTIM_MASTER_ENABLE_IT(hhrtim, 
+    __HAL_HRTIM_MASTER_ENABLE_IT(hhrtim,
                                  hhrtim->TimerParam[HRTIM_TIMERINDEX_MASTER].InterruptRequests);
   }
-  
+
   /* Enable timing unit related interrupts (if required) */
-  for (timer_idx = HRTIM_TIMERINDEX_TIMER_A ; 
-       timer_idx < HRTIM_TIMERINDEX_MASTER ; 
+  for (timer_idx = HRTIM_TIMERINDEX_TIMER_A ;
+       timer_idx < HRTIM_TIMERINDEX_MASTER ;
        timer_idx++)
   {
     if ((Timers & TimerIdxToTimerId[timer_idx]) != RESET)
     {
-      __HAL_HRTIM_TIMER_ENABLE_IT(hhrtim, 
-                                  timer_idx, 
+      __HAL_HRTIM_TIMER_ENABLE_IT(hhrtim,
+                                  timer_idx,
                                   hhrtim->TimerParam[timer_idx].InterruptRequests);
     }
   }
-  
+
   /* Enable timer(s) counter */
   hhrtim->Instance->sMasterRegs.MCR |= (Timers);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;}
 
 /**
@@ -4672,12 +4787,12 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStart_IT(HRTIM_HandleTypeDef * hhrtim
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  Timers: Timer counter(s) to stop
   *                   This parameter can be any combination of the following values:
-  *                   @arg HRTIM_TIMER_MASTER 
-  *                   @arg HRTIM_TIMER_A 
-  *                   @arg HRTIM_TIMER_B 
-  *                   @arg HRTIM_TIMER_C 
-  *                   @arg HRTIM_TIMER_D 
-  *                   @arg HRTIM_TIMER_E 
+  *                   @arg HRTIM_TIMER_MASTER
+  *                   @arg HRTIM_TIMER_A
+  *                   @arg HRTIM_TIMER_B
+  *                   @arg HRTIM_TIMER_C
+  *                   @arg HRTIM_TIMER_D
+  *                   @arg HRTIM_TIMER_E
   * @retval HAL status
   * @note The counter of a timer is stopped only if all timer outputs are disabled
   * @note All enabled timer related interrupts are disabled.
@@ -4688,30 +4803,30 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStop_IT(HRTIM_HandleTypeDef * hhrtim,
   /* ++ WA */
   __IO uint32_t delai = (uint32_t)(0x17F);
   /* -- WA */
-  
+
   uint8_t timer_idx;
-  
+
   /* Check the parameters */
   assert_param(IS_HRTIM_TIMERID(Timers));
-  
+
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Disable HRTIM interrupts (if required) */
   __HAL_HRTIM_DISABLE_IT(hhrtim, hhrtim->Init.HRTIMInterruptResquests);
-  
+
   /* Disable master timer related interrupts (if required) */
   if ((Timers & HRTIM_TIMERID_MASTER) != RESET)
   {
     /* Interrupts enable flag must be cleared one by one */
-    __HAL_HRTIM_MASTER_DISABLE_IT(hhrtim, hhrtim->TimerParam[HRTIM_TIMERINDEX_MASTER].InterruptRequests); 
+    __HAL_HRTIM_MASTER_DISABLE_IT(hhrtim, hhrtim->TimerParam[HRTIM_TIMERINDEX_MASTER].InterruptRequests);
   }
-  
+
   /* Disable timing unit related interrupts (if required) */
-  for (timer_idx = HRTIM_TIMERINDEX_TIMER_A ; 
-       timer_idx < HRTIM_TIMERINDEX_MASTER ; 
+  for (timer_idx = HRTIM_TIMERINDEX_TIMER_A ;
+       timer_idx < HRTIM_TIMERINDEX_MASTER ;
        timer_idx++)
   {
     if ((Timers & TimerIdxToTimerId[timer_idx]) != RESET)
@@ -4719,19 +4834,19 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStop_IT(HRTIM_HandleTypeDef * hhrtim,
       __HAL_HRTIM_TIMER_DISABLE_IT(hhrtim, timer_idx, hhrtim->TimerParam[timer_idx].InterruptRequests);
     }
   }
-  
+
   /* ++ WA */
   do { delai--; } while (delai != 0);
   /* -- WA */
-  
+
   /* Disable timer(s) counter */
   hhrtim->Instance->sMasterRegs.MCR &= ~(Timers);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -4741,12 +4856,12 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStop_IT(HRTIM_HandleTypeDef * hhrtim,
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  Timers: Timer counter(s) to start
   *                   This parameter can be any combination of the following values:
-  *                   HRTIM_TIMER_MASTER 
-  *                   @arg HRTIM_TIMER_A 
-  *                   @arg HRTIM_TIMER_B 
-  *                   @arg HRTIM_TIMER_C 
-  *                   @arg HRTIM_TIMER_D 
-  *                   @arg HRTIM_TIMER_E 
+  *                   HRTIM_TIMER_MASTER
+  *                   @arg HRTIM_TIMER_A
+  *                   @arg HRTIM_TIMER_B
+  *                   @arg HRTIM_TIMER_C
+  *                   @arg HRTIM_TIMER_D
+  *                   @arg HRTIM_TIMER_E
   * @retval HAL status
   * @note This function enables the dma request(s) mentionned in the timer
   *       configuration data structure for every timers to start.
@@ -4759,7 +4874,7 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStart_DMA(HRTIM_HandleTypeDef * hhrti
 {
   uint8_t timer_idx;
   DMA_HandleTypeDef * hdma;
-  
+
    /* Check the parameters */
   assert_param(IS_HRTIM_TIMERID(Timers));
 
@@ -4769,32 +4884,32 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStart_DMA(HRTIM_HandleTypeDef * hhrti
   }
 
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
-  
+
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   if (((Timers & HRTIM_TIMERID_MASTER) != RESET) &&
       (hhrtim->TimerParam[HRTIM_TIMERINDEX_MASTER].DMARequests != 0))
   {
       /* Set the DMA error callback */
       hhrtim->hdmaMaster->XferErrorCallback = HRTIM_DMAError ;
-      
+
       /* Set the DMA transfer completed callback */
       hhrtim->hdmaMaster->XferCpltCallback = HRTIM_DMAMasterCplt;
-      
+
       /* Enable the DMA channel */
       HAL_DMA_Start_IT(hhrtim->hdmaMaster,
                        hhrtim->TimerParam[HRTIM_TIMERINDEX_MASTER].DMASrcAddress,
                        hhrtim->TimerParam[HRTIM_TIMERINDEX_MASTER].DMADstAddress,
                        hhrtim->TimerParam[HRTIM_TIMERINDEX_MASTER].DMASize);
-      
+
       /* Enable the timer DMA request */
-      __HAL_HRTIM_MASTER_ENABLE_DMA(hhrtim, 
+      __HAL_HRTIM_MASTER_ENABLE_DMA(hhrtim,
                                    hhrtim->TimerParam[HRTIM_TIMERINDEX_MASTER].DMARequests);
   }
-  
-  for (timer_idx = HRTIM_TIMERINDEX_TIMER_A ; 
-       timer_idx < HRTIM_TIMERINDEX_MASTER ; 
+
+  for (timer_idx = HRTIM_TIMERINDEX_TIMER_A ;
+       timer_idx < HRTIM_TIMERINDEX_MASTER ;
        timer_idx++)
   {
     if (((Timers & TimerIdxToTimerId[timer_idx]) != RESET) &&
@@ -4805,31 +4920,31 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStart_DMA(HRTIM_HandleTypeDef * hhrti
 
       /* Set the DMA error callback */
       hdma->XferErrorCallback = HRTIM_DMAError ;
-      
+
       /* Set the DMA transfer completed callback */
       hdma->XferCpltCallback = HRTIM_DMATimerxCplt;
-      
+
       /* Enable the DMA channel */
       HAL_DMA_Start_IT(hdma,
                        hhrtim->TimerParam[timer_idx].DMASrcAddress,
                        hhrtim->TimerParam[timer_idx].DMADstAddress,
                        hhrtim->TimerParam[timer_idx].DMASize);
-      
+
       /* Enable the timer DMA request */
-      __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim, 
+      __HAL_HRTIM_TIMER_ENABLE_DMA(hhrtim,
                                    timer_idx,
-                                   hhrtim->TimerParam[timer_idx].DMARequests); 
+                                   hhrtim->TimerParam[timer_idx].DMARequests);
     }
   }
 
   /* Enable the timer counter */
   __HAL_HRTIM_ENABLE(hhrtim, Timers);
 
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
 
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -4839,12 +4954,12 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStart_DMA(HRTIM_HandleTypeDef * hhrti
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  Timers: Timer counter(s) to stop
   *                   This parameter can be any combination of the following values:
-  *                   @arg HRTIM_TIMER_MASTER 
-  *                   @arg HRTIM_TIMER_A 
-  *                   @arg HRTIM_TIMER_B 
-  *                   @arg HRTIM_TIMER_C 
-  *                   @arg HRTIM_TIMER_D 
-  *                   @arg HRTIM_TIMER_E 
+  *                   @arg HRTIM_TIMER_MASTER
+  *                   @arg HRTIM_TIMER_A
+  *                   @arg HRTIM_TIMER_B
+  *                   @arg HRTIM_TIMER_C
+  *                   @arg HRTIM_TIMER_D
+  *                   @arg HRTIM_TIMER_E
   * @retval HAL status
   * @note  The counter of a timer is stopped only if all timer outputs are disabled
   * @note  All enabled timer related DMA requests are disabled.
@@ -4858,21 +4973,21 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStop_DMA(HRTIM_HandleTypeDef * hhrtim
   /* Check the parameters */
   assert_param(IS_HRTIM_TIMERID(Timers));
 
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   if (((Timers & HRTIM_TIMERID_MASTER) != RESET) &&
       (hhrtim->TimerParam[HRTIM_TIMERINDEX_MASTER].DMARequests != 0))
-  { 
+  {
     /* Disable the DMA */
     HAL_DMA_Abort(hhrtim->hdmaMaster);
-    
+
     /* Disable the DMA request(s) */
     __HAL_HRTIM_MASTER_DISABLE_DMA(hhrtim,
                                    hhrtim->TimerParam[HRTIM_TIMERINDEX_MASTER].DMARequests);
   }
-  
-  for (timer_idx = HRTIM_TIMERINDEX_TIMER_A ; 
-       timer_idx < HRTIM_TIMERINDEX_MASTER ; 
+
+  for (timer_idx = HRTIM_TIMERINDEX_TIMER_A ;
+       timer_idx < HRTIM_TIMERINDEX_MASTER ;
        timer_idx++)
   {
     if (((Timers & TimerIdxToTimerId[timer_idx]) != RESET) &&
@@ -4883,19 +4998,19 @@ HAL_StatusTypeDef HAL_HRTIM_WaveformCounterStop_DMA(HRTIM_HandleTypeDef * hhrtim
 
       /* Disable the DMA */
       HAL_DMA_Abort(hdma);
-      
+
     /* Disable the DMA request(s) */
       __HAL_HRTIM_TIMER_DISABLE_DMA(hhrtim,
                                     timer_idx,
-                                    hhrtim->TimerParam[timer_idx].DMARequests);      
+                                    hhrtim->TimerParam[timer_idx].DMARequests);
     }
   }
-  
+
   /* Disable the timer counter */
   __HAL_HRTIM_DISABLE(hhrtim, Timers);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   return HAL_OK;
 }
 
@@ -4913,10 +5028,10 @@ HAL_StatusTypeDef HAL_HRTIM_BurstModeCtl(HRTIM_HandleTypeDef * hhrtim,
                                          uint32_t Enable)
 {
   uint32_t hrtim_bmcr;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_BURSTMODECTL(Enable));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -4924,23 +5039,23 @@ HAL_StatusTypeDef HAL_HRTIM_BurstModeCtl(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Enable/Disable the burst mode controller */
   hrtim_bmcr = hhrtim->Instance->sCommonRegs.BMCR;
   hrtim_bmcr &= ~(HRTIM_BMCR_BME);
   hrtim_bmcr |= Enable;
-  
+
   /* Update the HRTIM registers */
   hhrtim->Instance->sCommonRegs.BMCR = hrtim_bmcr;
 
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -4957,18 +5072,18 @@ HAL_StatusTypeDef HAL_HRTIM_BurstModeSoftwareTrigger(HRTIM_HandleTypeDef *hhrtim
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Software trigger of the burst mode controller */
   hhrtim->Instance->sCommonRegs.BMTRGR |= HRTIM_BMTRGR_SW;
 
   hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -4982,7 +5097,7 @@ HAL_StatusTypeDef HAL_HRTIM_BurstModeSoftwareTrigger(HRTIM_HandleTypeDef *hhrtim
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  CaptureUnit: Capture unit to trig
-  *                    This parameter can be one of the following values: 
+  *                    This parameter can be one of the following values:
   *                    @arg HRTIM_CAPTUREUNIT_1: Capture unit 1
   *                    @arg HRTIM_CAPTUREUNIT_2: Capture unit 2
   * @retval HAL status
@@ -4996,7 +5111,7 @@ HAL_StatusTypeDef HAL_HRTIM_SoftwareCapture(HRTIM_HandleTypeDef * hhrtim,
   /* Check parameters */
   assert_param(IS_HRTIM_TIMING_UNIT(TimerIdx));
   assert_param(IS_HRTIM_CAPTUREUNIT(CaptureUnit));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -5004,7 +5119,7 @@ HAL_StatusTypeDef HAL_HRTIM_SoftwareCapture(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Force a software capture on concerned capture unit */
@@ -5021,13 +5136,13 @@ HAL_StatusTypeDef HAL_HRTIM_SoftwareCapture(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -5035,12 +5150,12 @@ HAL_StatusTypeDef HAL_HRTIM_SoftwareCapture(HRTIM_HandleTypeDef * hhrtim,
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  Timers: timers concerned with the software register update
   *                   This parameter can be any combination of the following values:
-  *                   @arg HRTIM_TIMERUPDATE_MASTER 
-  *                   @arg HRTIM_TIMERUPDATE_A 
-  *                   @arg HRTIM_TIMERUPDATE_B 
-  *                   @arg HRTIM_TIMERUPDATE_C 
-  *                   @arg HRTIM_TIMERUPDATE_D 
-  *                   @arg HRTIM_TIMERUPDATE_E 
+  *                   @arg HRTIM_TIMERUPDATE_MASTER
+  *                   @arg HRTIM_TIMERUPDATE_A
+  *                   @arg HRTIM_TIMERUPDATE_B
+  *                   @arg HRTIM_TIMERUPDATE_C
+  *                   @arg HRTIM_TIMERUPDATE_D
+  *                   @arg HRTIM_TIMERUPDATE_E
   * @retval HAL status
   * @note The 'software update' bits in the HRTIM conrol register 2 register are
   *       automatically reset by hardware
@@ -5050,7 +5165,7 @@ HAL_StatusTypeDef HAL_HRTIM_SoftwareUpdate(HRTIM_HandleTypeDef * hhrtim,
 {
   /* Check parameters */
   assert_param(IS_HRTIM_TIMERUPDATE(Timers));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -5058,18 +5173,18 @@ HAL_StatusTypeDef HAL_HRTIM_SoftwareUpdate(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Force timer(s) registers update */
   hhrtim->Instance->sCommonRegs.CR2 |= Timers;
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -5077,12 +5192,12 @@ HAL_StatusTypeDef HAL_HRTIM_SoftwareUpdate(HRTIM_HandleTypeDef * hhrtim,
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  Timers: timers concerned with the software counter reset
   *                   This parameter can be any combination of the following values:
-  *                   @arg HRTIM_TIMERRESET_MASTER 
-  *                   @arg HRTIM_TIMERRESET_TIMER_A 
-  *                   @arg HRTIM_TIMERRESET_TIMER_B 
-  *                   @arg HRTIM_TIMERRESET_TIMER_C 
-  *                   @arg HRTIM_TIMERRESET_TIMER_D 
-  *                   @arg HRTIM_TIMERRESET_TIMER_E 
+  *                   @arg HRTIM_TIMERRESET_MASTER
+  *                   @arg HRTIM_TIMERRESET_TIMER_A
+  *                   @arg HRTIM_TIMERRESET_TIMER_B
+  *                   @arg HRTIM_TIMERRESET_TIMER_C
+  *                   @arg HRTIM_TIMERRESET_TIMER_D
+  *                   @arg HRTIM_TIMERRESET_TIMER_E
   * @retval HAL status
   * @note The 'software reset' bits in the HRTIM conrol register 2  are
   *       automatically reset by hardware
@@ -5092,7 +5207,7 @@ HAL_StatusTypeDef HAL_HRTIM_SoftwareReset(HRTIM_HandleTypeDef * hhrtim,
 {
   /* Check parameters */
   assert_param(IS_HRTIM_TIMERRESET(Timers));
-  
+
   if(hhrtim->State == HAL_HRTIM_STATE_BUSY)
   {
      return HAL_BUSY;
@@ -5100,18 +5215,18 @@ HAL_StatusTypeDef HAL_HRTIM_SoftwareReset(HRTIM_HandleTypeDef * hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   hhrtim->State = HAL_HRTIM_STATE_BUSY;
 
   /* Force timer(s) registers reset */
   hhrtim->Instance->sCommonRegs.CR2 = Timers;
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY;
-  
-  /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
 
-  return HAL_OK; 
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
+  /* Process Unlocked */
+  __HAL_UNLOCK(hhrtim);
+
+  return HAL_OK;
 }
 
 /**
@@ -5129,7 +5244,7 @@ HAL_StatusTypeDef HAL_HRTIM_SoftwareReset(HRTIM_HandleTypeDef * hhrtim,
   *                             content will be updated from.
   * @param  BurstBufferLength: size (in WORDS) of the burst buffer.
   * @retval HAL status
-  * @note The TimerIdx parameter determines the dma channel to be used by the  
+  * @note The TimerIdx parameter determines the dma channel to be used by the
   *       DMA burst controller (see below)
   *       HRTIM_TIMERINDEX_MASTER: DMA channel 2 is used by the DMA burst controller
   *       HRTIM_TIMERINDEX_TIMER_A: DMA channel 3 is used by the DMA burst controller
@@ -5147,46 +5262,46 @@ HAL_StatusTypeDef HAL_HRTIM_BurstDMATransfer(HRTIM_HandleTypeDef *hhrtim,
 
   /* Check the parameters */
   assert_param(IS_HRTIM_TIMERINDEX(TimerIdx));
-  
+
   if((hhrtim->State == HAL_HRTIM_STATE_BUSY))
   {
      return HAL_BUSY;
   }
   if((hhrtim->State == HAL_HRTIM_STATE_READY))
   {
-    if((BurstBufferAddress == 0 ) || (BurstBufferLength == 0)) 
+    if((BurstBufferAddress == 0 ) || (BurstBufferLength == 0))
     {
-      return HAL_ERROR;                                    
+      return HAL_ERROR;
     }
     else
     {
       hhrtim->State = HAL_HRTIM_STATE_BUSY;
     }
   }
-  
+
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
+
   /* Get the timer DMA handler */
   hdma = HRTIM_GetDMAHandleFromTimerIdx(hhrtim, TimerIdx);
-  
+
   /* Set the DMA transfer completed callback */
   hdma->XferCpltCallback = HRTIM_BurstDMACplt;
-  
+
   /* Set the DMA error callback */
   hdma->XferErrorCallback = HRTIM_DMAError ;
-  
+
   /* Enable the DMA channel */
-  HAL_DMA_Start_IT(hdma, 
-                   BurstBufferAddress, 
+  HAL_DMA_Start_IT(hdma,
+                   BurstBufferAddress,
                    (uint32_t)&(hhrtim->Instance->sCommonRegs.BDMADR),
                    BurstBufferLength);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
 
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);  
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
 }
 
@@ -5196,12 +5311,12 @@ HAL_StatusTypeDef HAL_HRTIM_BurstDMATransfer(HRTIM_HandleTypeDef *hhrtim,
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  Timers: Timer(s) concerned by the register preload enabling command
   *                   This parameter can be any combination of the following values:
-  *                   @arg HRTIM_TIMERUPDATE_MASTER 
-  *                   @arg HRTIM_TIMERUPDATE_A 
-  *                   @arg HRTIM_TIMERUPDATE_B 
-  *                   @arg HRTIM_TIMERUPDATE_C 
-  *                   @arg HRTIM_TIMERUPDATE_D 
-  *                   @arg HRTIM_TIMERUPDATE_E 
+  *                   @arg HRTIM_TIMERUPDATE_MASTER
+  *                   @arg HRTIM_TIMERUPDATE_A
+  *                   @arg HRTIM_TIMERUPDATE_B
+  *                   @arg HRTIM_TIMERUPDATE_C
+  *                   @arg HRTIM_TIMERUPDATE_D
+  *                   @arg HRTIM_TIMERUPDATE_E
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HRTIM_UpdateEnable(HRTIM_HandleTypeDef *hhrtim,
@@ -5212,17 +5327,17 @@ HAL_StatusTypeDef HAL_HRTIM_UpdateEnable(HRTIM_HandleTypeDef *hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Enable timer(s) registers update */
   hhrtim->Instance->sCommonRegs.CR1 &= ~(Timers);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
   }
 
@@ -5232,12 +5347,12 @@ HAL_StatusTypeDef HAL_HRTIM_UpdateEnable(HRTIM_HandleTypeDef *hhrtim,
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  Timers: Timer(s) concerned by the register preload disabling command
   *                   This parameter can be any combination of the following values:
-  *                   @arg HRTIM_TIMERUPDATE_MASTER 
-  *                   @arg HRTIM_TIMERUPDATE_A 
-  *                   @arg HRTIM_TIMERUPDATE_B 
-  *                   @arg HRTIM_TIMERUPDATE_C 
-  *                   @arg HRTIM_TIMERUPDATE_D 
-  *                   @arg HRTIM_TIMERUPDATE_E 
+  *                   @arg HRTIM_TIMERUPDATE_MASTER
+  *                   @arg HRTIM_TIMERUPDATE_A
+  *                   @arg HRTIM_TIMERUPDATE_B
+  *                   @arg HRTIM_TIMERUPDATE_C
+  *                   @arg HRTIM_TIMERUPDATE_D
+  *                   @arg HRTIM_TIMERUPDATE_E
   * @retval HAL status
   */
 HAL_StatusTypeDef HAL_HRTIM_UpdateDisable(HRTIM_HandleTypeDef *hhrtim,
@@ -5248,17 +5363,17 @@ HAL_StatusTypeDef HAL_HRTIM_UpdateDisable(HRTIM_HandleTypeDef *hhrtim,
 
   /* Process Locked */
   __HAL_LOCK(hhrtim);
-  
-  hhrtim->State = HAL_HRTIM_STATE_BUSY; 
-  
+
+  hhrtim->State = HAL_HRTIM_STATE_BUSY;
+
   /* Enable timer(s) registers update */
   hhrtim->Instance->sCommonRegs.CR1 |= (Timers);
-  
-  hhrtim->State = HAL_HRTIM_STATE_READY; 
-                  
+
+  hhrtim->State = HAL_HRTIM_STATE_READY;
+
   /* Process Unlocked */
-  __HAL_UNLOCK(hhrtim);      
-  
+  __HAL_UNLOCK(hhrtim);
+
   return HAL_OK;
   }
 
@@ -5267,22 +5382,22 @@ HAL_StatusTypeDef HAL_HRTIM_UpdateDisable(HRTIM_HandleTypeDef *hhrtim,
   */
 
 /** @defgroup HRTIM_Exported_Functions_Group9 Peripheral state functions
- *  @brief    Peripheral State functions 
+ *  @brief    Peripheral State functions
 
-@verbatim    
+@verbatim
  ===============================================================================
               ##### Peripheral State functions #####
  ===============================================================================
-    [..]  This section provides functions used to get HRTIM or HRTIM timer 
+    [..]  This section provides functions used to get HRTIM or HRTIM timer
           specific information:
-      (+) Get HRTIM HAL state 
-      (+) Get captured value 
-      (+) Get HRTIM timer output level 
-      (+) Get HRTIM timer output state 
-      (+) Get delayed protection status  
-      (+) Get burst status 
-      (+) Get current push-pull status  
-      (+) Get idle push-pull status  
+      (+) Get HRTIM HAL state
+      (+) Get captured value
+      (+) Get HRTIM timer output level
+      (+) Get HRTIM timer output state
+      (+) Get delayed protection status
+      (+) Get burst status
+      (+) Get current push-pull status
+      (+) Get idle push-pull status
 
 @endverbatim
   * @{
@@ -5300,7 +5415,7 @@ HAL_HRTIM_StateTypeDef HAL_HRTIM_GetState(HRTIM_HandleTypeDef* hhrtim)
 }
 
 /**
-  * @brief  Returns actual value of the capture register of the designated capture unit 
+  * @brief  Returns actual value of the capture register of the designated capture unit
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -5310,7 +5425,7 @@ HAL_HRTIM_StateTypeDef HAL_HRTIM_GetState(HRTIM_HandleTypeDef* hhrtim)
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
   * @param  CaptureUnit: Capture unit to trig
-  *                    This parameter can be one of the following values: 
+  *                    This parameter can be one of the following values:
   *                    @arg HRTIM_CAPTUREUNIT_1: Capture unit 1
   *                    @arg HRTIM_CAPTUREUNIT_2: Capture unit 2
   * @retval Captured value
@@ -5320,7 +5435,7 @@ uint32_t HAL_HRTIM_GetCapturedValue(HRTIM_HandleTypeDef * hhrtim,
                                     uint32_t CaptureUnit)
 {
   uint32_t captured_value = 0;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_TIMING_UNIT(TimerIdx));
   assert_param(IS_HRTIM_CAPTUREUNIT(CaptureUnit));
@@ -5339,12 +5454,12 @@ uint32_t HAL_HRTIM_GetCapturedValue(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
-  return captured_value; 
+
+  return captured_value;
 }
 
 /**
-  * @brief  Returns actual level (active or inactive) of the designated output 
+  * @brief  Returns actual level (active or inactive) of the designated output
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -5366,7 +5481,7 @@ uint32_t HAL_HRTIM_GetCapturedValue(HRTIM_HandleTypeDef * hhrtim,
   *                    @arg HRTIM_OUTPUT_TE1: Timer E - Output 1
   *                    @arg HRTIM_OUTPUT_TE2: Timer E - Output 2
   * @retval Output level
-  * @note Returned output level is taken before the output stage (chopper, 
+  * @note Returned output level is taken before the output stage (chopper,
   *        polarity).
   */
 uint32_t HAL_HRTIM_WaveformGetOutputLevel(HRTIM_HandleTypeDef * hhrtim,
@@ -5374,10 +5489,10 @@ uint32_t HAL_HRTIM_WaveformGetOutputLevel(HRTIM_HandleTypeDef * hhrtim,
                                           uint32_t Output)
 {
   uint32_t output_level = HRTIM_OUTPUTLEVEL_INACTIVE;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, Output));
-  
+
   /* Read the output level */
   switch (Output)
   {
@@ -5414,12 +5529,12 @@ uint32_t HAL_HRTIM_WaveformGetOutputLevel(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
-  return output_level; 
+
+  return output_level;
 }
 
 /**
-  * @brief  Returns actual state (RUN, IDLE, FAULT) of the designated output 
+  * @brief  Returns actual state (RUN, IDLE, FAULT) of the designated output
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -5448,10 +5563,10 @@ uint32_t HAL_HRTIM_WaveformGetOutputState(HRTIM_HandleTypeDef * hhrtim,
 {
   uint32_t output_bit = 0;
   uint32_t output_state = HRTIM_OUTPUTSTATE_IDLE;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, Output));
-  
+
   /* Set output state according to output control status and output disable status */
   switch (Output)
   {
@@ -5506,7 +5621,7 @@ uint32_t HAL_HRTIM_WaveformGetOutputState(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   if ((hhrtim->Instance->sCommonRegs.OENR & output_bit) != RESET)
   {
     /* Output is enabled: output in RUN state (whatever ouput disable status is)*/
@@ -5525,13 +5640,13 @@ uint32_t HAL_HRTIM_WaveformGetOutputState(HRTIM_HandleTypeDef * hhrtim,
       output_state = HRTIM_OUTPUTSTATE_IDLE;
     }
   }
-  
-  return(output_state);  
+
+  return(output_state);
 }
 
 /**
-  * @brief  Returns the level (active or inactive) of the designated output 
-  *         when the delayed protection was triggered. 
+  * @brief  Returns the level (active or inactive) of the designated output
+  *         when the delayed protection was triggered.
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -5552,14 +5667,14 @@ uint32_t HAL_HRTIM_WaveformGetOutputState(HRTIM_HandleTypeDef * hhrtim,
   *                    @arg HRTIM_OUTPUT_TD2: Timer D - Output 2
   *                    @arg HRTIM_OUTPUT_TD1: Timer E - Output 1
   *                    @arg HRTIM_OUTPUT_TD2: Timer E - Output 2
-  * @retval Delayed protection status 
+  * @retval Delayed protection status
   */
 uint32_t HAL_HRTIM_GetDelayedProtectionStatus(HRTIM_HandleTypeDef * hhrtim,
                                               uint32_t TimerIdx,
                                               uint32_t Output)
 {
   uint32_t delayed_protection_status = HRTIM_OUTPUTLEVEL_INACTIVE;
-  
+
   /* Check parameters */
   assert_param(IS_HRTIM_TIMER_OUTPUT(TimerIdx, Output));
 
@@ -5603,14 +5718,14 @@ uint32_t HAL_HRTIM_GetDelayedProtectionStatus(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   return delayed_protection_status;
 }
 
 /**
-  * @brief  Returns the actual status (active or inactive) of the burst mode controller 
+  * @brief  Returns the actual status (active or inactive) of the burst mode controller
   * @param  hhrtim: pointer to HAL HRTIM handle
-  * @retval Burst mode controller status 
+  * @retval Burst mode controller status
   */
 uint32_t HAL_HRTIM_GetBurstStatus(HRTIM_HandleTypeDef * hhrtim)
 {
@@ -5618,8 +5733,8 @@ uint32_t HAL_HRTIM_GetBurstStatus(HRTIM_HandleTypeDef * hhrtim)
 
   /* Read burst mode status */
   burst_mode_status = (hhrtim->Instance->sCommonRegs.BMCR & HRTIM_BMCR_BMSTAT);
-  
-  return burst_mode_status; 
+
+  return burst_mode_status;
 }
 
 /**
@@ -5633,7 +5748,7 @@ uint32_t HAL_HRTIM_GetBurstStatus(HRTIM_HandleTypeDef * hhrtim)
   *                   @arg HRTIM_TIMERINDEX_TIMER_C for timer C
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
-  * @retval Burst mode controller status 
+  * @retval Burst mode controller status
   */
 uint32_t HAL_HRTIM_GetCurrentPushPullStatus(HRTIM_HandleTypeDef * hhrtim,
                                             uint32_t TimerIdx)
@@ -5645,8 +5760,8 @@ uint32_t HAL_HRTIM_GetCurrentPushPullStatus(HRTIM_HandleTypeDef * hhrtim,
 
   /* Read current push pull status */
   current_pushpull_status = (hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxISR & HRTIM_TIMISR_CPPSTAT);
-  
-  return current_pushpull_status; 
+
+  return current_pushpull_status;
 }
 
 
@@ -5661,7 +5776,7 @@ uint32_t HAL_HRTIM_GetCurrentPushPullStatus(HRTIM_HandleTypeDef * hhrtim,
   *                   @arg HRTIM_TIMERINDEX_TIMER_C for timer C
   *                   @arg HRTIM_TIMERINDEX_TIMER_D for timer D
   *                   @arg HRTIM_TIMERINDEX_TIMER_E for timer E
-  * @retval Idle Push Pull Status 
+  * @retval Idle Push Pull Status
   */
 uint32_t HAL_HRTIM_GetIdlePushPullStatus(HRTIM_HandleTypeDef * hhrtim,
                                          uint32_t TimerIdx)
@@ -5673,8 +5788,8 @@ uint32_t HAL_HRTIM_GetIdlePushPullStatus(HRTIM_HandleTypeDef * hhrtim,
 
   /* Read current push pull status */
   idle_pushpull_status = (hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxISR & HRTIM_TIMISR_IPPSTAT);
-  
-  return idle_pushpull_status; 
+
+  return idle_pushpull_status;
 }
 
 /**
@@ -5701,12 +5816,12 @@ uint32_t HAL_HRTIM_GetIdlePushPullStatus(HRTIM_HandleTypeDef * hhrtim,
  *            - System fault and Fault 1 to 5 (regardless of the timing unit attribution)
  *            - Burst mode period completed
  *
-@verbatim   
+@verbatim
  ===============================================================================
                       ##### HRTIM interrupts handling #####
- ===============================================================================  
+ ===============================================================================
     [..]
-    This subsection provides a set of functions allowing to manage the HRTIM  
+    This subsection provides a set of functions allowing to manage the HRTIM
     interrupts:
       (+)  HRTIM interrupt handler
       (+)  Callback function called when Fault1 interrupt occurs
@@ -5763,7 +5878,7 @@ void HAL_HRTIM_IRQHandler(HRTIM_HandleTypeDef * hhrtim,
     /* Timing unit related interrupts handling */
     HRTIM_Timer_ISR(hhrtim, TimerIdx);
   }
-  
+
 }
 
 /**
@@ -5778,7 +5893,7 @@ __weak void HAL_HRTIM_Fault1Callback(HRTIM_HandleTypeDef * hhrtim)
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Fault1Callback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
@@ -5793,12 +5908,12 @@ __weak void HAL_HRTIM_Fault2Callback(HRTIM_HandleTypeDef * hhrtim)
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Fault2Callback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when a fault 3 interrupt occured
-  * @param  hhrtim: pointer to HAL HRTIM handle 
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @retval None
   */
 __weak void HAL_HRTIM_Fault3Callback(HRTIM_HandleTypeDef * hhrtim)
@@ -5808,12 +5923,12 @@ __weak void HAL_HRTIM_Fault3Callback(HRTIM_HandleTypeDef * hhrtim)
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Fault3Callback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when a fault 4 interrupt occured
-  * @param  hhrtim: pointer to HAL HRTIM handle 
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @retval None
   */
 __weak void HAL_HRTIM_Fault4Callback(HRTIM_HandleTypeDef * hhrtim)
@@ -5823,12 +5938,12 @@ __weak void HAL_HRTIM_Fault4Callback(HRTIM_HandleTypeDef * hhrtim)
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Fault4Callback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when a fault 5 interrupt occured
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @retval None
   */
 __weak void HAL_HRTIM_Fault5Callback(HRTIM_HandleTypeDef * hhrtim)
@@ -5838,12 +5953,12 @@ __weak void HAL_HRTIM_Fault5Callback(HRTIM_HandleTypeDef * hhrtim)
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Fault5Callback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when a system fault interrupt occured
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @retval None
   */
 __weak void HAL_HRTIM_SystemFaultCallback(HRTIM_HandleTypeDef * hhrtim)
@@ -5853,12 +5968,12 @@ __weak void HAL_HRTIM_SystemFaultCallback(HRTIM_HandleTypeDef * hhrtim)
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_SystemFaultCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the end of the burst mode period is reached
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @retval None
   */
 __weak void HAL_HRTIM_BurstModePeriodCallback(HRTIM_HandleTypeDef * hhrtim)
@@ -5867,13 +5982,13 @@ __weak void HAL_HRTIM_BurstModePeriodCallback(HRTIM_HandleTypeDef * hhrtim)
   UNUSED(hhrtim);
 
   /* NOTE : This function should not be modified, when the callback is needed,
-            the HAL_HRTIM_BurstModeCallback could be implenetd in the user file
-   */ 
+            the HAL_HRTIM_BurstModeCallback could be implemented in the user file
+   */
 }
 
 /**
   * @brief  Callback function invoked when a synchronization input event is received
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @retval None
   */
 __weak void HAL_HRTIM_SynchronizationEventCallback(HRTIM_HandleTypeDef * hhrtim)
@@ -5883,12 +5998,12 @@ __weak void HAL_HRTIM_SynchronizationEventCallback(HRTIM_HandleTypeDef * hhrtim)
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Master_SynchronizationEventCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when timer registers are updated
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_MASTER  for master timer
@@ -5908,12 +6023,12 @@ __weak void HAL_HRTIM_RegistersUpdateCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Master_RegistersUpdateCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when timer repetition period has elapsed
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_MASTER  for master timer
@@ -5933,13 +6048,13 @@ __weak void HAL_HRTIM_RepetitionEventCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Master_RepetitionEventCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the timer counter matches the value
   *         programmed in the compare 1 register
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_MASTER  for master timer
@@ -5959,13 +6074,13 @@ __weak void HAL_HRTIM_Compare1EventCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Master_Compare1EventCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the timer counter matches the value
   *         programmed in the compare 2 register
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @retval None
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
@@ -5985,13 +6100,13 @@ __weak void HAL_HRTIM_Compare2EventCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Master_Compare2EventCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the timer counter matches the value
   *         programmed in the compare 3 register
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_MASTER  for master timer
@@ -6011,13 +6126,13 @@ __weak void HAL_HRTIM_Compare3EventCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Master_Compare3EventCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the timer counter matches the value
   *         programmed in the compare 4 register
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_MASTER  for master timer
@@ -6037,12 +6152,12 @@ __weak void HAL_HRTIM_Compare4EventCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Master_Compare4EventCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the timer x capture 1 event occurs
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_TIMER_A for timer A
@@ -6061,12 +6176,12 @@ __weak void HAL_HRTIM_Capture1EventCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Timer_Capture1EventCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the timer x capture 2 event occurs
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_TIMER_A for timer A
@@ -6085,13 +6200,13 @@ __weak void HAL_HRTIM_Capture2EventCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Timer_Capture2EventCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
-  * @brief  Callback function invoked when the delayed idle or balanced idle mode is 
+  * @brief  Callback function invoked when the delayed idle or balanced idle mode is
   *         entered
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_TIMER_A for timer A
@@ -6110,13 +6225,13 @@ __weak void HAL_HRTIM_DelayedProtectionCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Timer_DelayedProtectionCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the timer x counter reset/roll-over
   *         event occurs
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_TIMER_A for timer A
@@ -6135,12 +6250,12 @@ __weak void HAL_HRTIM_CounterResetCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Timer_CounterResetCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the timer x output 1 is set
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_TIMER_A for timer A
@@ -6159,12 +6274,12 @@ __weak void HAL_HRTIM_Output1SetCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Timer_Output1SetCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the timer x output 1 is reset
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_TIMER_A for timer A
@@ -6183,12 +6298,12 @@ __weak void HAL_HRTIM_Output1ResetCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Timer_Output1ResetCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the timer x output 2 is set
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_TIMER_A for timer A
@@ -6207,12 +6322,12 @@ __weak void HAL_HRTIM_Output2SetCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Timer_Output2SetCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when the timer x output 2 is reset
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_TIMER_A for timer A
@@ -6231,12 +6346,12 @@ __weak void HAL_HRTIM_Output2ResetCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_Timer_Output2ResetCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
   * @brief  Callback function invoked when a DMA burst transfer is completed
-  * @param  hhrtim: pointer to HAL HRTIM handle  
+  * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   *                   This parameter can be one of the following values:
   *                   @arg HRTIM_TIMERINDEX_MASTER  for master timer
@@ -6256,7 +6371,7 @@ __weak void HAL_HRTIM_BurstDMATransferCallback(HRTIM_HandleTypeDef * hhrtim,
 
   /* NOTE : This function should not be modified, when the callback is needed,
             the HAL_HRTIM_BurstDMATransferCallback could be implenetd in the user file
-   */ 
+   */
 }
 
 /**
@@ -6270,9 +6385,471 @@ __weak void HAL_HRTIM_ErrorCallback(HRTIM_HandleTypeDef *hhrtim)
   UNUSED(hhrtim);
 
   /* NOTE : This function should not be modified, when the callback is needed,
-            the HAL_HRTIM_ErrorCallback could be implenetd in the user file
-   */ 
+            the HAL_HRTIM_ErrorCallback could be implemented in the user file
+   */
 }
+
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+/**
+  * @brief  HRTIM callback function registration
+  * @param  CallbackID ID of the HRTIM callback function to register
+  *                   This parameter can be one of the following values:
+  *                   @arg HAL_HRTIM_FAULT1CALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_FAULT2CALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_FAULT3CALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_FAULT4CALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_FAULT5CALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_SYSTEMFAULTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_BURSTMODEPERIODCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_SYNCHRONIZATIONEVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_ERRORCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_MSPINIT_CB_ID
+  *                   @arg HAL_HRTIM_MSPDEINIT_CB_ID
+  * @param  pCallback Callback function pointer
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_HRTIM_RegisterCallback(HRTIM_HandleTypeDef *       hhrtim,
+                                             HAL_HRTIM_CallbackIDTypeDef CallbackID,
+                                             pHRTIM_CallbackTypeDef      pCallback)
+{
+  HAL_StatusTypeDef status = HAL_OK;
+
+  if (pCallback == NULL)
+  {
+    return HAL_ERROR;
+  }
+
+  /* Process locked */
+  __HAL_LOCK(hhrtim);
+
+  if (HAL_HRTIM_STATE_READY == hhrtim->State)
+  {
+    switch (CallbackID)
+    {
+      case HAL_HRTIM_FAULT1CALLBACK_CB_ID :
+        hhrtim->Fault1Callback = pCallback;
+        break;
+
+      case HAL_HRTIM_FAULT2CALLBACK_CB_ID :
+        hhrtim->Fault2Callback = pCallback;
+        break;
+
+      case HAL_HRTIM_FAULT3CALLBACK_CB_ID :
+        hhrtim->Fault3Callback = pCallback;
+        break;
+
+      case HAL_HRTIM_FAULT4CALLBACK_CB_ID :
+        hhrtim->Fault4Callback = pCallback;
+        break;
+
+      case HAL_HRTIM_FAULT5CALLBACK_CB_ID :
+        hhrtim->Fault5Callback = pCallback;
+        break;
+
+      case HAL_HRTIM_SYSTEMFAULTCALLBACK_CB_ID :
+        hhrtim->SystemFaultCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_BURSTMODEPERIODCALLBACK_CB_ID :
+        hhrtim->BurstModePeriodCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_SYNCHRONIZATIONEVENTCALLBACK_CB_ID :
+        hhrtim->SynchronizationEventCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_ERRORCALLBACK_CB_ID :
+        hhrtim->ErrorCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_MSPINIT_CB_ID :
+        hhrtim->MspInitCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_MSPDEINIT_CB_ID :
+        hhrtim->MspDeInitCallback = pCallback;
+        break;
+
+      default :
+
+        /* Return error status */
+        status =  HAL_ERROR;
+        break;
+    }
+  }
+  else if (HAL_HRTIM_STATE_RESET == hhrtim->State)
+  {
+    switch (CallbackID)
+    {
+      case HAL_HRTIM_MSPINIT_CB_ID :
+        hhrtim->MspInitCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_MSPDEINIT_CB_ID :
+        hhrtim->MspDeInitCallback = pCallback;
+        break;
+
+      default :
+
+        /* Return error status */
+        status =  HAL_ERROR;
+        break;
+    }
+  }
+  else
+  {
+    /* Return error status */
+    status =  HAL_ERROR;
+  }
+
+  /* Release Lock */
+  __HAL_UNLOCK(hhrtim);
+
+  return status;
+}
+
+/**
+  * @brief  HRTIM callback function unregistration
+  * @param  CallbackID ID of the HRTIM callback function to unregister
+  *                   This parameter can be one of the following values:
+  *                   @arg HAL_HRTIM_FAULT1CALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_FAULT2CALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_FAULT3CALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_FAULT4CALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_FAULT5CALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_SYSTEMFAULTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_BURSTMODEPERIODCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_SYNCHRONIZATIONEVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_ERRORCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_MSPINIT_CB_ID
+  *                   @arg HAL_HRTIM_MSPDEINIT_CB_ID
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_HRTIM_UnRegisterCallback(HRTIM_HandleTypeDef *       hhrtim,
+                                               HAL_HRTIM_CallbackIDTypeDef CallbackID)
+{
+  HAL_StatusTypeDef status = HAL_OK;
+
+  /* Process locked */
+  __HAL_LOCK(hhrtim);
+
+  if (HAL_HRTIM_STATE_READY == hhrtim->State)
+  {
+    switch (CallbackID)
+    {
+    case HAL_HRTIM_FAULT1CALLBACK_CB_ID :
+      hhrtim->Fault1Callback = HAL_HRTIM_Fault1Callback;
+      break;
+
+    case HAL_HRTIM_FAULT2CALLBACK_CB_ID :
+      hhrtim->Fault2Callback = HAL_HRTIM_Fault2Callback;
+      break;
+
+    case HAL_HRTIM_FAULT3CALLBACK_CB_ID :
+      hhrtim->Fault3Callback = HAL_HRTIM_Fault3Callback;
+      break;
+
+    case HAL_HRTIM_FAULT4CALLBACK_CB_ID :
+      hhrtim->Fault4Callback = HAL_HRTIM_Fault4Callback;
+      break;
+
+    case HAL_HRTIM_FAULT5CALLBACK_CB_ID :
+      hhrtim->Fault5Callback = HAL_HRTIM_Fault5Callback;
+      break;
+
+    case HAL_HRTIM_SYSTEMFAULTCALLBACK_CB_ID :
+      hhrtim->SystemFaultCallback = HAL_HRTIM_SystemFaultCallback;
+      break;
+
+    case HAL_HRTIM_BURSTMODEPERIODCALLBACK_CB_ID :
+      hhrtim->BurstModePeriodCallback = HAL_HRTIM_BurstModePeriodCallback;
+      break;
+
+    case HAL_HRTIM_SYNCHRONIZATIONEVENTCALLBACK_CB_ID :
+      hhrtim->SynchronizationEventCallback = HAL_HRTIM_SynchronizationEventCallback;
+      break;
+
+    case HAL_HRTIM_ERRORCALLBACK_CB_ID :
+      hhrtim->ErrorCallback = HAL_HRTIM_ErrorCallback;
+      break;
+
+    case HAL_HRTIM_MSPINIT_CB_ID :
+      hhrtim->MspInitCallback = HAL_HRTIM_MspInit;
+      break;
+
+    case HAL_HRTIM_MSPDEINIT_CB_ID :
+      hhrtim->MspDeInitCallback = HAL_HRTIM_MspDeInit;
+      break;
+
+    default :
+
+    /* Return error status */
+    status =  HAL_ERROR;
+      break;
+    }
+  }
+  else if (HAL_HRTIM_STATE_RESET == hhrtim->State)
+  {
+    switch (CallbackID)
+    {
+    case HAL_HRTIM_MSPINIT_CB_ID :
+      hhrtim->MspInitCallback = HAL_HRTIM_MspInit;
+      break;
+
+    case HAL_HRTIM_MSPDEINIT_CB_ID :
+      hhrtim->MspDeInitCallback = HAL_HRTIM_MspDeInit;
+      break;
+
+    default :
+
+    /* Return error status */
+    status =  HAL_ERROR;
+      break;
+    }
+  }
+  else
+  {
+    /* Return error status */
+    status =  HAL_ERROR;
+  }
+
+  /* Release Lock */
+  __HAL_UNLOCK(hhrtim);
+
+  return status;
+}
+
+/**
+  * @brief  HRTIM Timer x callback function registration
+  * @param  CallbackID ID of the HRTIM Timer x callback function to register
+  *                   This parameter can be one of the following values:
+  *                   @arg HAL_HRTIM_REGISTERSUPDATECALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_REPETITIONEVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_COMPARE1EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_COMPARE2EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_COMPARE3EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_COMPARE4EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_CAPTURE1EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_CAPTURE2EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_DELAYEDPROTECTIONCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_COUNTERRESETCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_OUTPUT1SETCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_OUTPUT1RESETCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_OUTPUT2SETCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_OUTPUT2RESETCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_BURSTDMATRANSFERCALLBACK_CB_ID
+  * @param  pCallback Callback function pointer
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_HRTIM_TIMxRegisterCallback(HRTIM_HandleTypeDef *        hhrtim,
+                                                 HAL_HRTIM_CallbackIDTypeDef  CallbackID,
+                                                 pHRTIM_TIMxCallbackTypeDef   pCallback)
+{
+  HAL_StatusTypeDef status = HAL_OK;
+
+  if (pCallback == NULL)
+  {
+    return HAL_ERROR;
+  }
+
+  /* Process locked */
+  __HAL_LOCK(hhrtim);
+
+  if (HAL_HRTIM_STATE_READY == hhrtim->State)
+  {
+    switch (CallbackID)
+    {
+      case HAL_HRTIM_REGISTERSUPDATECALLBACK_CB_ID :
+        hhrtim->RegistersUpdateCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_REPETITIONEVENTCALLBACK_CB_ID :
+        hhrtim->RepetitionEventCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_COMPARE1EVENTCALLBACK_CB_ID :
+        hhrtim->Compare1EventCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_COMPARE2EVENTCALLBACK_CB_ID :
+        hhrtim->Compare2EventCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_COMPARE3EVENTCALLBACK_CB_ID :
+        hhrtim->Compare3EventCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_COMPARE4EVENTCALLBACK_CB_ID :
+        hhrtim->Compare4EventCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_CAPTURE1EVENTCALLBACK_CB_ID :
+        hhrtim->Capture1EventCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_CAPTURE2EVENTCALLBACK_CB_ID :
+        hhrtim->Capture2EventCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_DELAYEDPROTECTIONCALLBACK_CB_ID :
+        hhrtim->DelayedProtectionCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_COUNTERRESETCALLBACK_CB_ID :
+        hhrtim->CounterResetCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_OUTPUT1SETCALLBACK_CB_ID :
+        hhrtim->Output1SetCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_OUTPUT1RESETCALLBACK_CB_ID :
+        hhrtim->Output1ResetCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_OUTPUT2SETCALLBACK_CB_ID :
+        hhrtim->Output2SetCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_OUTPUT2RESETCALLBACK_CB_ID :
+        hhrtim->Output2ResetCallback = pCallback;
+        break;
+
+      case HAL_HRTIM_BURSTDMATRANSFERCALLBACK_CB_ID :
+        hhrtim->BurstDMATransferCallback = pCallback;
+        break;
+
+    default :
+
+        /* Return error status */
+        status =  HAL_ERROR;
+        break;
+    }
+  }
+  else
+  {
+    /* Return error status */
+    status =  HAL_ERROR;
+  }
+
+  /* Release Lock */
+  __HAL_UNLOCK(hhrtim);
+
+  return status;
+}
+
+/**
+  * @brief  HRTIM Timer x callback function unregistration
+  * @param  CallbackID ID of the HRTIM callback Timer x function to unregister
+  *                   This parameter can be one of the following values:
+  *                   @arg HAL_HRTIM_REGISTERSUPDATECALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_REPETITIONEVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_COMPARE1EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_COMPARE2EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_COMPARE3EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_COMPARE4EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_CAPTURE1EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_CAPTURE2EVENTCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_DELAYEDPROTECTIONCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_COUNTERRESETCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_OUTPUT1SETCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_OUTPUT1RESETCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_OUTPUT2SETCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_OUTPUT2RESETCALLBACK_CB_ID
+  *                   @arg HAL_HRTIM_BURSTDMATRANSFERCALLBACK_CB_ID
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_HRTIM_TIMxUnRegisterCallback(HRTIM_HandleTypeDef *       hhrtim,
+                                                   HAL_HRTIM_CallbackIDTypeDef CallbackID)
+{
+  HAL_StatusTypeDef status = HAL_OK;
+
+  /* Process locked */
+  __HAL_LOCK(hhrtim);
+
+  if (HAL_HRTIM_STATE_READY == hhrtim->State)
+  {
+    switch (CallbackID)
+    {
+      case HAL_HRTIM_REGISTERSUPDATECALLBACK_CB_ID :
+        hhrtim->RegistersUpdateCallback = HAL_HRTIM_RegistersUpdateCallback;
+        break;
+
+      case HAL_HRTIM_REPETITIONEVENTCALLBACK_CB_ID :
+        hhrtim->RepetitionEventCallback = HAL_HRTIM_RepetitionEventCallback;
+        break;
+
+      case HAL_HRTIM_COMPARE1EVENTCALLBACK_CB_ID :
+        hhrtim->Compare1EventCallback = HAL_HRTIM_Compare1EventCallback;
+        break;
+
+      case HAL_HRTIM_COMPARE2EVENTCALLBACK_CB_ID :
+        hhrtim->Compare2EventCallback = HAL_HRTIM_Compare2EventCallback;
+        break;
+
+      case HAL_HRTIM_COMPARE3EVENTCALLBACK_CB_ID :
+        hhrtim->Compare3EventCallback = HAL_HRTIM_Compare3EventCallback;
+        break;
+
+      case HAL_HRTIM_COMPARE4EVENTCALLBACK_CB_ID :
+        hhrtim->Compare4EventCallback = HAL_HRTIM_Compare4EventCallback;
+        break;
+
+      case HAL_HRTIM_CAPTURE1EVENTCALLBACK_CB_ID :
+        hhrtim->Capture1EventCallback = HAL_HRTIM_Capture1EventCallback;
+        break;
+
+      case HAL_HRTIM_CAPTURE2EVENTCALLBACK_CB_ID :
+        hhrtim->Capture2EventCallback = HAL_HRTIM_Capture2EventCallback;
+        break;
+
+      case HAL_HRTIM_DELAYEDPROTECTIONCALLBACK_CB_ID :
+        hhrtim->DelayedProtectionCallback = HAL_HRTIM_DelayedProtectionCallback;
+        break;
+
+      case HAL_HRTIM_COUNTERRESETCALLBACK_CB_ID :
+        hhrtim->CounterResetCallback = HAL_HRTIM_CounterResetCallback;
+        break;
+
+      case HAL_HRTIM_OUTPUT1SETCALLBACK_CB_ID :
+        hhrtim->Output1SetCallback = HAL_HRTIM_Output1SetCallback;
+        break;
+
+      case HAL_HRTIM_OUTPUT1RESETCALLBACK_CB_ID :
+        hhrtim->Output1ResetCallback = HAL_HRTIM_Output1ResetCallback;
+        break;
+
+      case HAL_HRTIM_OUTPUT2SETCALLBACK_CB_ID :
+        hhrtim->Output2SetCallback = HAL_HRTIM_Output2SetCallback;
+        break;
+
+      case HAL_HRTIM_OUTPUT2RESETCALLBACK_CB_ID :
+        hhrtim->Output2ResetCallback = HAL_HRTIM_Output2ResetCallback;
+        break;
+
+      case HAL_HRTIM_BURSTDMATRANSFERCALLBACK_CB_ID :
+        hhrtim->BurstDMATransferCallback = HAL_HRTIM_BurstDMATransferCallback;
+        break;
+
+    default :
+
+        /* Return error status */
+        status =  HAL_ERROR;
+        break;
+    }
+  }
+  else
+  {
+    /* Return error status */
+    status =  HAL_ERROR;
+  }
+
+  /* Release Lock */
+  __HAL_UNLOCK(hhrtim);
+
+  return status;
+}
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
 
 /**
   * @}
@@ -6292,22 +6869,22 @@ __weak void HAL_HRTIM_ErrorCallback(HRTIM_HandleTypeDef *hhrtim)
   * @param  pTimeBaseCfg: pointer to the time base configuration structure
   * @retval None
   */
-static void  HRTIM_MasterBase_Config(HRTIM_HandleTypeDef * hhrtim, 
+static void  HRTIM_MasterBase_Config(HRTIM_HandleTypeDef * hhrtim,
                                      HRTIM_TimeBaseCfgTypeDef * pTimeBaseCfg)
 {
   uint32_t hrtim_mcr;
-  
+
   /* Configure master timer */
   hrtim_mcr = hhrtim->Instance->sMasterRegs.MCR;
-  
+
   /* Set the prescaler ratio */
   hrtim_mcr &= (uint32_t) ~(HRTIM_MCR_CK_PSC);
   hrtim_mcr |= (uint32_t)pTimeBaseCfg->PrescalerRatio;
-  
+
   /* Set the operating mode */
   hrtim_mcr &= (uint32_t) ~(HRTIM_MCR_CONT | HRTIM_MCR_RETRIG);
   hrtim_mcr |= (uint32_t)pTimeBaseCfg->Mode;
-  
+
   /* Update the HRTIM registers */
   hhrtim->Instance->sMasterRegs.MCR  = hrtim_mcr;
   hhrtim->Instance->sMasterRegs.MPER = pTimeBaseCfg->Period;
@@ -6326,10 +6903,10 @@ static void  HRTIM_TimingUnitBase_Config(HRTIM_HandleTypeDef * hhrtim,
                                          HRTIM_TimeBaseCfgTypeDef * pTimeBaseCfg)
 {
   uint32_t hrtim_timcr;
-  
+
   /* Configure master timing unit */
   hrtim_timcr = hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxCR;
- 
+
   /* Set the prescaler ratio */
   hrtim_timcr &= (uint32_t) ~(HRTIM_TIMCR_CK_PSC);
   hrtim_timcr |= (uint32_t)pTimeBaseCfg->PrescalerRatio;
@@ -6337,7 +6914,7 @@ static void  HRTIM_TimingUnitBase_Config(HRTIM_HandleTypeDef * hhrtim,
   /* Set the operating mode */
   hrtim_timcr &= (uint32_t) ~(HRTIM_TIMCR_CONT | HRTIM_TIMCR_RETRIG);
   hrtim_timcr |= (uint32_t)pTimeBaseCfg->Mode;
-  
+
   /* Update the HRTIM registers */
   hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxCR  = hrtim_timcr;
   hhrtim->Instance->sTimerxRegs[TimerIdx].PERxR = pTimeBaseCfg->Period;
@@ -6350,44 +6927,44 @@ static void  HRTIM_TimingUnitBase_Config(HRTIM_HandleTypeDef * hhrtim,
   * @param  pTimerCfg: pointer to the timer configuration data structure
   * @retval None
   */
-static void  HRTIM_MasterWaveform_Config(HRTIM_HandleTypeDef * hhrtim, 
+static void  HRTIM_MasterWaveform_Config(HRTIM_HandleTypeDef * hhrtim,
                                          HRTIM_TimerCfgTypeDef * pTimerCfg)
 {
   uint32_t hrtim_mcr;
   uint32_t hrtim_bmcr;
-  
+
   /* Configure master timer */
   hrtim_mcr = hhrtim->Instance->sMasterRegs.MCR;
   hrtim_bmcr = hhrtim->Instance->sCommonRegs.BMCR;
-  
+
   /* Enable/Disable the half mode */
   hrtim_mcr &= ~(HRTIM_MCR_HALF);
   hrtim_mcr |= pTimerCfg->HalfModeEnable;
-  
+
   /* Enable/Disable the timer start upon synchronization event reception */
   hrtim_mcr &= ~(HRTIM_MCR_SYNCSTRTM);
   hrtim_mcr |= pTimerCfg->StartOnSync;
- 
+
   /* Enable/Disable the timer reset upon synchronization event reception */
   hrtim_mcr &= ~(HRTIM_MCR_SYNCRSTM);
   hrtim_mcr |= pTimerCfg->ResetOnSync;
-  
+
   /* Enable/Disable the DAC synchronization event generation */
   hrtim_mcr &= ~(HRTIM_MCR_DACSYNC);
   hrtim_mcr |= pTimerCfg->DACSynchro;
-  
+
   /* Enable/Disable preload meachanism for timer registers */
   hrtim_mcr &= ~(HRTIM_MCR_PREEN);
   hrtim_mcr |= pTimerCfg->PreloadEnable;
-  
+
   /* Master timer registers update handling */
   hrtim_mcr &= ~(HRTIM_MCR_BRSTDMA);
   hrtim_mcr |= (pTimerCfg->UpdateGating << 2);
-  
+
   /* Enable/Disable registers update on repetition */
   hrtim_mcr &= ~(HRTIM_MCR_MREPU);
   hrtim_mcr |= pTimerCfg->RepetitionUpdate;
-  
+
   /* Set the timer burst mode */
   hrtim_bmcr &= ~(HRTIM_BMCR_MTBM);
   hrtim_bmcr |= pTimerCfg->BurstMode;
@@ -6398,14 +6975,14 @@ static void  HRTIM_MasterWaveform_Config(HRTIM_HandleTypeDef * hhrtim,
 }
 
 /**
-  * @brief  Configures timing unit (timer A to timer E) in waveform mode 
+  * @brief  Configures timing unit (timer A to timer E) in waveform mode
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   * @param  pTimerCfg: pointer to the timer configuration data structure
   * @retval None
   */
-static void  HRTIM_TimingUnitWaveform_Config(HRTIM_HandleTypeDef * hhrtim, 
-                                             uint32_t TimerIdx, 
+static void  HRTIM_TimingUnitWaveform_Config(HRTIM_HandleTypeDef * hhrtim,
+                                             uint32_t TimerIdx,
                                              HRTIM_TimerCfgTypeDef * pTimerCfg)
 {
   uint32_t hrtim_timcr;
@@ -6413,7 +6990,7 @@ static void  HRTIM_TimingUnitWaveform_Config(HRTIM_HandleTypeDef * hhrtim,
   uint32_t hrtim_timoutr;
   uint32_t hrtim_timrstr;
   uint32_t hrtim_bmcr;
-  
+
   /* UPDGAT bitfield must be reset before programming a new value */
   hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxCR &= ~(HRTIM_TIMCR_UPDGAT);
 
@@ -6423,31 +7000,31 @@ static void  HRTIM_TimingUnitWaveform_Config(HRTIM_HandleTypeDef * hhrtim,
   hrtim_timoutr = hhrtim->Instance->sTimerxRegs[TimerIdx].OUTxR;
   hrtim_timrstr = hhrtim->Instance->sTimerxRegs[TimerIdx].RSTxR;
   hrtim_bmcr    = hhrtim->Instance->sCommonRegs.BMCR;
-  
+
   /* Enable/Disable the half mode */
   hrtim_timcr &= ~(HRTIM_TIMCR_HALF);
   hrtim_timcr |= pTimerCfg->HalfModeEnable;
-  
+
   /* Enable/Disable the timer start upon synchronization event reception */
   hrtim_timcr &= ~(HRTIM_TIMCR_SYNCSTRT);
   hrtim_timcr |= pTimerCfg->StartOnSync;
- 
+
   /* Enable/Disable the timer reset upon synchronization event reception */
   hrtim_timcr &= ~(HRTIM_TIMCR_SYNCRST);
   hrtim_timcr |= pTimerCfg->ResetOnSync;
-  
+
   /* Enable/Disable the DAC synchronization event generation */
   hrtim_timcr &= ~(HRTIM_TIMCR_DACSYNC);
   hrtim_timcr |= pTimerCfg->DACSynchro;
-  
+
   /* Enable/Disable preload meachanism for timer registers */
   hrtim_timcr &= ~(HRTIM_TIMCR_PREEN);
   hrtim_timcr |= pTimerCfg->PreloadEnable;
-  
+
   /* Timing unit registers update handling */
   hrtim_timcr &= ~(HRTIM_TIMCR_UPDGAT);
   hrtim_timcr |= pTimerCfg->UpdateGating;
-  
+
   /* Enable/Disable registers update on repetition */
   hrtim_timcr &= ~(HRTIM_TIMCR_TREPU);
   if (pTimerCfg->RepetitionUpdate == HRTIM_UPDATEONREPETITION_ENABLED)
@@ -6458,24 +7035,24 @@ static void  HRTIM_TimingUnitWaveform_Config(HRTIM_HandleTypeDef * hhrtim,
   /* Set the push-pull mode */
   hrtim_timcr &= ~(HRTIM_TIMCR_PSHPLL);
   hrtim_timcr |= pTimerCfg->PushPull;
-  
+
   /* Enable/Disable registers update on timer counter reset */
   hrtim_timcr &= ~(HRTIM_TIMCR_TRSTU);
   hrtim_timcr |= pTimerCfg->ResetUpdate;
-  
+
   /* Set the timer update trigger */
   hrtim_timcr &= ~(HRTIM_TIMCR_TIMUPDATETRIGGER);
   hrtim_timcr |= pTimerCfg->UpdateTrigger;
-  
-  
+
+
   /* Enable/Disable the fault channel at timer level */
   hrtim_timfltr &= ~(HRTIM_FLTR_FLTxEN);
   hrtim_timfltr |= (pTimerCfg->FaultEnable & HRTIM_FLTR_FLTxEN);
-  
+
   /* Lock/Unlock fault sources at timer level */
   hrtim_timfltr &= ~(HRTIM_FLTR_FLTLCK);
   hrtim_timfltr |= pTimerCfg->FaultLock;
-  
+
   /* The deadtime cannot be used simultaneously with the push-pull mode */
   if (pTimerCfg->PushPull == HRTIM_TIMPUSHPULLMODE_DISABLED)
   {
@@ -6483,7 +7060,7 @@ static void  HRTIM_TimingUnitWaveform_Config(HRTIM_HandleTypeDef * hhrtim,
     hrtim_timoutr &= ~(HRTIM_OUTR_DTEN);
     hrtim_timoutr |= pTimerCfg->DeadTimeInsertion;
   }
-  
+
   /* Enable/Disable delayed protection at timer level
      Delayed Idle is available whatever the timer operating mode (regular, push-pull)
      Balanced Idle is only available in push-pull mode
@@ -6495,7 +7072,7 @@ static void  HRTIM_TimingUnitWaveform_Config(HRTIM_HandleTypeDef * hhrtim,
     hrtim_timoutr &= ~(HRTIM_OUTR_DLYPRT| HRTIM_OUTR_DLYPRTEN);
     hrtim_timoutr |= pTimerCfg->DelayedProtectionMode;
   }
-    
+
   /* Set the timer counter reset trigger */
   hrtim_timrstr = pTimerCfg->ResetTrigger;
 
@@ -6538,12 +7115,12 @@ static void  HRTIM_TimingUnitWaveform_Config(HRTIM_HandleTypeDef * hhrtim,
   hhrtim->Instance->sTimerxRegs[TimerIdx].TIMxCR  = hrtim_timcr;
   hhrtim->Instance->sTimerxRegs[TimerIdx].FLTxR = hrtim_timfltr;
   hhrtim->Instance->sTimerxRegs[TimerIdx].OUTxR = hrtim_timoutr;
-  hhrtim->Instance->sTimerxRegs[TimerIdx].RSTxR = hrtim_timrstr;  
+  hhrtim->Instance->sTimerxRegs[TimerIdx].RSTxR = hrtim_timrstr;
   hhrtim->Instance->sCommonRegs.BMCR = hrtim_bmcr;
 }
 
 /**
-  * @brief  Configures a compare unit 
+  * @brief  Configures a compare unit
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   * @param  CompareUnit: Compare unit identifier
@@ -6607,12 +7184,12 @@ static void  HRTIM_CompareUnitConfig(HRTIM_HandleTypeDef * hhrtim,
         hhrtim->Instance->sTimerxRegs[TimerIdx].CMP4xR = pCompareCfg->CompareValue;
       }
       break;
-    }    
+    }
   }
 }
 
 /**
-  * @brief  Configures a capture unit 
+  * @brief  Configures a capture unit
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   * @param  CaptureUnit: Capture unit identifier
@@ -6625,7 +7202,7 @@ static void HRTIM_CaptureUnitConfig(HRTIM_HandleTypeDef * hhrtim,
                                     uint32_t Event)
 {
   uint32_t CaptureTrigger = 0xFFFFFFFFU;
-  
+
   switch (Event)
   {
   case HRTIM_EVENT_1:
@@ -6679,7 +7256,7 @@ static void HRTIM_CaptureUnitConfig(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   switch (CaptureUnit)
   {
   case HRTIM_CAPTUREUNIT_1:
@@ -6696,7 +7273,7 @@ static void HRTIM_CaptureUnitConfig(HRTIM_HandleTypeDef * hhrtim,
 }
 
 /**
-  * @brief  Configures the output of a timing unit 
+  * @brief  Configures the output of a timing unit
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   * @param  Output: timing unit output identifier
@@ -6710,12 +7287,12 @@ static void  HRTIM_OutputConfig(HRTIM_HandleTypeDef * hhrtim,
 {
   uint32_t hrtim_outr;
   uint32_t hrtim_dtr;
-  
+
   uint32_t shift = 0xFFFFFFFFU;
-  
+
   hrtim_outr = hhrtim->Instance->sTimerxRegs[TimerIdx].OUTxR;
   hrtim_dtr = hhrtim->Instance->sTimerxRegs[TimerIdx].DTxR;
-  
+
   switch (Output)
   {
   case HRTIM_OUTPUT_TA1:
@@ -6727,7 +7304,7 @@ static void  HRTIM_OutputConfig(HRTIM_HandleTypeDef * hhrtim,
       /* Set the output set/reset crossbar */
       hhrtim->Instance->sTimerxRegs[TimerIdx].SETx1R = pOutputCfg->SetSource;
       hhrtim->Instance->sTimerxRegs[TimerIdx].RSTx1R = pOutputCfg->ResetSource;
-      
+
       shift = 0;
     }
     break;
@@ -6745,7 +7322,7 @@ static void  HRTIM_OutputConfig(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   /* Clear output config */
   hrtim_outr &= ~((HRTIM_OUTR_POL1 |
                    HRTIM_OUTR_IDLM1 |
@@ -6753,19 +7330,19 @@ static void  HRTIM_OutputConfig(HRTIM_HandleTypeDef * hhrtim,
                    HRTIM_OUTR_FAULT1|
                    HRTIM_OUTR_CHP1 |
                    HRTIM_OUTR_DIDL1)  << shift);
-  
+
   /* Set the polarity */
   hrtim_outr |= (pOutputCfg->Polarity << shift);
-  
+
   /* Set the IDLE mode */
   hrtim_outr |= (pOutputCfg->IdleMode << shift);
-  
+
   /* Set the IDLE state */
   hrtim_outr |= (pOutputCfg->IdleLevel << shift);
-  
+
   /* Set the FAULT state */
   hrtim_outr |= (pOutputCfg->FaultLevel << shift);
-  
+
   /* Set the chopper mode */
   hrtim_outr |= (pOutputCfg->ChopperModeEnable << shift);
 
@@ -6775,19 +7352,19 @@ static void  HRTIM_OutputConfig(HRTIM_HandleTypeDef * hhrtim,
      - the outputs is active during the burst mode (IDLES=1)
      - positive deadtimes (SDTR/SDTF set to 0)
   */
-  if ((pOutputCfg->IdleLevel == HRTIM_OUTPUTIDLELEVEL_ACTIVE) && 
+  if ((pOutputCfg->IdleLevel == HRTIM_OUTPUTIDLELEVEL_ACTIVE) &&
       ((hrtim_dtr & HRTIM_DTR_SDTR) == RESET) &&
       ((hrtim_dtr & HRTIM_DTR_SDTF) == RESET))
   {
     hrtim_outr |= (pOutputCfg->BurstModeEntryDelayed << shift);
   }
-  
+
   /* Update HRTIM register */
   hhrtim->Instance->sTimerxRegs[TimerIdx].OUTxR = hrtim_outr;
 }
 
 /**
-  * @brief  Configures an external event channel 
+  * @brief  Configures an external event channel
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  Event: Event channel identifier
   * @param  pEventCfg: pointer to the event channel configuration data structure
@@ -6805,7 +7382,7 @@ static void HRTIM_EventConfig(HRTIM_HandleTypeDef * hhrtim,
   hrtim_eecr1 = hhrtim->Instance->sCommonRegs.EECR1;
   hrtim_eecr2 = hhrtim->Instance->sCommonRegs.EECR2;
   hrtim_eecr3 = hhrtim->Instance->sCommonRegs.EECR3;
-  
+
   switch (Event)
   {
   case HRTIM_EVENT_1:
@@ -6944,7 +7521,7 @@ static void HRTIM_EventConfig(HRTIM_HandleTypeDef * hhrtim,
 }
 
 /**
-  * @brief  Configures the timer counter reset 
+  * @brief  Configures the timer counter reset
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
   * @param  Event: Event channel identifier
@@ -7035,7 +7612,7 @@ static uint32_t HRTIM_GetITFromOCMode(HRTIM_HandleTypeDef * hhrtim,
   uint32_t hrtim_set;
   uint32_t hrtim_reset;
   uint32_t interrupt = 0;
-  
+
   switch (OCChannel)
   {
   case HRTIM_OUTPUT_TA1:
@@ -7047,7 +7624,7 @@ static uint32_t HRTIM_GetITFromOCMode(HRTIM_HandleTypeDef * hhrtim,
       /* Retreives actual OC mode and set interrupt accordingly */
       hrtim_set = hhrtim->Instance->sTimerxRegs[TimerIdx].SETx1R;
       hrtim_reset = hhrtim->Instance->sTimerxRegs[TimerIdx].RSTx1R;
-      
+
       if (((hrtim_set & HRTIM_OUTPUTSET_TIMCMP1) == HRTIM_OUTPUTSET_TIMCMP1) &&
           ((hrtim_reset & HRTIM_OUTPUTSET_TIMCMP1) == HRTIM_OUTPUTSET_TIMCMP1))
       {
@@ -7077,7 +7654,7 @@ static uint32_t HRTIM_GetITFromOCMode(HRTIM_HandleTypeDef * hhrtim,
       /* Retreives actual OC mode and set interrupt accordingly */
       hrtim_set = hhrtim->Instance->sTimerxRegs[TimerIdx].SETx2R;
       hrtim_reset = hhrtim->Instance->sTimerxRegs[TimerIdx].RSTx2R;
-      
+
       if (((hrtim_set & HRTIM_OUTPUTSET_TIMCMP2) == HRTIM_OUTPUTSET_TIMCMP2) &&
           ((hrtim_reset & HRTIM_OUTPUTSET_TIMCMP2) == HRTIM_OUTPUTSET_TIMCMP2))
       {
@@ -7099,7 +7676,7 @@ static uint32_t HRTIM_GetITFromOCMode(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   return interrupt;
 }
 
@@ -7129,7 +7706,7 @@ static uint32_t HRTIM_GetDMAFromOCMode(HRTIM_HandleTypeDef * hhrtim,
   uint32_t hrtim_set;
   uint32_t hrtim_reset;
   uint32_t dma_request = 0;
-  
+
   switch (OCChannel)
   {
   case HRTIM_OUTPUT_TA1:
@@ -7141,7 +7718,7 @@ static uint32_t HRTIM_GetDMAFromOCMode(HRTIM_HandleTypeDef * hhrtim,
       /* Retreives actual OC mode and set dma_request accordingly */
       hrtim_set = hhrtim->Instance->sTimerxRegs[TimerIdx].SETx1R;
       hrtim_reset = hhrtim->Instance->sTimerxRegs[TimerIdx].RSTx1R;
-      
+
       if (((hrtim_set & HRTIM_OUTPUTSET_TIMCMP1) == HRTIM_OUTPUTSET_TIMCMP1) &&
           ((hrtim_reset & HRTIM_OUTPUTSET_TIMCMP1) == HRTIM_OUTPUTSET_TIMCMP1))
       {
@@ -7171,7 +7748,7 @@ static uint32_t HRTIM_GetDMAFromOCMode(HRTIM_HandleTypeDef * hhrtim,
       /* Retreives actual OC mode and set dma_request accordingly */
       hrtim_set = hhrtim->Instance->sTimerxRegs[TimerIdx].SETx2R;
       hrtim_reset = hhrtim->Instance->sTimerxRegs[TimerIdx].RSTx2R;
-      
+
       if (((hrtim_set & HRTIM_OUTPUTSET_TIMCMP2) == HRTIM_OUTPUTSET_TIMCMP2) &&
           ((hrtim_reset & HRTIM_OUTPUTSET_TIMCMP2) == HRTIM_OUTPUTSET_TIMCMP2))
       {
@@ -7193,7 +7770,7 @@ static uint32_t HRTIM_GetDMAFromOCMode(HRTIM_HandleTypeDef * hhrtim,
     }
     break;
   }
-  
+
   return dma_request;
 }
 
@@ -7201,7 +7778,7 @@ static DMA_HandleTypeDef * HRTIM_GetDMAHandleFromTimerIdx(HRTIM_HandleTypeDef * 
                                                           uint32_t TimerIdx)
 {
   DMA_HandleTypeDef * hdma = (DMA_HandleTypeDef *)NULL;
-  
+
   switch (TimerIdx)
   {
   case HRTIM_TIMERINDEX_MASTER:
@@ -7235,14 +7812,14 @@ static DMA_HandleTypeDef * HRTIM_GetDMAHandleFromTimerIdx(HRTIM_HandleTypeDef * 
     }
     break;
   }
-  
+
   return hdma;
 }
 
 static uint32_t GetTimerIdxFromDMAHandle(DMA_HandleTypeDef *hdma)
 {
   uint32_t timed_idx = 0xFFFFFFFF;
-  
+
   if (hdma->Init.Request ==  DMA_REQUEST_HRTIM_MASTER)
   {
     timed_idx = HRTIM_TIMERINDEX_MASTER;
@@ -7267,12 +7844,12 @@ static uint32_t GetTimerIdxFromDMAHandle(DMA_HandleTypeDef *hdma)
   {
     timed_idx = HRTIM_TIMERINDEX_TIMER_E;
   }
-  
+
   return timed_idx;
 }
 
 /**
-  * @brief  Forces an immediate transfer from the preload to the active 
+  * @brief  Forces an immediate transfer from the preload to the active
   *         registers.
   * @param  hhrtim: pointer to HAL HRTIM handle
   * @param  TimerIdx: Timer index
@@ -7330,69 +7907,93 @@ static void HRTIM_HRTIM_ISR(HRTIM_HandleTypeDef * hhrtim)
     if(__HAL_HRTIM_GET_ITSTATUS(hhrtim, HRTIM_IT_FLT1) != RESET)
     {
       __HAL_HRTIM_CLEAR_IT(hhrtim, HRTIM_IT_FLT1);
-      
+
       /* Invoke Fault 1 event callback */
-      HAL_HRTIM_Fault1Callback(hhrtim);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Fault1Callback(hhrtim);
+#else
+      HAL_HRTIM_Fault1Callback(hhrtim);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Fault 2 event */
   if(__HAL_HRTIM_GET_FLAG(hhrtim, HRTIM_FLAG_FLT2) != RESET)
   {
     if(__HAL_HRTIM_GET_ITSTATUS(hhrtim, HRTIM_IT_FLT2) != RESET)
     {
       __HAL_HRTIM_CLEAR_IT(hhrtim, HRTIM_IT_FLT2);
-      
+
       /* Invoke Fault 2 event callback */
-      HAL_HRTIM_Fault2Callback(hhrtim);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Fault2Callback(hhrtim);
+#else
+      HAL_HRTIM_Fault2Callback(hhrtim);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Fault 3 event */
   if(__HAL_HRTIM_GET_FLAG(hhrtim, HRTIM_FLAG_FLT3) != RESET)
   {
     if(__HAL_HRTIM_GET_ITSTATUS(hhrtim, HRTIM_IT_FLT3) != RESET)
     {
       __HAL_HRTIM_CLEAR_IT(hhrtim, HRTIM_IT_FLT3);
-      
+
       /* Invoke Fault 3 event callback */
-      HAL_HRTIM_Fault3Callback(hhrtim);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Fault3Callback(hhrtim);
+#else
+      HAL_HRTIM_Fault3Callback(hhrtim);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Fault 4 event */
   if(__HAL_HRTIM_GET_FLAG(hhrtim, HRTIM_FLAG_FLT4) != RESET)
   {
     if(__HAL_HRTIM_GET_ITSTATUS(hhrtim, HRTIM_IT_FLT4) != RESET)
     {
       __HAL_HRTIM_CLEAR_IT(hhrtim, HRTIM_IT_FLT4);
-      
+
       /* Invoke Fault 4 event callback */
-      HAL_HRTIM_Fault4Callback(hhrtim);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Fault4Callback(hhrtim);
+#else
+      HAL_HRTIM_Fault4Callback(hhrtim);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Fault 5 event */
   if(__HAL_HRTIM_GET_FLAG(hhrtim, HRTIM_FLAG_FLT5) != RESET)
   {
     if(__HAL_HRTIM_GET_ITSTATUS(hhrtim, HRTIM_IT_FLT5) != RESET)
     {
       __HAL_HRTIM_CLEAR_IT(hhrtim, HRTIM_IT_FLT5);
-      
+
       /* Invoke Fault 5 event callback */
-      HAL_HRTIM_Fault5Callback(hhrtim);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Fault5Callback(hhrtim);
+#else
+      HAL_HRTIM_Fault5Callback(hhrtim);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* System fault event */
   if(__HAL_HRTIM_GET_FLAG(hhrtim, HRTIM_FLAG_SYSFLT) != RESET)
   {
     if(__HAL_HRTIM_GET_ITSTATUS(hhrtim, HRTIM_IT_SYSFLT) != RESET)
     {
       __HAL_HRTIM_CLEAR_IT(hhrtim, HRTIM_IT_SYSFLT);
-      
+
       /* Invoke System fault event callback */
-      HAL_HRTIM_SystemFaultCallback(hhrtim);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->SystemFaultCallback(hhrtim);
+#else
+      HAL_HRTIM_SystemFaultCallback(hhrtim);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
 }
@@ -7403,100 +8004,132 @@ static void HRTIM_HRTIM_ISR(HRTIM_HandleTypeDef * hhrtim)
 * @retval None
 */
 static void HRTIM_Master_ISR(HRTIM_HandleTypeDef * hhrtim)
-{  
+{
   /* Burst mode period event */
   if(__HAL_HRTIM_GET_FLAG(hhrtim, HRTIM_FLAG_BMPER) != RESET)
   {
     if(__HAL_HRTIM_GET_ITSTATUS(hhrtim, HRTIM_IT_BMPER) != RESET)
     {
       __HAL_HRTIM_CLEAR_IT(hhrtim, HRTIM_IT_BMPER);
-      
+
       /* Invoke Burst mode period event callback */
-      HAL_HRTIM_BurstModePeriodCallback(hhrtim);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->BurstModePeriodCallback(hhrtim);
+#else
+      HAL_HRTIM_BurstModePeriodCallback(hhrtim);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
-  }  
-  
+  }
+
   /* Master timer compare 1 event */
   if(__HAL_HRTIM_MASTER_GET_FLAG(hhrtim, HRTIM_MASTER_FLAG_MCMP1) != RESET)
   {
     if(__HAL_HRTIM_MASTER_GET_ITSTATUS(hhrtim, HRTIM_MASTER_IT_MCMP1) != RESET)
     {
       __HAL_HRTIM_MASTER_CLEAR_IT(hhrtim, HRTIM_MASTER_IT_MCMP1);
-      
+
       /* Invoke compare 1 event callback */
-      HAL_HRTIM_Compare1EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Compare1EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#else
+      HAL_HRTIM_Compare1EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Master timer compare 2 event */
   if(__HAL_HRTIM_MASTER_GET_FLAG(hhrtim, HRTIM_MASTER_FLAG_MCMP2) != RESET)
   {
     if(__HAL_HRTIM_MASTER_GET_ITSTATUS(hhrtim, HRTIM_MASTER_IT_MCMP2) != RESET)
     {
       __HAL_HRTIM_MASTER_CLEAR_IT(hhrtim, HRTIM_MASTER_IT_MCMP2);
-      
+
       /* Invoke compare 2 event callback */
-      HAL_HRTIM_Compare2EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Compare2EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#else
+      HAL_HRTIM_Compare2EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Master timer compare 3 event */
   if(__HAL_HRTIM_MASTER_GET_FLAG(hhrtim, HRTIM_MASTER_FLAG_MCMP3) != RESET)
   {
     if(__HAL_HRTIM_MASTER_GET_ITSTATUS(hhrtim, HRTIM_MASTER_IT_MCMP3) != RESET)
     {
       __HAL_HRTIM_MASTER_CLEAR_IT(hhrtim, HRTIM_MASTER_IT_MCMP3);
-      
+
       /* Invoke compare 3 event callback */
-      HAL_HRTIM_Compare3EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Compare3EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#else
+      HAL_HRTIM_Compare3EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Master timer compare 4 event */
   if(__HAL_HRTIM_MASTER_GET_FLAG(hhrtim, HRTIM_MASTER_FLAG_MCMP4) != RESET)
   {
     if(__HAL_HRTIM_MASTER_GET_ITSTATUS(hhrtim, HRTIM_MASTER_IT_MCMP4) != RESET)
     {
       __HAL_HRTIM_MASTER_CLEAR_IT(hhrtim, HRTIM_MASTER_IT_MCMP4);
-      
+
       /* Invoke compare 4 event callback */
-      HAL_HRTIM_Compare4EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Compare4EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#else
+      HAL_HRTIM_Compare4EventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Master timer repetition event */
   if(__HAL_HRTIM_MASTER_GET_FLAG(hhrtim, HRTIM_MASTER_FLAG_MREP) != RESET)
   {
     if(__HAL_HRTIM_MASTER_GET_ITSTATUS(hhrtim, HRTIM_MASTER_IT_MREP) != RESET)
     {
       __HAL_HRTIM_MASTER_CLEAR_IT(hhrtim, HRTIM_MASTER_IT_MREP);
-      
+
       /* Invoke repetition event callback */
-      HAL_HRTIM_RepetitionEventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->RepetitionEventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#else
+      HAL_HRTIM_RepetitionEventCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Synchronization input event */
   if(__HAL_HRTIM_MASTER_GET_FLAG(hhrtim, HRTIM_MASTER_FLAG_SYNC) != RESET)
   {
     if(__HAL_HRTIM_MASTER_GET_ITSTATUS(hhrtim, HRTIM_MASTER_IT_SYNC) != RESET)
     {
       __HAL_HRTIM_MASTER_CLEAR_IT(hhrtim, HRTIM_MASTER_IT_SYNC);
-      
+
       /* Invoke synchronization event callback */
-      HAL_HRTIM_SynchronizationEventCallback(hhrtim);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->SynchronizationEventCallback(hhrtim);
+#else
+      HAL_HRTIM_SynchronizationEventCallback(hhrtim);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Master timer registers update event */
   if(__HAL_HRTIM_MASTER_GET_FLAG(hhrtim, HRTIM_MASTER_FLAG_MUPD) != RESET)
   {
     if(__HAL_HRTIM_MASTER_GET_ITSTATUS(hhrtim, HRTIM_MASTER_IT_MUPD) != RESET)
     {
       __HAL_HRTIM_MASTER_CLEAR_IT(hhrtim, HRTIM_MASTER_IT_MUPD);
-      
+
       /* Invoke registers update event callback */
-      HAL_HRTIM_RegistersUpdateCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->RegistersUpdateCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#else
+      HAL_HRTIM_RegistersUpdateCallback(hhrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
 }
@@ -7522,165 +8155,221 @@ static void HRTIM_Timer_ISR(HRTIM_HandleTypeDef * hhrtim,
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_CMP1) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_CMP1);
-      
+
       /* Invoke compare 1 event callback */
-      HAL_HRTIM_Compare1EventCallback(hhrtim, TimerIdx);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Compare1EventCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_Compare1EventCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer compare 2 event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_CMP2) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_CMP2) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_CMP2);
-      
+
       /* Invoke compare 2 event callback */
-      HAL_HRTIM_Compare2EventCallback(hhrtim, TimerIdx);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Compare2EventCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_Compare2EventCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer compare 3 event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_CMP3) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_CMP3) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_CMP3);
-      
+
       /* Invoke compare 3 event callback */
-      HAL_HRTIM_Compare3EventCallback(hhrtim, TimerIdx);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Compare3EventCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_Compare3EventCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer compare 4 event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_CMP4) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_CMP4) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_CMP4);
-      
+
       /* Invoke compare 4 event callback */
-      HAL_HRTIM_Compare4EventCallback(hhrtim, TimerIdx);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Compare4EventCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_Compare4EventCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer repetition event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_REP) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_REP) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_REP);
-      
+
       /* Invoke repetition event callback */
-      HAL_HRTIM_RepetitionEventCallback(hhrtim, TimerIdx);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->RepetitionEventCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_RepetitionEventCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer registers update event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_UPD) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_UPD) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_UPD);
-      
+
       /* Invoke registers update event callback */
-      HAL_HRTIM_RegistersUpdateCallback(hhrtim, TimerIdx);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->RegistersUpdateCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_RegistersUpdateCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer capture 1 event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_CPT1) != RESET)
-  {    
+  {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_CPT1) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_CPT1);
-      
+
       /* Invoke capture 1 event callback */
-      HAL_HRTIM_Capture1EventCallback(hhrtim, TimerIdx);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Capture1EventCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_Capture1EventCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer capture 2 event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_CPT2) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_CPT2) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_CPT2);
-      
+
       /* Invoke capture 2 event callback */
-      HAL_HRTIM_Capture2EventCallback(hhrtim, TimerIdx);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Capture2EventCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_Capture2EventCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer ouput 1 set event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_SET1) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_SET1) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_SET1);
-      
-      /* Invoke ouput 1 set event callback */
-      HAL_HRTIM_Output1SetCallback(hhrtim, TimerIdx);  
+
+      /* Invoke output 1 set event callback */
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Output1SetCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_Output1SetCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer ouput 1 reset event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_RST1) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_RST1) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_RST1);
-      
-      /* Invoke ouput 1 reset event callback */
-      HAL_HRTIM_Output1ResetCallback(hhrtim, TimerIdx);  
+
+      /* Invoke output 1 reset event callback */
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Output1ResetCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_Output1ResetCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer ouput 2 set event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_SET2) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_SET2) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_SET2);
-      
-      /* Invoke ouput 2 set event callback */
-      HAL_HRTIM_Output2SetCallback(hhrtim, TimerIdx);  
+
+      /* Invoke output 2 set event callback */
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Output2SetCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_Output2SetCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer ouput 2 reset event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_RST2) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_RST2) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_RST2);
-      
-      /* Invoke ouput 2 reset event callback */
-      HAL_HRTIM_Output2ResetCallback(hhrtim, TimerIdx);  
+
+      /* Invoke output 2 reset event callback */
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->Output2ResetCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_Output2ResetCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
+
   /* Timer reset event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_RST) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_RST) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_RST);
-      
+
       /* Invoke timer reset callback */
-      HAL_HRTIM_CounterResetCallback(hhrtim, TimerIdx);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->CounterResetCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_CounterResetCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
-  
-  /* Delayed protection event */  
+
+  /* Delayed protection event */
   if(__HAL_HRTIM_TIMER_GET_FLAG(hhrtim, TimerIdx, HRTIM_TIM_FLAG_DLYPRT) != RESET)
   {
     if(__HAL_HRTIM_TIMER_GET_ITSTATUS(hhrtim, TimerIdx, HRTIM_TIM_IT_DLYPRT) != RESET)
     {
       __HAL_HRTIM_TIMER_CLEAR_IT(hhrtim, TimerIdx, HRTIM_TIM_IT_DLYPRT);
-      
+
       /* Invoke delayed protection callback */
-      HAL_HRTIM_DelayedProtectionCallback(hhrtim, TimerIdx);  
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+      hhrtim->DelayedProtectionCallback(hhrtim, TimerIdx);
+#else
+      HAL_HRTIM_DelayedProtectionCallback(hhrtim, TimerIdx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
     }
   }
 }
@@ -7693,34 +8382,62 @@ static void HRTIM_Timer_ISR(HRTIM_HandleTypeDef * hhrtim,
 static void HRTIM_DMAMasterCplt(DMA_HandleTypeDef *hdma)
 {
   HRTIM_HandleTypeDef * hrtim = (HRTIM_HandleTypeDef *)((DMA_HandleTypeDef* )hdma)->Parent;
-  
+
   if ((hrtim->Instance->sMasterRegs.MDIER & HRTIM_MASTER_DMA_MCMP1) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Compare1EventCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#else
     HAL_HRTIM_Compare1EventCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sMasterRegs.MDIER & HRTIM_MASTER_DMA_MCMP2) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Compare2EventCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#else
     HAL_HRTIM_Compare2EventCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sMasterRegs.MDIER & HRTIM_MASTER_DMA_MCMP3) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Compare3EventCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#else
     HAL_HRTIM_Compare3EventCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sMasterRegs.MDIER & HRTIM_MASTER_DMA_MCMP4) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Compare4EventCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#else
     HAL_HRTIM_Compare4EventCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sMasterRegs.MDIER & HRTIM_MASTER_DMA_MREP) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->RepetitionEventCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#else
     HAL_HRTIM_RepetitionEventCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sMasterRegs.MDIER & HRTIM_MASTER_DMA_SYNC) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->SynchronizationEventCallback(hrtim);
+#else
     HAL_HRTIM_SynchronizationEventCallback(hrtim);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sMasterRegs.MDIER & HRTIM_MASTER_DMA_MUPD) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->RegistersUpdateCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#else
     HAL_HRTIM_RegistersUpdateCallback(hrtim, HRTIM_TIMERINDEX_MASTER);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
 }
 
@@ -7732,79 +8449,139 @@ static void HRTIM_DMAMasterCplt(DMA_HandleTypeDef *hdma)
 static void HRTIM_DMATimerxCplt(DMA_HandleTypeDef *hdma)
 {
   uint8_t timer_idx;
-  
+
   HRTIM_HandleTypeDef * hrtim = (HRTIM_HandleTypeDef *)((DMA_HandleTypeDef* )hdma)->Parent;
-  
+
   timer_idx = GetTimerIdxFromDMAHandle(hdma);
-  
+
   if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_CMP1) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Compare1EventCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_Compare1EventCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_CMP2) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Compare2EventCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_Compare2EventCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_CMP3) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Compare3EventCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_Compare3EventCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_CMP4) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Compare4EventCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_Compare4EventCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_REP) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->RepetitionEventCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_RepetitionEventCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_UPD) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->RegistersUpdateCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_RegistersUpdateCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_CPT1) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Capture1EventCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_Capture1EventCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_CPT2) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Capture2EventCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_Capture2EventCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_SET1) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Output1SetCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_Output1SetCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_RST1) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Output1ResetCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_Output1ResetCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_SET2) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Output2SetCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_Output2SetCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_RST2) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->Output2ResetCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_Output2ResetCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_RST) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->CounterResetCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_CounterResetCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
   else if ((hrtim->Instance->sTimerxRegs[timer_idx].TIMxDIER & HRTIM_TIM_DMA_DLYPRT) != RESET)
   {
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->DelayedProtectionCallback(hrtim, timer_idx);
+#else
     HAL_HRTIM_DelayedProtectionCallback(hrtim, timer_idx);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
   }
 }
 
 /**
-* @brief  DMA error callback 
+* @brief  DMA error callback
 * @param  hdma: pointer to DMA handle.
 * @retval None
 */
 static void HRTIM_DMAError(DMA_HandleTypeDef *hdma)
 {
   HRTIM_HandleTypeDef * hrtim = (HRTIM_HandleTypeDef *)((DMA_HandleTypeDef* )hdma)->Parent;
-  
+
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->ErrorCallback(hrtim);
+#else
   HAL_HRTIM_ErrorCallback(hrtim);
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
 }
 
 /**
@@ -7815,8 +8592,12 @@ static void HRTIM_DMAError(DMA_HandleTypeDef *hdma)
 static void HRTIM_BurstDMACplt(DMA_HandleTypeDef *hdma)
 {
   HRTIM_HandleTypeDef * hrtim = (HRTIM_HandleTypeDef *)((DMA_HandleTypeDef* )hdma)->Parent;
-  
+
+#if (USE_HAL_HRTIM_REGISTER_CALLBACKS == 1)
+    hrtim->BurstDMATransferCallback(hrtim, GetTimerIdxFromDMAHandle(hdma));
+#else
   HAL_HRTIM_BurstDMATransferCallback(hrtim, GetTimerIdxFromDMAHandle(hdma));
+#endif /* USE_HAL_HRTIM_REGISTER_CALLBACKS */
 }
 
 /**

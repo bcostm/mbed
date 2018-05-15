@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_ll_fmc.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of FMC HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */ 
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_LL_FMC_H
-#define __STM32H7xx_LL_FMC_H
+#ifndef STM32H7xx_LL_FMC_H
+#define STM32H7xx_LL_FMC_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -1347,6 +1345,6 @@ uint32_t           FMC_SDRAM_GetModeStatus(FMC_SDRAM_TypeDef *Device, uint32_t B
 }
 #endif
 
-#endif /* __STM32H7xx_LL_FMC_H */
+#endif /* STM32H7xx_LL_FMC_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

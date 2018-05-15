@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_eth.c
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   ETH HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the Ethernet (ETH) peripheral:
@@ -71,7 +69,64 @@
           (##) HAL_ETH_GetDMAConfig(): Get DMA actual configuration into ETH_DMAConfigTypeDef 
           (##) HAL_ETH_SetDMAConfig(): Set DMA configuration based on ETH_DMAConfigTypeDef 
       
-      -@- The PTP protocol offload APIs are  not supported in this driver.
+      -@- The PTP protocol offload APIs are not supported in this driver.
+  
+  *** Callback registration ***
+  =============================================
+
+  The compilation define  USE_HAL_ETH_REGISTER_CALLBACKS when set to 1
+  allows the user to configure dynamically the driver callbacks.
+  Use Function @ref HAL_ETH_RegisterCallback() to register an interrupt callback.
+
+  Function @ref HAL_ETH_RegisterCallback() allows to register following callbacks:
+    (+) TxCpltCallback   : Tx Complete Callback.
+    (+) RxCpltCallback   : Rx Complete Callback.
+    (+) DMAErrorCallback : DMA Error Callback.
+    (+) MACErrorCallback : MAC Error Callback.
+    (+) PMTCallback      : Power Management Callback
+    (+) EEECallback      : EEE Callback.
+    (+) WakeUpCallback   : Wake UP Callback        
+    (+) MspInitCallback  : MspInit Callback.
+    (+) MspDeInitCallback: MspDeInit Callback.
+    
+  This function takes as parameters the HAL peripheral handle, the Callback ID
+  and a pointer to the user callback function.
+
+  Use function @ref HAL_ETH_UnRegisterCallback() to reset a callback to the default
+  weak function.
+  @ref HAL_ETH_UnRegisterCallback takes as parameters the HAL peripheral handle,
+  and the Callback ID.
+  This function allows to reset following callbacks:
+    (+) TxCpltCallback   : Tx Complete Callback.
+    (+) RxCpltCallback   : Rx Complete Callback.
+    (+) DMAErrorCallback : DMA Error Callback.
+    (+) MACErrorCallback : MAC Error Callback.
+    (+) PMTCallback      : Power Management Callback
+    (+) EEECallback      : EEE Callback.
+    (+) WakeUpCallback   : Wake UP Callback        
+    (+) MspInitCallback  : MspInit Callback.
+    (+) MspDeInitCallback: MspDeInit Callback.
+    
+  By default, after the HAL_ETH_Init and when the state is HAL_ETH_STATE_RESET
+  all callbacks are set to the corresponding weak functions:
+  examples @ref HAL_ETH_TxCpltCallback(), @ref HAL_ETH_RxCpltCallback().
+  Exception done for MspInit and MspDeInit functions that are
+  reset to the legacy weak function in the HAL_ETH_Init/ @ref HAL_ETH_DeInit only when
+  these callbacks are null (not registered beforehand).
+  if not, MspInit or MspDeInit are not null, the HAL_ETH_Init/ @ref HAL_ETH_DeInit
+  keep and use the user MspInit/MspDeInit callbacks (registered beforehand)
+
+  Callbacks can be registered/unregistered in HAL_ETH_STATE_READY state only.
+  Exception done MspInit/MspDeInit that can be registered/unregistered
+  in HAL_ETH_STATE_READY or HAL_ETH_STATE_RESET state,
+  thus registered (user) MspInit/DeInit callbacks can be used during the Init/DeInit.
+  In that case first register the MspInit/MspDeInit user callbacks
+  using @ref HAL_ETH_RegisterCallback() before calling @ref HAL_ETH_DeInit
+  or HAL_ETH_Init function.
+
+  When The compilation define USE_HAL_ETH_REGISTER_CALLBACKS is set to 0 or
+  not defined, the callback registration feature is not available and all callbacks
+  are set to the corresponding weak functions.
 
   @endverbatim
   ******************************************************************************
@@ -184,6 +239,10 @@ static void ETH_MACDMAConfig(ETH_HandleTypeDef *heth);
 static void ETH_DMATxDescListInit(ETH_HandleTypeDef *heth);
 static void ETH_DMARxDescListInit(ETH_HandleTypeDef *heth);
 static uint32_t ETH_Prepare_Tx_Descriptors(ETH_HandleTypeDef *heth, ETH_TxPacketConfig *pTxConfig, uint32_t ItMode);
+
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+static void ETH_InitCallbacksToDefault(ETH_HandleTypeDef *heth);
+#endif /* USE_HAL_ETH_REGISTER_CALLBACKS */
 /**
   * @}
   */
@@ -239,12 +298,33 @@ HAL_StatusTypeDef HAL_ETH_Init(ETH_HandleTypeDef *heth)
     return HAL_ERROR;
   }
   
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+
+  if(heth->gState == HAL_ETH_STATE_RESET)
+  {
+    /* Allocate lock resource and initialize it */
+    heth->Lock = HAL_UNLOCKED;
+
+    ETH_InitCallbacksToDefault(heth);
+
+    if(heth->MspInitCallback == NULL)
+    {
+      heth->MspInitCallback = HAL_ETH_MspInit;
+    }
+
+    /* Init the low level hardware */
+    heth->MspInitCallback(heth);
+  }
+
+#else
+  
   /* Check the ETH peripheral state */
   if(heth->gState == HAL_ETH_STATE_RESET)
   {
     /* Init the low level hardware : GPIO, CLOCK, NVIC. */
     HAL_ETH_MspInit(heth);
   }
+#endif /* (USE_HAL_ETH_REGISTER_CALLBACKS) */
   
   heth->gState = HAL_ETH_STATE_BUSY;
   
@@ -338,8 +418,20 @@ HAL_StatusTypeDef HAL_ETH_DeInit(ETH_HandleTypeDef *heth)
   /* Set the ETH peripheral state to BUSY */
   heth->gState = HAL_ETH_STATE_BUSY;
   
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+
+  if(heth->MspDeInitCallback == NULL)
+  {
+    heth->MspDeInitCallback = HAL_ETH_MspDeInit;
+  }
+  /* DeInit the low level hardware */
+  heth->MspDeInitCallback(heth);
+#else
+  
   /* De-Init the low level hardware : GPIO, CLOCK, NVIC. */
   HAL_ETH_MspDeInit(heth);
+  
+#endif /* (USE_HAL_ETH_REGISTER_CALLBACKS) */
   
   /* Set ETH HAL state to Disabled */
   heth->gState= HAL_ETH_STATE_RESET;
@@ -377,6 +469,228 @@ __weak void HAL_ETH_MspDeInit(ETH_HandleTypeDef *heth)
   the HAL_ETH_MspDeInit could be implemented in the user file
   */
 }
+
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+/**
+  * @brief  Register a User ETH Callback
+  *         To be used instead of the weak predefined callback
+  * @param heth eth handle
+  * @param CallbackID ID of the callback to be registered
+  *        This parameter can be one of the following values:
+  *          @arg @ref HAL_ETH_TX_COMPLETE_CB_ID Tx Complete Callback ID
+  *          @arg @ref HAL_ETH_RX_COMPLETE_CB_ID Rx Complete Callback ID
+  *          @arg @ref HAL_ETH_DMA_ERROR_CB_ID   DMA Error Callback ID
+  *          @arg @ref HAL_ETH_MAC_ERROR_CB_ID   MAC Error Callback ID
+  *          @arg @ref HAL_ETH_PMT_CB_ID         Power Management Callback ID
+  *          @arg @ref HAL_ETH_EEE_CB_ID         EEE Callback ID
+  *          @arg @ref HAL_ETH_WAKEUP_CB_ID      Wake UP Callback ID
+  *          @arg @ref HAL_ETH_MSPINIT_CB_ID     MspInit callback ID
+  *          @arg @ref HAL_ETH_MSPDEINIT_CB_ID   MspDeInit callback ID
+  * @param pCallback pointer to the Callback function
+  * @retval status
+  */
+HAL_StatusTypeDef HAL_ETH_RegisterCallback(ETH_HandleTypeDef *heth, HAL_ETH_CallbackIDTypeDef CallbackID, pETH_CallbackTypeDef pCallback)
+{
+  HAL_StatusTypeDef status = HAL_OK;
+
+  if(pCallback == NULL)
+  {
+    /* Update the error code */
+    heth->ErrorCode |= HAL_ETH_ERROR_INVALID_CALLBACK;
+
+    return HAL_ERROR;
+  }
+  /* Process locked */
+  __HAL_LOCK(heth);
+
+  if(heth->gState == HAL_ETH_STATE_READY)
+  {
+    switch (CallbackID)
+    {
+    case HAL_ETH_TX_COMPLETE_CB_ID :
+      heth->TxCpltCallback = pCallback;
+      break;
+
+    case HAL_ETH_RX_COMPLETE_CB_ID :
+      heth->RxCpltCallback = pCallback;
+      break;
+
+    case HAL_ETH_DMA_ERROR_CB_ID :
+      heth->DMAErrorCallback = pCallback;
+      break;
+
+    case HAL_ETH_MAC_ERROR_CB_ID :
+      heth->MACErrorCallback = pCallback;
+      break;
+
+    case HAL_ETH_PMT_CB_ID :
+      heth->PMTCallback = pCallback;
+      break;
+      
+    case HAL_ETH_EEE_CB_ID :
+      heth->EEECallback = pCallback;
+      break;
+      
+    case HAL_ETH_WAKEUP_CB_ID :
+      heth->WakeUpCallback = pCallback;
+      break;
+
+    case HAL_ETH_MSPINIT_CB_ID :
+      heth->MspInitCallback = pCallback;
+      break;
+
+   case HAL_ETH_MSPDEINIT_CB_ID :
+      heth->MspDeInitCallback = pCallback;
+      break;
+
+    default :
+      /* Update the error code */
+      heth->ErrorCode |= HAL_ETH_ERROR_INVALID_CALLBACK;
+      /* Return error status */
+      status =  HAL_ERROR;
+      break;
+    }
+  }
+  else if(heth->gState == HAL_ETH_STATE_RESET)
+  {
+    switch (CallbackID)
+    {
+    case HAL_ETH_MSPINIT_CB_ID :
+      heth->MspInitCallback = pCallback;
+      break;
+
+   case HAL_ETH_MSPDEINIT_CB_ID :
+      heth->MspDeInitCallback = pCallback;
+      break;
+
+    default :
+      /* Update the error code */
+      heth->ErrorCode |= HAL_ETH_ERROR_INVALID_CALLBACK;
+     /* Return error status */
+      status =  HAL_ERROR;
+      break;
+    }
+  }
+  else
+  {
+    /* Update the error code */
+    heth->ErrorCode |= HAL_ETH_ERROR_INVALID_CALLBACK;
+    /* Return error status */
+    status =  HAL_ERROR;
+  }
+
+  /* Release Lock */
+  __HAL_UNLOCK(heth);
+
+  return status;
+}
+
+/**
+  * @brief  Unregister an ETH Callback
+  *         ETH callabck is redirected to the weak predefined callback
+  * @param heth eth handle
+  * @param CallbackID ID of the callback to be unregistered
+  *        This parameter can be one of the following values:
+  *          @arg @ref HAL_ETH_TX_COMPLETE_CB_ID Tx Complete Callback ID
+  *          @arg @ref HAL_ETH_RX_COMPLETE_CB_ID Rx Complete Callback ID
+  *          @arg @ref HAL_ETH_DMA_ERROR_CB_ID   DMA Error Callback ID
+  *          @arg @ref HAL_ETH_MAC_ERROR_CB_ID   MAC Error Callback ID
+  *          @arg @ref HAL_ETH_PMT_CB_ID         Power Management Callback ID
+  *          @arg @ref HAL_ETH_EEE_CB_ID         EEE Callback ID
+  *          @arg @ref HAL_ETH_WAKEUP_CB_ID      Wake UP Callback ID
+  *          @arg @ref HAL_ETH_MSPINIT_CB_ID     MspInit callback ID
+  *          @arg @ref HAL_ETH_MSPDEINIT_CB_ID   MspDeInit callback ID
+  * @retval status
+  */
+HAL_StatusTypeDef HAL_ETH_UnRegisterCallback(ETH_HandleTypeDef *heth, HAL_ETH_CallbackIDTypeDef CallbackID)
+{
+  HAL_StatusTypeDef status = HAL_OK;
+
+  /* Process locked */
+  __HAL_LOCK(heth);
+
+  if(heth->gState == HAL_ETH_STATE_READY)
+  {
+    switch (CallbackID)
+    {
+    case HAL_ETH_TX_COMPLETE_CB_ID :
+      heth->TxCpltCallback = HAL_ETH_TxCpltCallback;
+      break;
+
+    case HAL_ETH_RX_COMPLETE_CB_ID :
+      heth->RxCpltCallback = HAL_ETH_RxCpltCallback;
+      break;
+
+    case HAL_ETH_DMA_ERROR_CB_ID :
+      heth->DMAErrorCallback = HAL_ETH_DMAErrorCallback;
+      break;
+
+    case HAL_ETH_MAC_ERROR_CB_ID :
+      heth->MACErrorCallback = HAL_ETH_MACErrorCallback;
+      break;
+
+    case HAL_ETH_PMT_CB_ID :
+      heth->PMTCallback = HAL_ETH_PMTCallback;
+      break;
+      
+    case HAL_ETH_EEE_CB_ID :
+      heth->EEECallback = HAL_ETH_EEECallback;
+      break;
+      
+    case HAL_ETH_WAKEUP_CB_ID :
+      heth->WakeUpCallback = HAL_ETH_WakeUpCallback;
+      break;
+
+    case HAL_ETH_MSPINIT_CB_ID :
+      heth->MspInitCallback = HAL_ETH_MspInit;
+      break;
+
+   case HAL_ETH_MSPDEINIT_CB_ID :
+      heth->MspDeInitCallback = HAL_ETH_MspDeInit;
+      break;
+
+    default :
+      /* Update the error code */
+      heth->ErrorCode |= HAL_ETH_ERROR_INVALID_CALLBACK;
+     /* Return error status */
+      status =  HAL_ERROR;
+      break;
+    }
+  }
+  else if(heth->gState == HAL_ETH_STATE_RESET)
+  {
+    switch (CallbackID)
+    {
+    case HAL_ETH_MSPINIT_CB_ID :
+      heth->MspInitCallback = HAL_ETH_MspInit;
+      break;
+
+   case HAL_ETH_MSPDEINIT_CB_ID :
+      heth->MspDeInitCallback = HAL_ETH_MspDeInit;
+      break;
+
+    default :
+      /* Update the error code */
+      heth->ErrorCode |= HAL_ETH_ERROR_INVALID_CALLBACK;
+     /* Return error status */
+      status =  HAL_ERROR;
+      break;
+    }
+  }
+  else
+  {
+    /* Update the error code */
+    heth->ErrorCode |= HAL_ETH_ERROR_INVALID_CALLBACK;
+    /* Return error status */
+    status =  HAL_ERROR;
+  }
+
+  /* Release Lock */
+  __HAL_UNLOCK(heth);
+
+  return status;
+}
+#endif /* USE_HAL_ETH_REGISTER_CALLBACKS */
 
 /**
   * @brief  Assign memory buffers to a DMA Rx descriptor 
@@ -882,6 +1196,12 @@ uint8_t HAL_ETH_IsRxDataAvailable(ETH_HandleTypeDef *heth)
 
 /**
   * @brief  This function gets the buffer address of last received Packet.
+  * @note   Please insure to allocate the RxBuffer structure before calling this function
+  *         how to use example:
+  *           HAL_ETH_GetRxDataLength(heth, &Length);
+  *           BuffersNbr = (Length / heth->Init.RxBuffLen) + 1;
+  *           RxBuffer = (ETH_BufferTypeDef *)malloc(BuffersNbr * sizeof(ETH_BufferTypeDef));
+  *           HAL_ETH_GetRxDataBuffer(heth, RxBuffer);
   * @param  heth: pointer to a ETH_HandleTypeDef structure that contains
   *         the configuration information for ETHERNET module
   * @param  RxBuffer: Pointer to a ETH_BufferTypeDef structure
@@ -895,6 +1215,12 @@ HAL_StatusTypeDef HAL_ETH_GetRxDataBuffer(ETH_HandleTypeDef *heth, ETH_BufferTyp
   __IO const ETH_DMADescTypeDef *dmarxdesc = (ETH_DMADescTypeDef *)dmarxdesclist->RxDesc[descidx];
   ETH_BufferTypeDef *rxbuff = RxBuffer;
   
+  if(rxbuff == NULL)
+  {
+    heth->ErrorCode = HAL_ETH_ERROR_PARAM;
+    return HAL_ERROR;
+  }
+  
   if(dmarxdesclist->AppDescNbr ==0)
   {
     if(HAL_ETH_IsRxDataAvailable(heth) == 0)
@@ -907,32 +1233,22 @@ HAL_StatusTypeDef HAL_ETH_GetRxDataBuffer(ETH_HandleTypeDef *heth, ETH_BufferTyp
   /* Get intermediate descriptors buffers: in case of the Packet is splitted into multi descriptors */
   for(index = 0; index < (dmarxdesclist->AppDescNbr - 1); index++)
   {    
-    /* Both rx descriptor buffers are valid */
+    /* Get Address and length of the first buffer address */
+    rxbuff->buffer = (uint8_t *) dmarxdesc->BackupAddr0;
+    rxbuff->len =  heth->Init.RxBuffLen;    
+    
+    /* Check if the second buffer address of this descriptor is valid */
     if(dmarxdesc->BackupAddr1 != 0)
-    {
-      if(rxbuff == NULL)
-      {
-        return HAL_ERROR;
-      }
-      
-      rxbuff->buffer = (uint8_t *) dmarxdesc->BackupAddr0;
-      rxbuff->len = heth->Init.RxBuffLen;
-      
+    {      
+      /* Point to next buffer */
       rxbuff = (struct __ETH_BufferTypeDef *)rxbuff->next;
-      
-      if(rxbuff == NULL)
-      {
-        return HAL_ERROR;
-      }
-      
+      /* Get Address and length of the second buffer address */
       rxbuff->buffer = (uint8_t *) dmarxdesc->BackupAddr1;
       rxbuff->len =  heth->Init.RxBuffLen;      
     }
-    /* Only buffer 1 address is valid */
     else
     {
-      rxbuff->buffer = (uint8_t *) dmarxdesc->BackupAddr0;
-      rxbuff->len =  heth->Init.RxBuffLen;      
+      /* Nothing to do here */      
     }
     
     /* get total length until this descriptor */
@@ -946,34 +1262,25 @@ HAL_StatusTypeDef HAL_ETH_GetRxDataBuffer(ETH_HandleTypeDef *heth, ETH_BufferTyp
     rxbuff = (struct __ETH_BufferTypeDef *)rxbuff->next; 
   }
   
-  /* Get last descriptor buffers */
-  if(rxbuff == NULL)
-  {
-    return HAL_ERROR;
-  }
-  
   /* last descriptor data length */
   lastdesclen = READ_BIT(dmarxdesc->DESC3, ETH_DMARXNDESCWBF_PL) - accumulatedlen;
+  
+  /* Get Address of the first buffer address */
+  rxbuff->buffer = (uint8_t *) dmarxdesc->BackupAddr0;
   
   /* data is in only one buffer */
   if(lastdesclen <= heth->Init.RxBuffLen)
   {
-    rxbuff->buffer = (uint8_t *) dmarxdesc->BackupAddr0;
     rxbuff->len = lastdesclen; 
   }
   /* data is in two buffers */
   else if(dmarxdesc->BackupAddr1 != 0)
   {
-    rxbuff->buffer = (uint8_t *) dmarxdesc->BackupAddr0;
+    /* Get the Length of the first buffer address */
     rxbuff->len = heth->Init.RxBuffLen; 
-    
+    /* Point to next buffer */
     rxbuff = (struct __ETH_BufferTypeDef *)rxbuff->next;
-    
-    if(rxbuff == NULL)
-    {
-      return HAL_ERROR;
-    }
-    
+    /* Get the Address the Length of the second buffer address */
     rxbuff->buffer = (uint8_t *) dmarxdesc->BackupAddr1;
     rxbuff->len =  lastdesclen - (heth->Init.RxBuffLen);  
   }
@@ -1170,8 +1477,13 @@ void HAL_ETH_IRQHandler(ETH_HandleTypeDef *heth)
       /* Call this function to update handle fields */
       if(HAL_ETH_IsRxDataAvailable(heth) == 1)
       {
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+        /*Call registered Receive complete callback*/
+        heth->RxCpltCallback(heth);
+#else
         /* Receive complete callback */
         HAL_ETH_RxCpltCallback(heth);
+#endif  /* USE_HAL_ETH_REGISTER_CALLBACKS */
       }
       
       /* Clear the Eth DMA Rx IT pending bits */
@@ -1183,9 +1495,14 @@ void HAL_ETH_IRQHandler(ETH_HandleTypeDef *heth)
   if (__HAL_ETH_DMA_GET_IT(heth, ETH_DMACSR_TI))
   {
     if(__HAL_ETH_DMA_GET_IT_SOURCE(heth, ETH_DMACIER_TIE)) 
-    {    
+    {
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+        /*Call registered Transmit complete callback*/
+        heth->TxCpltCallback(heth);
+#else    
       /* Transfer complete callback */
       HAL_ETH_TxCpltCallback(heth);
+#endif  /* USE_HAL_ETH_REGISTER_CALLBACKS */
       
       /* Clear the Eth DMA Tx IT pending bits */
       __HAL_ETH_DMA_CLEAR_IT(heth, ETH_DMACSR_TI | ETH_DMACSR_NIS);
@@ -1222,9 +1539,14 @@ void HAL_ETH_IRQHandler(ETH_HandleTypeDef *heth)
         __HAL_ETH_DMA_CLEAR_IT(heth, (ETH_DMACSR_CDE | ETH_DMACSR_ETI | ETH_DMACSR_RWT |
                                     ETH_DMACSR_RBU | ETH_DMACSR_AIS));
       }
-    
-      /* Ethernet Error callback */
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+      /* Call registered DMA Error callback*/
+      heth->DMAErrorCallback(heth);
+#else 
+      /* Ethernet DMA Error callback */
       HAL_ETH_DMAErrorCallback(heth);
+#endif  /* USE_HAL_ETH_REGISTER_CALLBACKS */
+
     }
   }
   
@@ -1235,9 +1557,14 @@ void HAL_ETH_IRQHandler(ETH_HandleTypeDef *heth)
     heth->MACErrorCode = READ_REG(heth->Instance->MACRXTXSR);
     
     heth->gState = HAL_ETH_STATE_ERROR;
-    
-    /* Ethernet PMT callback */
+
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+    /* Call registered MAC Error callback*/
+    heth->DMAErrorCallback(heth);
+#else    
+    /* Ethernet MAC Error callback */
     HAL_ETH_MACErrorCallback(heth);
+#endif  /* USE_HAL_ETH_REGISTER_CALLBACKS */
     
     heth->MACErrorCode = (uint32_t)(0x0U);
   } 
@@ -1247,9 +1574,14 @@ void HAL_ETH_IRQHandler(ETH_HandleTypeDef *heth)
   {
     /* Get MAC Wake-up source and clear the status register pending bit */
     heth->MACWakeUpEvent = READ_BIT(heth->Instance->MACPCSR, (ETH_MACPCSR_RWKPRCVD | ETH_MACPCSR_MGKPRCVD));
-    
+
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+    /* Call registered PMT callback*/
+    heth->PMTCallback(heth);
+#else    
     /* Ethernet PMT callback */
     HAL_ETH_PMTCallback(heth);
+#endif  /* USE_HAL_ETH_REGISTER_CALLBACKS */
     
     heth->MACWakeUpEvent = (uint32_t)(0x0U);
   }
@@ -1259,21 +1591,66 @@ void HAL_ETH_IRQHandler(ETH_HandleTypeDef *heth)
   {
     /* Get MAC LPI interrupt source and clear the status register pending bit */
     heth->MACLPIEvent = READ_BIT(heth->Instance->MACPCSR, 0x0000000FU);
-    
+
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+    /* Call registered EEE callback*/
+    heth->EEECallback(heth);
+#else    
     /* Ethernet EEE callback */
     HAL_ETH_EEECallback(heth);
+#endif  /* USE_HAL_ETH_REGISTER_CALLBACKS */
     
     heth->MACLPIEvent = (uint32_t)(0x0U);
   }
-
+  
+#if defined(DUAL_CORE)
+  if (HAL_GetCurrentCPUID() == CM7_CPUID)
+  {
+    /* check ETH WAKEUP exti flag */
+    if(__HAL_ETH_WAKEUP_EXTI_GET_FLAG(ETH_WAKEUP_EXTI_LINE) != RESET)
+    {
+      /* Clear ETH WAKEUP Exti pending bit */
+      __HAL_ETH_WAKEUP_EXTI_CLEAR_FLAG(ETH_WAKEUP_EXTI_LINE);
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+      /* Call registered WakeUp callback*/
+      heth->WakeUpCallback(heth);
+#else
+      /* ETH WAKEUP callback */
+      HAL_ETH_WakeUpCallback(heth);
+#endif
+    }
+  }
+  else
+  {
+    /* check ETH WAKEUP exti flag */
+    if(__HAL_ETH_WAKEUP_EXTID2_GET_FLAG(ETH_WAKEUP_EXTI_LINE) != RESET)
+    {
+      /* Clear ETH WAKEUP Exti pending bit */
+      __HAL_ETH_WAKEUP_EXTID2_CLEAR_FLAG(ETH_WAKEUP_EXTI_LINE);
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+      /* Call registered WakeUp callback*/
+      heth->WakeUpCallback(heth);
+#else
+      /* ETH WAKEUP callback */
+      HAL_ETH_WakeUpCallback(heth);
+#endif
+    }
+  }
+#else
   /* check ETH WAKEUP exti flag */
   if(__HAL_ETH_WAKEUP_EXTI_GET_FLAG(ETH_WAKEUP_EXTI_LINE) != RESET)
   {
     /* Clear ETH WAKEUP Exti pending bit */
     __HAL_ETH_WAKEUP_EXTI_CLEAR_FLAG(ETH_WAKEUP_EXTI_LINE);
-    /* ETH WAKEUP interrupt user callback */
-    HAL_ETH_WakeUpCallback(heth);
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+      /* Call registered WakeUp callback*/
+      heth->WakeUpCallback(heth);
+#else
+      /* ETH WAKEUP callback */
+      HAL_ETH_WakeUpCallback(heth);
+#endif
   }
+#endif
 }
 
 /**
@@ -2590,6 +2967,20 @@ static uint32_t ETH_Prepare_Tx_Descriptors(ETH_HandleTypeDef *heth, ETH_TxPacket
   /* Return function status */
   return HAL_ETH_ERROR_NONE;
 }
+
+#if (USE_HAL_ETH_REGISTER_CALLBACKS == 1)
+static void ETH_InitCallbacksToDefault(ETH_HandleTypeDef *heth)
+{
+  /* Init the ETH Callback settings */
+  heth->TxCpltCallback   = HAL_ETH_TxCpltCallback;    /* Legacy weak TxCpltCallback   */
+  heth->RxCpltCallback   = HAL_ETH_RxCpltCallback;    /* Legacy weak RxCpltCallback   */
+  heth->DMAErrorCallback = HAL_ETH_DMAErrorCallback;  /* Legacy weak DMAErrorCallback */
+  heth->MACErrorCallback = HAL_ETH_MACErrorCallback;  /* Legacy weak MACErrorCallback */
+  heth->PMTCallback      = HAL_ETH_PMTCallback;       /* Legacy weak PMTCallback      */
+  heth->EEECallback      = HAL_ETH_EEECallback;       /* Legacy weak EEECallback      */
+  heth->WakeUpCallback   = HAL_ETH_WakeUpCallback;    /* Legacy weak WakeUpCallback   */ 
+}
+#endif /* USE_HAL_ETH_REGISTER_CALLBACKS */
 
 #endif /* HAL_ETH_MODULE_ENABLED */
 /**

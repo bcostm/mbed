@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_dma_ex.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of DMA HAL extension module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_DMA_EX_H
-#define __STM32H7xx_HAL_DMA_EX_H
+#ifndef STM32H7xx_HAL_DMA_EX_H
+#define STM32H7xx_HAL_DMA_EX_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -319,6 +317,6 @@ void HAL_DMAEx_MUX_IRQHandler(DMA_HandleTypeDef *hdma);
 }
 #endif
 
-#endif /* __STM32H7xx_HAL_DMA_H */
+#endif /* STM32H7xx_HAL_DMA_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
