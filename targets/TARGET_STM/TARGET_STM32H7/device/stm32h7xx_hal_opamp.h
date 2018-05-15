@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_opamp.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of OPAMP HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_OPAMP_H
-#define __STM32H7xx_HAL_OPAMP_H
+#ifndef STM32H7xx_HAL_OPAMP_H
+#define STM32H7xx_HAL_OPAMP_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -141,7 +139,7 @@ typedef enum
 /** 
   * @brief OPAMP Handle Structure definition
   */ 
-typedef struct
+typedef struct __OPAMP_HandleTypeDef
 {
   OPAMP_TypeDef                 *Instance;                    /*!< OPAMP instance's registers base address   */
   OPAMP_InitTypeDef              Init;                         /*!< OPAMP required parameters */
@@ -149,6 +147,10 @@ typedef struct
   HAL_LockTypeDef                Lock;                         /*!< Locking object          */
   __IO HAL_OPAMP_StateTypeDef    State;                        /*!< OPAMP communication state */
   
+#if (USE_HAL_OPAMP_REGISTER_CALLBACKS == 1)
+void (* MspInitCallback)                (struct __OPAMP_HandleTypeDef *hopamp);
+void (* MspDeInitCallback)              (struct __OPAMP_HandleTypeDef *hopamp); 
+#endif /* USE_HAL_OPAMP_REGISTER_CALLBACKS */ 
 } OPAMP_HandleTypeDef;
 
 /** 
@@ -161,8 +163,25 @@ typedef  uint32_t HAL_OPAMP_TrimmingValueTypeDef;
   * @}
   */
 
-/* Exported constants --------------------------------------------------------*/
+#if (USE_HAL_OPAMP_REGISTER_CALLBACKS == 1)
+/**
+  * @brief  HAL OPAMP Callback ID enumeration definition
+  */
+typedef enum
+{
+  HAL_OPAMP_MSP_INIT_CB_ID                     = 0x01U,  /*!< OPAMP MspInit Callback ID           */
+  HAL_OPAMP_MSP_DEINIT_CB_ID                   = 0x02U,  /*!< OPAMP MspDeInit Callback ID         */
+  HAL_OPAMP_ALL_CB_ID                          = 0x03U   /*!< OPAMP All ID                        */
+}HAL_OPAMP_CallbackIDTypeDef;                            
 
+/**
+  * @brief  HAL OPAMP Callback pointer definition
+  */
+typedef void (*pOPAMP_CallbackTypeDef)(OPAMP_HandleTypeDef *hopamp);
+#endif /* USE_HAL_OPAMP_REGISTER_CALLBACKS */
+    
+    
+/* Exported constants --------------------------------------------------------*/
 /** @defgroup OPAMP_Exported_Constants OPAMP Exported Constants
   * @{
   */      
@@ -400,6 +419,11 @@ HAL_StatusTypeDef HAL_OPAMP_SelfCalibrate(OPAMP_HandleTypeDef *hopamp);
   */
 
 /* Peripheral Control functions  ************************************************/
+#if (USE_HAL_OPAMP_REGISTER_CALLBACKS == 1)
+/* OPAMP callback registering/unregistering */
+HAL_StatusTypeDef HAL_OPAMP_RegisterCallback (OPAMP_HandleTypeDef *hopamp, HAL_OPAMP_CallbackIDTypeDef CallbackId, pOPAMP_CallbackTypeDef pCallback);
+HAL_StatusTypeDef HAL_OPAMP_UnRegisterCallback (OPAMP_HandleTypeDef *hopamp, HAL_OPAMP_CallbackIDTypeDef CallbackId);
+#endif /* USE_HAL_OPAMP_REGISTER_CALLBACKS */
 HAL_StatusTypeDef HAL_OPAMP_Lock(OPAMP_HandleTypeDef *hopamp); 
 HAL_OPAMP_TrimmingValueTypeDef HAL_OPAMP_GetTrimOffset (OPAMP_HandleTypeDef *hopamp, uint32_t trimmingoffset);
 
@@ -434,6 +458,6 @@ HAL_OPAMP_StateTypeDef HAL_OPAMP_GetState(OPAMP_HandleTypeDef *hopamp);
 }
 #endif
 
-#endif /* __STM32H7xx_HAL_OPAMP_H */
+#endif /* STM32H7xx_HAL_OPAMP_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

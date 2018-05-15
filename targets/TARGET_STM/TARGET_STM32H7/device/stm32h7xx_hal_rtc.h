@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_rtc.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of RTC HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_RTC_H
-#define __STM32H7xx_HAL_RTC_H
+#ifndef STM32H7xx_HAL_RTC_H
+#define STM32H7xx_HAL_RTC_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -179,9 +177,9 @@ typedef struct
 }RTC_AlarmTypeDef;
 
 /** 
-  * @brief  Time Handle Structure definition
+  * @brief  RTC Handle Structure definition
   */
-typedef struct
+typedef struct __RTC_HandleTypeDef
 {
   RTC_TypeDef               *Instance;  /*!< Register base address    */
 
@@ -191,7 +189,51 @@ typedef struct
 
   __IO HAL_RTCStateTypeDef  State;      /*!< Time communication state */
 
+#if (USE_HAL_RTC_REGISTER_CALLBACKS == 1)
+  void  (* AlarmAEventCallback)      ( struct __RTC_HandleTypeDef * hrtc);  /*!< RTC Alarm A Event callback         */
+
+  void  (* AlarmBEventCallback)      ( struct __RTC_HandleTypeDef * hrtc);  /*!< RTC Alarm B Event callback         */
+
+  void  (* TimeStampEventCallback)   ( struct __RTC_HandleTypeDef * hrtc);  /*!< RTC TimeStamp Event callback       */
+
+  void  (* WakeUpTimerEventCallback) ( struct __RTC_HandleTypeDef * hrtc);  /*!< RTC WakeUpTimer Event callback     */
+
+  void  (* Tamper1EventCallback)     ( struct __RTC_HandleTypeDef * hrtc);  /*!< RTC Tamper 1 Event callback        */
+
+  void  (* Tamper2EventCallback)     ( struct __RTC_HandleTypeDef * hrtc);  /*!< RTC Tamper 2 Event callback        */
+
+  void  (* Tamper3EventCallback)     ( struct __RTC_HandleTypeDef * hrtc);  /*!< RTC Tamper 3 Event callback        */
+
+  void  (* MspInitCallback)         ( struct __RTC_HandleTypeDef * hrtc);   /*!< RTC Msp Init callback              */
+
+  void  (* MspDeInitCallback)       ( struct __RTC_HandleTypeDef * hrtc);   /*!< RTC Msp DeInit callback            */
+
+#endif /* (USE_HAL_RTC_REGISTER_CALLBACKS) */
+
 }RTC_HandleTypeDef;
+
+#if (USE_HAL_RTC_REGISTER_CALLBACKS == 1)
+/**
+  * @brief  HAL RTC Callback ID enumeration definition
+  */
+typedef enum
+{
+  HAL_RTC_ALARM_A_EVENT_CB_ID           = 0x00U,    /*!< RTC Alarm A Event Callback ID      */
+  HAL_RTC_ALARM_B_EVENT_CB_ID           = 0x01U,    /*!< RTC Alarm B Event Callback ID      */
+  HAL_RTC_TIMESTAMP_EVENT_CB_ID         = 0x02U,    /*!< RTC TimeStamp Event Callback ID    */
+  HAL_RTC_WAKEUPTIMER_EVENT_CB_ID       = 0x03U,    /*!< RTC WakeUp Timer Event Callback ID */
+  HAL_RTC_TAMPER1_EVENT_CB_ID           = 0x04U,    /*!< RTC Tamper 1 Callback ID           */
+  HAL_RTC_TAMPER2_EVENT_CB_ID           = 0x05U,    /*!< RTC Tamper 2 Callback ID           */
+  HAL_RTC_TAMPER3_EVENT_CB_ID           = 0x06U,    /*!< RTC Tamper 3 Callback ID           */
+  HAL_RTC_MSPINIT_CB_ID                 = 0x0EU,    /*!< RTC Msp Init callback ID           */
+  HAL_RTC_MSPDEINIT_CB_ID               = 0x0FU     /*!< RTC Msp DeInit callback ID         */
+}HAL_RTC_CallbackIDTypeDef;
+
+/**
+  * @brief  HAL RTC Callback pointer definition
+  */
+typedef  void (*pRTC_CallbackTypeDef)(RTC_HandleTypeDef * hrtc); /*!< pointer to an RTC callback function */
+#endif /* USE_HAL_RTC_REGISTER_CALLBACKS */
 
 /**
   * @}
@@ -269,8 +311,8 @@ typedef struct
 /** @defgroup RTC_Input_parameter_format_definitions RTC Input Parameter Format Definitions
   * @{
   */
-#define RTC_FORMAT_BIN                  ((uint32_t)0x00000000)
-#define RTC_FORMAT_BCD                  ((uint32_t)0x00000001)
+#define RTC_FORMAT_BIN                  ((uint32_t)0x000000000)
+#define RTC_FORMAT_BCD                  ((uint32_t)0x000000001)
 /**
   * @}
   */
@@ -431,14 +473,22 @@ typedef struct
   */
 
 /** @brief Reset RTC handle state
-  * @param  __HANDLE__: RTC handle.
+  * @param  __HANDLE__ RTC handle.
   * @retval None
   */
+#if (USE_HAL_RTC_REGISTER_CALLBACKS == 1)
+#define __HAL_RTC_RESET_HANDLE_STATE(__HANDLE__) do{\
+                                                      (__HANDLE__)->State = HAL_RTC_STATE_RESET;\
+                                                      (__HANDLE__)->MspInitCallback = NULL;\
+                                                      (__HANDLE__)->MspDeInitCallback = NULL;\
+                                                     }while(0)
+#else
 #define __HAL_RTC_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_RTC_STATE_RESET)
+#endif /* USE_HAL_RTC_REGISTER_CALLBACKS */
 
 /**
   * @brief  Disable the write protection for RTC registers.
-  * @param  __HANDLE__: specifies the RTC handle.
+  * @param  __HANDLE__ specifies the RTC handle.
   * @retval None
   */
 #define __HAL_RTC_WRITEPROTECTION_DISABLE(__HANDLE__)             \
@@ -449,7 +499,7 @@ typedef struct
 
 /**
   * @brief  Enable the write protection for RTC registers.
-  * @param  __HANDLE__: specifies the RTC handle.
+  * @param  __HANDLE__ specifies the RTC handle.
   * @retval None
   */
 #define __HAL_RTC_WRITEPROTECTION_ENABLE(__HANDLE__)              \
@@ -460,36 +510,36 @@ typedef struct
 
 /**
   * @brief  Enable the RTC ALARMA peripheral.
-  * @param  __HANDLE__: specifies the RTC handle.
+  * @param  __HANDLE__ specifies the RTC handle.
   * @retval None
   */
 #define __HAL_RTC_ALARMA_ENABLE(__HANDLE__)                          ((__HANDLE__)->Instance->CR |= (RTC_CR_ALRAE))
 
 /**
   * @brief  Disable the RTC ALARMA peripheral.
-  * @param  __HANDLE__: specifies the RTC handle.
+  * @param  __HANDLE__ specifies the RTC handle.
   * @retval None
   */
 #define __HAL_RTC_ALARMA_DISABLE(__HANDLE__)                         ((__HANDLE__)->Instance->CR &= ~(RTC_CR_ALRAE))
 
 /**
   * @brief  Enable the RTC ALARMB peripheral.
-  * @param  __HANDLE__: specifies the RTC handle.
+  * @param  __HANDLE__ specifies the RTC handle.
   * @retval None
   */
 #define __HAL_RTC_ALARMB_ENABLE(__HANDLE__)                          ((__HANDLE__)->Instance->CR |= (RTC_CR_ALRBE))
 
 /**
   * @brief  Disable the RTC ALARMB peripheral.
-  * @param  __HANDLE__: specifies the RTC handle.
+  * @param  __HANDLE__ specifies the RTC handle.
   * @retval None
   */
 #define __HAL_RTC_ALARMB_DISABLE(__HANDLE__)                         ((__HANDLE__)->Instance->CR &= ~(RTC_CR_ALRBE))
 
 /**
   * @brief  Enable the RTC Alarm interrupt.
-  * @param  __HANDLE__: specifies the RTC handle.
-  * @param  __INTERRUPT__: specifies the RTC Alarm interrupt sources to be enabled or disabled.
+  * @param  __HANDLE__ specifies the RTC handle.
+  * @param  __INTERRUPT__ specifies the RTC Alarm interrupt sources to be enabled or disabled.
   *          This parameter can be any combination of the following values:
   *             @arg RTC_IT_ALRA: Alarm A interrupt
   *             @arg RTC_IT_ALRB: Alarm B interrupt
@@ -499,8 +549,8 @@ typedef struct
 
 /**
   * @brief  Disable the RTC Alarm interrupt.
-  * @param  __HANDLE__: specifies the RTC handle.
-  * @param  __INTERRUPT__: specifies the RTC Alarm interrupt sources to be enabled or disabled.
+  * @param  __HANDLE__ specifies the RTC handle.
+  * @param  __INTERRUPT__ specifies the RTC Alarm interrupt sources to be enabled or disabled.
   *         This parameter can be any combination of the following values:
   *            @arg RTC_IT_ALRA: Alarm A interrupt
   *            @arg RTC_IT_ALRB: Alarm B interrupt
@@ -510,8 +560,8 @@ typedef struct
 
 /**
   * @brief  Check whether the specified RTC Alarm interrupt has occurred or not.
-  * @param  __HANDLE__: specifies the RTC handle.
-  * @param  __INTERRUPT__: specifies the RTC Alarm interrupt sources to check.
+  * @param  __HANDLE__ specifies the RTC handle.
+  * @param  __INTERRUPT__ specifies the RTC Alarm interrupt sources to check.
   *         This parameter can be:
   *            @arg RTC_IT_ALRA: Alarm A interrupt
   *            @arg RTC_IT_ALRB: Alarm B interrupt
@@ -521,8 +571,8 @@ typedef struct
 
 /**
   * @brief  Get the selected RTC Alarm's flag status.
-  * @param  __HANDLE__: specifies the RTC handle.
-  * @param  __FLAG__: specifies the RTC Alarm Flag sources to check.
+  * @param  __HANDLE__ specifies the RTC handle.
+  * @param  __FLAG__ specifies the RTC Alarm Flag sources to check.
   *         This parameter can be:
   *            @arg RTC_FLAG_ALRAF
   *            @arg RTC_FLAG_ALRBF
@@ -534,8 +584,8 @@ typedef struct
 
 /**
   * @brief  Clear the RTC Alarm's pending flags.
-  * @param  __HANDLE__: specifies the RTC handle.
-  * @param  __FLAG__: specifies the RTC Alarm Flag sources to clear.
+  * @param  __HANDLE__ specifies the RTC handle.
+  * @param  __FLAG__ specifies the RTC Alarm Flag sources to clear.
   *          This parameter can be:
   *             @arg RTC_FLAG_ALRAF
   *             @arg RTC_FLAG_ALRBF
@@ -545,8 +595,8 @@ typedef struct
 
 /**
   * @brief  Check whether the specified RTC Alarm interrupt is enabled or not.
-  * @param  __HANDLE__: specifies the RTC handle.
-  * @param  __INTERRUPT__: specifies the RTC Alarm interrupt sources to check.
+  * @param  __HANDLE__ specifies the RTC handle.
+  * @param  __INTERRUPT__ specifies the RTC Alarm interrupt sources to check.
   *         This parameter can be:
   *            @arg RTC_IT_ALRA: Alarm A interrupt
   *            @arg RTC_IT_ALRB: Alarm B interrupt
@@ -578,6 +628,32 @@ typedef struct
   */
 #define __HAL_RTC_ALARM_EXTI_DISABLE_EVENT()         (EXTI_D1->EMR1 &= ~(RTC_EXTI_LINE_ALARM_EVENT))
 
+#if defined(DUAL_CORE)
+/**
+  * @brief  Enable interrupt on the RTC Alarm associated D2 Exti line.
+  * @retval None
+  */
+#define __HAL_RTC_ALARM_EXTID2_ENABLE_IT()          (EXTI_D2->IMR1 |= RTC_EXTI_LINE_ALARM_EVENT)
+
+/**
+  * @brief  Disable interrupt on the RTC Alarm associated D2 Exti line.
+  * @retval None
+  */
+#define __HAL_RTC_ALARM_EXTID2_DISABLE_IT()         (EXTI_D2->IMR1 &= ~(RTC_EXTI_LINE_ALARM_EVENT))
+
+/**
+  * @brief  Enable event on the RTC Alarm associated D2 Exti line.
+  * @retval None
+  */
+#define __HAL_RTC_ALARM_EXTID2_ENABLE_EVENT()        (EXTI_D2->EMR1 |= RTC_EXTI_LINE_ALARM_EVENT)
+
+/**
+  * @brief  Disable event on the RTC Alarm associated D2 Exti line.
+  * @retval None
+  */
+#define __HAL_RTC_ALARM_EXTID2_DISABLE_EVENT()       (EXTI_D2->EMR1 &= ~(RTC_EXTI_LINE_ALARM_EVENT))
+
+#endif
 /**
   * @brief  Enable falling edge trigger on the RTC Alarm associated Exti line.  
   * @retval None
@@ -630,6 +706,19 @@ typedef struct
   */
 #define __HAL_RTC_ALARM_EXTI_CLEAR_FLAG()            (EXTI_D1->PR1 = (RTC_EXTI_LINE_ALARM_EVENT))
 
+#if defined(DUAL_CORE)
+/**
+  * @brief Check whether the RTC Alarm associated D2 Exti line interrupt flag is set or not.
+  * @retval Line Status
+  */
+#define __HAL_RTC_ALARM_EXTID2_GET_FLAG()            (EXTI_D2->PR1 & RTC_EXTI_LINE_ALARM_EVENT)
+
+/**
+  * @brief Clear the RTC Alarm associated D2 Exti line flag.
+  * @retval None
+  */
+#define __HAL_RTC_ALARM_EXTID2_CLEAR_FLAG()          (EXTI_D2->PR1 = (RTC_EXTI_LINE_ALARM_EVENT))
+#endif
 /**
   * @brief Generate a Software interrupt on RTC Alarm associated Exti line.
   * @retval None
@@ -656,6 +745,12 @@ HAL_StatusTypeDef HAL_RTC_Init(RTC_HandleTypeDef *hrtc);
 HAL_StatusTypeDef HAL_RTC_DeInit(RTC_HandleTypeDef *hrtc);
 void              HAL_RTC_MspInit(RTC_HandleTypeDef *hrtc);
 void              HAL_RTC_MspDeInit(RTC_HandleTypeDef *hrtc);
+
+/* Callbacks Register/UnRegister functions  ***********************************/
+#if (USE_HAL_RTC_REGISTER_CALLBACKS == 1)
+HAL_StatusTypeDef HAL_RTC_RegisterCallback(RTC_HandleTypeDef *hrtc, HAL_RTC_CallbackIDTypeDef CallbackID, pRTC_CallbackTypeDef pCallback);
+HAL_StatusTypeDef HAL_RTC_UnRegisterCallback(RTC_HandleTypeDef *hrtc, HAL_RTC_CallbackIDTypeDef CallbackID);
+#endif /* USE_HAL_RTC_REGISTER_CALLBACKS */
 /**
   * @}
   */
@@ -717,14 +812,14 @@ HAL_RTCStateTypeDef HAL_RTC_GetState(RTC_HandleTypeDef *hrtc);
   * @{
   */
 /* Masks Definition */
-#define RTC_TR_RESERVED_MASK    ((uint32_t)0x007F7F7F)
-#define RTC_DR_RESERVED_MASK    ((uint32_t)0x00FFFF3F) 
-#define RTC_INIT_MASK           ((uint32_t)0xFFFFFFFFU)  
-#define RTC_RSF_MASK            ((uint32_t)0xFFFFFF5FU)
-
-#define RTC_TIMEOUT_VALUE  1000
+#define RTC_TR_RESERVED_MASK    0x007F7F7FU
+#define RTC_DR_RESERVED_MASK    0x00FFFF3FU
+#define RTC_INIT_MASK           0xFFFFFFFFU
+#define RTC_RSF_MASK            0xFFFFFF5FU
   
-#define RTC_EXTI_LINE_ALARM_EVENT             ((uint32_t)0x00020000)  /*!< External interrupt line 17 Connected to the RTC Alarm event */
+#define RTC_TIMEOUT_VALUE  1000U
+  
+#define RTC_EXTI_LINE_ALARM_EVENT    0x00020000U  /*!< External interrupt line 17 Connected to the RTC Alarm event */
 
 /**
   * @}
@@ -857,6 +952,6 @@ uint8_t            RTC_Bcd2ToByte(uint8_t Value);
 }
 #endif
 
-#endif /* __STM32H7xx_HAL_RTC_H */
+#endif /* STM32H7xx_HAL_RTC_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

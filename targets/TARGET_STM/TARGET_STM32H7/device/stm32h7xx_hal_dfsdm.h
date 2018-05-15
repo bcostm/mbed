@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_dfsdm.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of DFSDM HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_DFSDM_H
-#define __STM32H7xx_HAL_DFSDM_H
+#ifndef STM32H7xx_HAL_DFSDM_H
+#define STM32H7xx_HAL_DFSDM_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -134,12 +132,36 @@ typedef struct
 /** 
   * @brief  DFSDM channel handle structure definition  
   */  
-typedef struct
+typedef struct __DFSDM_Channel_HandleTypeDef
 {
   DFSDM_Channel_TypeDef          *Instance; /*!< DFSDM channel instance */
   DFSDM_Channel_InitTypeDef      Init;      /*!< DFSDM channel init parameters */
   HAL_DFSDM_Channel_StateTypeDef State;     /*!< DFSDM channel state */
+#if (USE_HAL_DFSDM_REGISTER_CALLBACKS == 1)
+  void (*CkabCallback)      (struct __DFSDM_Channel_HandleTypeDef *hdfsdm_channel); /*!< DFSDM channel clock absence detection callback */
+  void (*ScdCallback)       (struct __DFSDM_Channel_HandleTypeDef *hdfsdm_channel); /*!< DFSDM channel short circuit detection callback */
+  void (*MspInitCallback)   (struct __DFSDM_Channel_HandleTypeDef *hdfsdm_channel); /*!< DFSDM channel MSP init callback */
+  void (*MspDeInitCallback) (struct __DFSDM_Channel_HandleTypeDef *hdfsdm_channel); /*!< DFSDM channel MSP de-init callback */
+#endif
 }DFSDM_Channel_HandleTypeDef;
+
+#if (USE_HAL_DFSDM_REGISTER_CALLBACKS == 1)
+/**
+  * @brief  DFSDM channel callback ID enumeration definition
+  */
+typedef enum
+{
+  HAL_DFSDM_CHANNEL_CKAB_CB_ID      = 0x00U, /*!< DFSDM channel clock absence detection callback ID */
+  HAL_DFSDM_CHANNEL_SCD_CB_ID       = 0x01U, /*!< DFSDM channel short circuit detection callback ID */
+  HAL_DFSDM_CHANNEL_MSPINIT_CB_ID   = 0x02U, /*!< DFSDM channel MSP init callback ID */
+  HAL_DFSDM_CHANNEL_MSPDEINIT_CB_ID = 0x03U  /*!< DFSDM channel MSP de-init callback ID */
+}HAL_DFSDM_Channel_CallbackIDTypeDef;
+
+/**
+  * @brief  DFSDM channel callback pointer definition
+  */
+typedef void (*pDFSDM_Channel_CallbackTypeDef)(DFSDM_Channel_HandleTypeDef *hdfsdm_channel);
+#endif
 
 /** 
   * @brief  HAL DFSDM Filter states definition  
@@ -206,7 +228,7 @@ typedef struct
 /** 
   * @brief  DFSDM filter handle structure definition  
   */  
-typedef struct
+typedef struct __DFSDM_Filter_HandleTypeDef
 {
   DFSDM_Filter_TypeDef          *Instance;           /*!< DFSDM filter instance */
   DFSDM_Filter_InitTypeDef      Init;                /*!< DFSDM filter init parameters */
@@ -221,6 +243,17 @@ typedef struct
   uint32_t                      InjConvRemaining;    /*!< Injected conversions remaining */
   HAL_DFSDM_Filter_StateTypeDef State;               /*!< DFSDM filter state */
   uint32_t                      ErrorCode;           /*!< DFSDM filter error code */  
+#if (USE_HAL_DFSDM_REGISTER_CALLBACKS == 1)
+  void (*AwdCallback)             (struct __DFSDM_Filter_HandleTypeDef *hdfsdm_filter,
+                                   uint32_t Channel, uint32_t Threshold);               /*!< DFSDM filter analog watchdog callback */
+  void (*RegConvCpltCallback)     (struct __DFSDM_Filter_HandleTypeDef *hdfsdm_filter); /*!< DFSDM filter regular conversion complete callback */
+  void (*RegConvHalfCpltCallback) (struct __DFSDM_Filter_HandleTypeDef *hdfsdm_filter); /*!< DFSDM filter half regular conversion complete callback */
+  void (*InjConvCpltCallback)     (struct __DFSDM_Filter_HandleTypeDef *hdfsdm_filter); /*!< DFSDM filter injected conversion complete callback */
+  void (*InjConvHalfCpltCallback) (struct __DFSDM_Filter_HandleTypeDef *hdfsdm_filter); /*!< DFSDM filter half injected conversion complete callback */
+  void (*ErrorCallback)           (struct __DFSDM_Filter_HandleTypeDef *hdfsdm_filter); /*!< DFSDM filter error callback */
+  void (*MspInitCallback)         (struct __DFSDM_Filter_HandleTypeDef *hdfsdm_filter); /*!< DFSDM filter MSP init callback */
+  void (*MspDeInitCallback)       (struct __DFSDM_Filter_HandleTypeDef *hdfsdm_filter); /*!< DFSDM filter MSP de-init callback */
+#endif
 }DFSDM_Filter_HandleTypeDef;
 
 /** 
@@ -241,6 +274,28 @@ typedef struct
   uint32_t LowBreakSignal;  /*!< Break signal assigned to analog watchdog low threshold event.
                                  This parameter can be a values combination of @ref DFSDM_BreakSignals */
 }DFSDM_Filter_AwdParamTypeDef;
+
+#if (USE_HAL_DFSDM_REGISTER_CALLBACKS == 1)
+/**
+  * @brief  DFSDM filter callback ID enumeration definition
+  */
+typedef enum
+{
+  HAL_DFSDM_FILTER_REGCONV_COMPLETE_CB_ID     = 0x00U, /*!< DFSDM filter regular conversion complete callback ID */
+  HAL_DFSDM_FILTER_REGCONV_HALFCOMPLETE_CB_ID = 0x01U, /*!< DFSDM filter half regular conversion complete callback ID */
+  HAL_DFSDM_FILTER_INJCONV_COMPLETE_CB_ID     = 0x02U, /*!< DFSDM filter injected conversion complete callback ID */
+  HAL_DFSDM_FILTER_INJCONV_HALFCOMPLETE_CB_ID = 0x03U, /*!< DFSDM filter half injected conversion complete callback ID */
+  HAL_DFSDM_FILTER_ERROR_CB_ID                = 0x04U, /*!< DFSDM filter error callback ID */
+  HAL_DFSDM_FILTER_MSPINIT_CB_ID              = 0x05U, /*!< DFSDM filter MSP init callback ID */
+  HAL_DFSDM_FILTER_MSPDEINIT_CB_ID            = 0x06U  /*!< DFSDM filter MSP de-init callback ID */
+}HAL_DFSDM_Filter_CallbackIDTypeDef;
+
+/**
+  * @brief  DFSDM filter callback pointer definition
+  */
+typedef void (*pDFSDM_Filter_CallbackTypeDef)(DFSDM_Filter_HandleTypeDef *hdfsdm_filter);
+typedef void (*pDFSDM_Filter_AwdCallbackTypeDef)(DFSDM_Filter_HandleTypeDef *hdfsdm_filter, uint32_t Channel, uint32_t Threshold);
+#endif
 
 /**
   * @}
@@ -395,6 +450,9 @@ typedef struct
 #define DFSDM_FILTER_ERROR_REGULAR_OVERRUN  ((uint32_t)0x00000001) /*!< Overrun occurs during regular conversion */
 #define DFSDM_FILTER_ERROR_INJECTED_OVERRUN ((uint32_t)0x00000002) /*!< Overrun occurs during injected conversion */
 #define DFSDM_FILTER_ERROR_DMA              ((uint32_t)0x00000003) /*!< DMA error occurs */
+#if (USE_HAL_DFSDM_REGISTER_CALLBACKS == 1)
+#define DFSDM_FILTER_ERROR_INVALID_CALLBACK ((uint32_t)0x00000004U) /*!< Invalid callback error occurs */
+#endif
 /**
   * @}
   */
@@ -463,21 +521,37 @@ typedef struct
  */
 
 /** @brief  Reset DFSDM channel handle state.
-  * @param  __HANDLE__: DFSDM channel handle.
+  * @param  __HANDLE__ DFSDM channel handle.
   * @retval None
   */
+#if (USE_HAL_DFSDM_REGISTER_CALLBACKS == 1)
+#define __HAL_DFSDM_CHANNEL_RESET_HANDLE_STATE(__HANDLE__) do{                                                      \
+                                                               (__HANDLE__)->State = HAL_DFSDM_CHANNEL_STATE_RESET; \
+                                                               (__HANDLE__)->MspInitCallback = NULL;                \
+                                                               (__HANDLE__)->MspDeInitCallback = NULL;              \
+                                                             } while(0)
+#else
 #define __HAL_DFSDM_CHANNEL_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_DFSDM_CHANNEL_STATE_RESET)
+#endif
 
 /** @brief  Reset DFSDM filter handle state.
-  * @param  __HANDLE__: DFSDM filter handle.
+  * @param  __HANDLE__ DFSDM filter handle.
   * @retval None
   */
+#if (USE_HAL_DFSDM_REGISTER_CALLBACKS == 1)
+#define __HAL_DFSDM_FILTER_RESET_HANDLE_STATE(__HANDLE__) do{                                                     \
+                                                              (__HANDLE__)->State = HAL_DFSDM_FILTER_STATE_RESET; \
+                                                              (__HANDLE__)->MspInitCallback = NULL;               \
+                                                              (__HANDLE__)->MspDeInitCallback = NULL;             \
+                                                            } while(0)
+#else
 #define __HAL_DFSDM_FILTER_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_DFSDM_FILTER_STATE_RESET)
+#endif
 
 /**
   * @}
   */
-/* End of exported macros -----------------------------------------------------------*/  
+/* End of exported macros ----------------------------------------------------*/
 
 /* Exported functions --------------------------------------------------------*/  
 /** @addtogroup DFSDM_Exported_Functions DFSDM Exported Functions
@@ -492,6 +566,15 @@ HAL_StatusTypeDef HAL_DFSDM_ChannelInit(DFSDM_Channel_HandleTypeDef *hdfsdm_chan
 HAL_StatusTypeDef HAL_DFSDM_ChannelDeInit(DFSDM_Channel_HandleTypeDef *hdfsdm_channel);
 void HAL_DFSDM_ChannelMspInit(DFSDM_Channel_HandleTypeDef *hdfsdm_channel);
 void HAL_DFSDM_ChannelMspDeInit(DFSDM_Channel_HandleTypeDef *hdfsdm_channel);
+
+#if (USE_HAL_DFSDM_REGISTER_CALLBACKS == 1)
+/* Channel callbacks register/unregister functions ****************************/
+HAL_StatusTypeDef HAL_DFSDM_Channel_RegisterCallback(DFSDM_Channel_HandleTypeDef        *hdfsdm_channel,
+                                                     HAL_DFSDM_Channel_CallbackIDTypeDef CallbackID,
+                                                     pDFSDM_Channel_CallbackTypeDef      pCallback);
+HAL_StatusTypeDef HAL_DFSDM_Channel_UnRegisterCallback(DFSDM_Channel_HandleTypeDef        *hdfsdm_channel,
+                                                       HAL_DFSDM_Channel_CallbackIDTypeDef CallbackID);
+#endif
 /**
   * @}
   */
@@ -539,6 +622,18 @@ HAL_StatusTypeDef HAL_DFSDM_FilterInit(DFSDM_Filter_HandleTypeDef *hdfsdm_filter
 HAL_StatusTypeDef HAL_DFSDM_FilterDeInit(DFSDM_Filter_HandleTypeDef *hdfsdm_filter);
 void HAL_DFSDM_FilterMspInit(DFSDM_Filter_HandleTypeDef *hdfsdm_filter);
 void HAL_DFSDM_FilterMspDeInit(DFSDM_Filter_HandleTypeDef *hdfsdm_filter);
+
+#if (USE_HAL_DFSDM_REGISTER_CALLBACKS == 1)
+/* Filter callbacks register/unregister functions ****************************/
+HAL_StatusTypeDef HAL_DFSDM_Filter_RegisterCallback(DFSDM_Filter_HandleTypeDef        *hdfsdm_filter,
+                                                    HAL_DFSDM_Filter_CallbackIDTypeDef CallbackID,
+                                                    pDFSDM_Filter_CallbackTypeDef      pCallback);
+HAL_StatusTypeDef HAL_DFSDM_Filter_UnRegisterCallback(DFSDM_Filter_HandleTypeDef        *hdfsdm_filter,
+                                                      HAL_DFSDM_Filter_CallbackIDTypeDef CallbackID);
+HAL_StatusTypeDef HAL_DFSDM_Filter_RegisterAwdCallback(DFSDM_Filter_HandleTypeDef      *hdfsdm_filter,
+                                                       pDFSDM_Filter_AwdCallbackTypeDef pCallback);
+HAL_StatusTypeDef HAL_DFSDM_Filter_UnRegisterAwdCallback(DFSDM_Filter_HandleTypeDef *hdfsdm_filter);
+#endif
 /**
   * @}
   */
@@ -661,13 +756,13 @@ uint32_t                      HAL_DFSDM_FilterGetError(DFSDM_Filter_HandleTypeDe
                                                        ((TRIG) == DFSDM_FILTER_EXT_TRIG_TIM16_OC1) || \
                                                        ((TRIG) == DFSDM_FILTER_EXT_TRIG_TIM6_TRGO) || \
                                                        ((TRIG) == DFSDM_FILTER_EXT_TRIG_TIM7_TRGO) || \
-                                                                                                             ((TRIG) == DFSDM_FILTER_EXT_TRIG_HRTIM1_ADCTRG1) || \
-                                                                                                             ((TRIG) == DFSDM_FILTER_EXT_TRIG_HRTIM1_ADCTRG3) || \
+                                                       ((TRIG) == DFSDM_FILTER_EXT_TRIG_HRTIM1_ADCTRG1) || \
+                                                       ((TRIG) == DFSDM_FILTER_EXT_TRIG_HRTIM1_ADCTRG3) || \
                                                        ((TRIG) == DFSDM_FILTER_EXT_TRIG_EXTI11) || \
                                                        ((TRIG) == DFSDM_FILTER_EXT_TRIG_EXTI15) || \
-                                                                                                             ((TRIG) == DFSDM_FILTER_EXT_TRIG_LPTIM1) || \
-                                                                                                             ((TRIG) == DFSDM_FILTER_EXT_TRIG_LPTIM2) || \
-                                                                                                             ((TRIG) == DFSDM_FILTER_EXT_TRIG_LPTIM3))
+                                                       ((TRIG) == DFSDM_FILTER_EXT_TRIG_LPTIM1) || \
+                                                       ((TRIG) == DFSDM_FILTER_EXT_TRIG_LPTIM2) || \
+                                                       ((TRIG) == DFSDM_FILTER_EXT_TRIG_LPTIM3))
 #define IS_DFSDM_FILTER_EXT_TRIG_EDGE(EDGE)           (((EDGE) == DFSDM_FILTER_EXT_TRIG_RISING_EDGE)  || \
                                                        ((EDGE) == DFSDM_FILTER_EXT_TRIG_FALLING_EDGE)  || \
                                                        ((EDGE) == DFSDM_FILTER_EXT_TRIG_BOTH_EDGES))
@@ -697,7 +792,7 @@ uint32_t                      HAL_DFSDM_FilterGetError(DFSDM_Filter_HandleTypeDe
 /**
 * @}
 */ 
-/* End of private macros ------------------------------------------------------------*/
+/* End of private macros -----------------------------------------------------*/
 
 /**
   * @}
@@ -711,6 +806,6 @@ uint32_t                      HAL_DFSDM_FilterGetError(DFSDM_Filter_HandleTypeDe
 }
 #endif
 
-#endif /* __STM32H7xx_HAL_DFSDM_H */
+#endif /* STM32H7xx_HAL_DFSDM_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

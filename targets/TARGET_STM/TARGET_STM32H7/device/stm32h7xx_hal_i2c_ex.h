@@ -2,9 +2,7 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_i2c_ex.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
-  * @brief   Header file of I2C HAL Extension module.
+  * @brief   Header file of I2C HAL Extended module.
   ******************************************************************************
   * @attention
   *
@@ -36,11 +34,11 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_I2C_EX_H
-#define __STM32H7xx_HAL_I2C_EX_H
+#ifndef STM32H7xx_HAL_I2C_EX_H
+#define STM32H7xx_HAL_I2C_EX_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -50,7 +48,7 @@
   * @{
   */
 
-/** @addtogroup I2CEx I2CEx
+/** @addtogroup I2CEx
   * @{
   */
 
@@ -64,8 +62,8 @@
 /** @defgroup I2CEx_Analog_Filter I2C Extended Analog Filter
   * @{
   */
-#define I2C_ANALOGFILTER_ENABLE        ((uint32_t)0x00000000U)
-#define I2C_ANALOGFILTER_DISABLE       I2C_CR1_ANFOFF
+#define I2C_ANALOGFILTER_ENABLE         0x00000000U
+#define I2C_ANALOGFILTER_DISABLE        I2C_CR1_ANFOFF
 /**
   * @}
   */
@@ -73,15 +71,14 @@
 /** @defgroup I2CEx_FastModePlus I2C Extended Fast Mode Plus
   * @{
   */
-#define I2C_FASTMODEPLUS_PB6          SYSCFG_PMCR_I2C_PB6_FMP
-#define I2C_FASTMODEPLUS_PB7          SYSCFG_PMCR_I2C_PB7_FMP
-#define I2C_FASTMODEPLUS_PB8          SYSCFG_PMCR_I2C_PB8_FMP
-#define I2C_FASTMODEPLUS_PB9          SYSCFG_PMCR_I2C_PB9_FMP
-
-#define I2C_FASTMODEPLUS_I2C1         SYSCFG_PMCR_I2C1_FMP
-#define I2C_FASTMODEPLUS_I2C2         SYSCFG_PMCR_I2C2_FMP
-#define I2C_FASTMODEPLUS_I2C3         SYSCFG_PMCR_I2C3_FMP
-#define I2C_FASTMODEPLUS_I2C4         SYSCFG_PMCR_I2C4_FMP
+#define I2C_FASTMODEPLUS_PB6            SYSCFG_PMCR_I2C_PB6_FMP                        /*!< Enable Fast Mode Plus on PB6       */
+#define I2C_FASTMODEPLUS_PB7            SYSCFG_PMCR_I2C_PB7_FMP                        /*!< Enable Fast Mode Plus on PB7       */
+#define I2C_FASTMODEPLUS_PB8            SYSCFG_PMCR_I2C_PB8_FMP                        /*!< Enable Fast Mode Plus on PB8       */
+#define I2C_FASTMODEPLUS_PB9            SYSCFG_PMCR_I2C_PB9_FMP                        /*!< Enable Fast Mode Plus on PB9       */
+#define I2C_FASTMODEPLUS_I2C1           SYSCFG_PMCR_I2C1_FMP                           /*!< Enable Fast Mode Plus on I2C1 pins */
+#define I2C_FASTMODEPLUS_I2C2           SYSCFG_PMCR_I2C2_FMP                           /*!< Enable Fast Mode Plus on I2C2 pins */
+#define I2C_FASTMODEPLUS_I2C3           SYSCFG_PMCR_I2C3_FMP                           /*!< Enable Fast Mode Plus on I2C3 pins */
+#define I2C_FASTMODEPLUS_I2C4           SYSCFG_PMCR_I2C4_FMP                           /*!< Enable Fast Mode Plus on I2C4 pins */
 /**
   * @}
   */
@@ -192,7 +189,6 @@ void HAL_I2CEx_DisableFastModePlus(uint32_t ConfigFastModePlus);
 }
 #endif
 
-#endif /* __STM32H7xx_HAL_I2C_EX_H */
-
+#endif /* STM32H7xx_HAL_I2C_EX_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

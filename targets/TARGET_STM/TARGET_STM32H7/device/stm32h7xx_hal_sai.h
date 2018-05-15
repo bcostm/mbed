@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_sai.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of SAI HAL module.
   ******************************************************************************
   * @attention
@@ -36,13 +34,12 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_SAI_H
-#define __STM32H7xx_HAL_SAI_H
+#ifndef STM32H7xx_HAL_SAI_H
+#define STM32H7xx_HAL_SAI_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
-
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_hal_def.h"
@@ -83,16 +80,15 @@ typedef void (*SAIcallback)(void);
   */
 typedef struct
 {
-  FunctionalState  Activation;  /*!< Enable/Disable PDM interface */
+  FunctionalState  Activation;  /*!< Enable/disable PDM interface */
   uint32_t         MicPairsNbr; /*!< Specifies the number of microphone pairs used.
-                                     This parameter must be a number between Min_Data = 1 and Max_Data = 4. */
+                                     This parameter must be a number between Min_Data = 1 and Max_Data = 3. */
   uint32_t         ClockEnable; /*!< Specifies which clock must be enabled.
                                      This parameter can be a values combination of @ref SAI_PDM_ClockEnable */
 } SAI_PdmInitTypeDef;
 /**
   * @}
   */
-
 
 /** @defgroup SAI_Init_Structure_definition SAI Init Structure definition
   * @brief  SAI Init Structure definition
@@ -109,22 +105,25 @@ typedef struct
   uint32_t SynchroExt;          /*!< Specifies SAI external output synchronization, this setup is common
                                      for BlockA and BlockB
                                      This parameter can be a value of @ref SAI_Block_SyncExt
-                                     @note: If both audio blocks of same SAI are used, this parameter has
-                                            to be set to the same value for each audio block */
+                                     @note If both audio blocks of same SAI are used, this parameter has
+                                           to be set to the same value for each audio block */
+
+  uint32_t MckOutput;           /*!< Specifies whether master clock output will be generated or not.
+                                     This parameter can be a value of @ref SAI_Block_MckOutput
+                                     @note This feature is only available on STM32H7xx Rev.B and above */
 
   uint32_t OutputDrive;         /*!< Specifies when SAI Block outputs are driven.
                                      This parameter can be a value of @ref SAI_Block_Output_Drive
-                                     @note this value has to be set before enabling the audio block
-                                     but after the audio block configuration. */
+                                     @note This value has to be set before enabling the audio block
+                                           but after the audio block configuration. */
 
   uint32_t NoDivider;           /*!< Specifies whether master clock will be divided or not.
                                      This parameter can be a value of @ref SAI_Block_NoDivider
-                                     @note: If bit NOMCK in the SAI_xCR1 register is cleared, the frame length
-                                            should be aligned to a number equal to a power of 2, from 8 to 256.
-                                            If bit NOMCK in the SAI_xCR1 register is set, the frame length can
-                                            take any of the values without constraint since the input clock of
-                                            the audio block should be equal to the bit clock.
-                                            There is no MCLK_x clock which can be output. */
+                                     @note If bit NODIV in the SAI_xCR1 register is cleared, the frame length
+                                           should be aligned to a number equal to a power of 2, from 8 to 256.
+                                           If bit NODIV in the SAI_xCR1 register is set, the frame length can
+                                           take any of the values from 8 to 256.
+                                     @note The NODIV bit is the same as NOMCK bit in STM32H7xx rev.Y */
 
   uint32_t FIFOThreshold;       /*!< Specifies SAI Block FIFO threshold.
                                      This parameter can be a value of @ref SAI_Block_Fifo_Threshold */
@@ -134,7 +133,7 @@ typedef struct
 
   uint32_t Mckdiv;              /*!< Specifies the master clock divider, the parameter will be used if for
                                      AudioFrequency the user choice
-                                     This parameter must be a number between Min_Data = 0 and Max_Data = 63 */
+                                     This parameter must be a number between Min_Data = 0 and Max_Data = 63. */
 
   uint32_t MckOverSampling;     /*!< Specifies the master clock oversampling.
                                      This parameter can be a value of @ref SAI_Block_Mck_OverSampling */
@@ -178,9 +177,9 @@ typedef struct
 
   uint32_t FrameLength;        /*!< Specifies the Frame length, the number of SCK clocks for each audio frame.
                                     This parameter must be a number between Min_Data = 8 and Max_Data = 256.
-                                    @note: If master clock MCLK_x pin is declared as an output, the frame length
-                                           should be aligned to a number equal to power of 2 in order to keep
-                                           in an audio frame, an integer number of MCLK pulses by bit Clock. */
+                                    @note If master clock MCLK_x pin is declared as an output, the frame length
+                                          should be aligned to a number equal to power of 2 in order to keep
+                                          in an audio frame, an integer number of MCLK pulses by bit Clock. */
 
   uint32_t ActiveFrameLength;  /*!< Specifies the Frame synchronization active level length.
                                     This Parameter specifies the length in number of bit clock (SCK + 1)
@@ -256,17 +255,47 @@ typedef struct __SAI_HandleTypeDef
   __IO HAL_SAI_StateTypeDef State;        /*!< SAI communication state */
 
   __IO uint32_t             ErrorCode;    /*!< SAI Error code */
+
+#if (USE_HAL_SAI_REGISTER_CALLBACKS == 1)
+  void (*RxCpltCallback)(struct __SAI_HandleTypeDef *hsai);      /*!< SAI receive complete callback */
+  void (*RxHalfCpltCallback)(struct __SAI_HandleTypeDef *hsai);  /*!< SAI receive half complete callback */
+  void (*TxCpltCallback)(struct __SAI_HandleTypeDef *hsai);      /*!< SAI transmit complete callback */
+  void (*TxHalfCpltCallback)(struct __SAI_HandleTypeDef *hsai);  /*!< SAI transmit half complete callback */
+  void (*ErrorCallback)(struct __SAI_HandleTypeDef *hsai);       /*!< SAI error callback */
+  void (*MspInitCallback)(struct __SAI_HandleTypeDef *hsai);     /*!< SAI MSP init callback */
+  void (*MspDeInitCallback)(struct __SAI_HandleTypeDef *hsai);   /*!< SAI MSP de-init callback */
+#endif
 } SAI_HandleTypeDef;
 /**
   * @}
   */
+
+#if (USE_HAL_SAI_REGISTER_CALLBACKS == 1)
+/**
+  * @brief  SAI callback ID enumeration definition
+  */
+typedef enum
+{
+  HAL_SAI_RX_COMPLETE_CB_ID     = 0x00U, /*!< SAI receive complete callback ID */
+  HAL_SAI_RX_HALFCOMPLETE_CB_ID = 0x01U, /*!< SAI receive half complete callback ID */
+  HAL_SAI_TX_COMPLETE_CB_ID     = 0x02U, /*!< SAI transmit complete callback ID */
+  HAL_SAI_TX_HALFCOMPLETE_CB_ID = 0x03U, /*!< SAI transmit half complete callback ID */
+  HAL_SAI_ERROR_CB_ID           = 0x04U, /*!< SAI error callback ID */
+  HAL_SAI_MSPINIT_CB_ID         = 0x05U, /*!< SAI MSP init callback ID */
+  HAL_SAI_MSPDEINIT_CB_ID       = 0x06U  /*!< SAI MSP de-init callback ID */
+} HAL_SAI_CallbackIDTypeDef;
+
+/**
+  * @brief  SAI callback pointer definition
+  */
+typedef void (*pSAI_CallbackTypeDef)(SAI_HandleTypeDef *hsai);
+#endif
 
 /**
   * @}
   */
 
 /* Exported constants --------------------------------------------------------*/
-
 /** @defgroup SAI_Exported_Constants SAI Exported Constants
   * @{
   */
@@ -283,6 +312,9 @@ typedef struct __SAI_HandleTypeDef
 #define HAL_SAI_ERROR_WCKCFG  ((uint32_t)0x00000020U)  /*!< Wrong clock configuration */
 #define HAL_SAI_ERROR_TIMEOUT ((uint32_t)0x00000040U)  /*!< Timeout error */
 #define HAL_SAI_ERROR_DMA     ((uint32_t)0x00000080U)  /*!< DMA error */
+#if (USE_HAL_SAI_REGISTER_CALLBACKS == 1)
+#define HAL_SAI_ERROR_INVALID_CALLBACK ((uint32_t)0x00000100U)  /*!< Invalid callback error */
+#endif
 /**
   * @}
   */
@@ -293,6 +325,15 @@ typedef struct __SAI_HandleTypeDef
 #define SAI_SYNCEXT_DISABLE          0
 #define SAI_SYNCEXT_OUTBLOCKA_ENABLE 1
 #define SAI_SYNCEXT_OUTBLOCKB_ENABLE 2
+/**
+  * @}
+  */
+
+/** @defgroup SAI_Block_MckOutput SAI Block Master Clock Output
+  * @{
+  */
+#define SAI_MCK_OUTPUT_DISABLE      ((uint32_t)0x00000000U)
+#define SAI_MCK_OUTPUT_ENABLE       ((uint32_t)SAI_xCR1_MCKEN)
 /**
   * @}
   */
@@ -351,8 +392,6 @@ typedef struct __SAI_HandleTypeDef
   */
 #define SAI_PDM_CLOCK1_ENABLE  ((uint32_t)SAI_PDMCR_CKEN1)
 #define SAI_PDM_CLOCK2_ENABLE  ((uint32_t)SAI_PDMCR_CKEN2)
-#define SAI_PDM_CLOCK3_ENABLE  ((uint32_t)SAI_PDMCR_CKEN3)
-#define SAI_PDM_CLOCK4_ENABLE  ((uint32_t)SAI_PDMCR_CKEN4)
 /**
   * @}
   */
@@ -434,11 +473,10 @@ typedef struct __SAI_HandleTypeDef
   * @{
   */
 #define SAI_MASTERDIVIDER_ENABLE         ((uint32_t)0x00000000U)
-#define SAI_MASTERDIVIDER_DISABLE        ((uint32_t)SAI_xCR1_NOMCK)
+#define SAI_MASTERDIVIDER_DISABLE        ((uint32_t)SAI_xCR1_NODIV)
 /**
   * @}
   */
-
 
 /** @defgroup SAI_Block_FS_Definition SAI Block FS Definition
   * @{
@@ -467,8 +505,7 @@ typedef struct __SAI_HandleTypeDef
   * @}
   */
 
-
-  /** @defgroup SAI_Block_Slot_Size SAI Block Slot Size
+/** @defgroup SAI_Block_Slot_Size SAI Block Slot Size
   * @{
   */
 #define SAI_SLOTSIZE_DATASIZE             ((uint32_t)0x00000000U)
@@ -600,19 +637,26 @@ typedef struct __SAI_HandleTypeDef
   */
 
 /* Exported macro ------------------------------------------------------------*/
-
 /** @defgroup SAI_Exported_Macros SAI Exported Macros
- *  @brief macros to handle interrupts and specific configurations
- * @{
- */
+  * @brief macros to handle interrupts and specific configurations
+  * @{
+  */
 
 /** @brief Reset SAI handle state.
   * @param  __HANDLE__ specifies the SAI Handle.
   * @retval None
   */
+#if (USE_HAL_SAI_REGISTER_CALLBACKS == 1)
+#define __HAL_SAI_RESET_HANDLE_STATE(__HANDLE__) do{                                            \
+                                                     (__HANDLE__)->State = HAL_SAI_STATE_RESET; \
+                                                     (__HANDLE__)->MspInitCallback = NULL;      \
+                                                     (__HANDLE__)->MspDeInitCallback = NULL;    \
+                                                   } while(0)
+#else
 #define __HAL_SAI_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_SAI_STATE_RESET)
+#endif
 
-/** @brief  Enable or disable the specified SAI interrupts.
+/** @brief  Enable the specified SAI interrupts.
   * @param  __HANDLE__ specifies the SAI Handle.
   * @param  __INTERRUPT__ specifies the interrupt source to enable or disable.
   *         This parameter can be one of the following values:
@@ -626,6 +670,20 @@ typedef struct __SAI_HandleTypeDef
   * @retval None
   */
 #define __HAL_SAI_ENABLE_IT(__HANDLE__, __INTERRUPT__)   ((__HANDLE__)->Instance->IMR |= (__INTERRUPT__))
+
+/** @brief  Disable the specified SAI interrupts.
+  * @param  __HANDLE__ specifies the SAI Handle.
+  * @param  __INTERRUPT__ specifies the interrupt source to enable or disable.
+  *         This parameter can be one of the following values:
+  *            @arg SAI_IT_OVRUDR: Overrun underrun interrupt enable
+  *            @arg SAI_IT_MUTEDET: Mute detection interrupt enable
+  *            @arg SAI_IT_WCKCFG: Wrong Clock Configuration interrupt enable
+  *            @arg SAI_IT_FREQ: FIFO request interrupt enable
+  *            @arg SAI_IT_CNRDY: Codec not ready interrupt enable
+  *            @arg SAI_IT_AFSDET: Anticipated frame synchronization detection interrupt enable
+  *            @arg SAI_IT_LFSDET: Late frame synchronization detection interrupt enable
+  * @retval None
+  */
 #define __HAL_SAI_DISABLE_IT(__HANDLE__, __INTERRUPT__)  ((__HANDLE__)->Instance->IMR &= (~(__INTERRUPT__)))
 
 /** @brief  Check whether the specified SAI interrupt source is enabled or not.
@@ -674,10 +732,19 @@ typedef struct __SAI_HandleTypeDef
   */
 #define __HAL_SAI_CLEAR_FLAG(__HANDLE__, __FLAG__) ((__HANDLE__)->Instance->CLRFR = (__FLAG__))
 
+/** @brief  Enable SAI.
+  * @param  __HANDLE__ specifies the SAI Handle.
+  * @retval None
+  */
 #define __HAL_SAI_ENABLE(__HANDLE__) ((__HANDLE__)->Instance->CR1 |=  SAI_xCR1_SAIEN)
+
+/** @brief  Disable SAI.
+  * @param  __HANDLE__ specifies the SAI Handle.
+  * @retval None
+  */
 #define __HAL_SAI_DISABLE(__HANDLE__) ((__HANDLE__)->Instance->CR1 &=  ~SAI_xCR1_SAIEN)
 
- /**
+/**
   * @}
   */
 
@@ -685,28 +752,33 @@ typedef struct __SAI_HandleTypeDef
 #include "stm32h7xx_hal_sai_ex.h"
 
 /* Exported functions --------------------------------------------------------*/
-
 /** @addtogroup SAI_Exported_Functions
   * @{
   */
 
 /* Initialization/de-initialization functions  ********************************/
-
 /** @addtogroup SAI_Exported_Functions_Group1
   * @{
   */
 HAL_StatusTypeDef HAL_SAI_InitProtocol(SAI_HandleTypeDef *hsai, uint32_t protocol, uint32_t datasize, uint32_t nbslot);
 HAL_StatusTypeDef HAL_SAI_Init(SAI_HandleTypeDef *hsai);
-HAL_StatusTypeDef HAL_SAI_DeInit (SAI_HandleTypeDef *hsai);
+HAL_StatusTypeDef HAL_SAI_DeInit(SAI_HandleTypeDef *hsai);
 void HAL_SAI_MspInit(SAI_HandleTypeDef *hsai);
 void HAL_SAI_MspDeInit(SAI_HandleTypeDef *hsai);
 
+#if (USE_HAL_SAI_REGISTER_CALLBACKS == 1)
+/* SAI callbacks register/unregister functions ********************************/
+HAL_StatusTypeDef HAL_SAI_RegisterCallback(SAI_HandleTypeDef        *hsai,
+                                           HAL_SAI_CallbackIDTypeDef CallbackID,
+                                           pSAI_CallbackTypeDef      pCallback);
+HAL_StatusTypeDef HAL_SAI_UnRegisterCallback(SAI_HandleTypeDef        *hsai,
+                                             HAL_SAI_CallbackIDTypeDef CallbackID);
+#endif
 /**
   * @}
   */
 
 /* I/O operation functions  ***************************************************/
-
 /** @addtogroup SAI_Exported_Functions_Group2
   * @{
   */
@@ -787,11 +859,10 @@ uint32_t HAL_SAI_GetError(SAI_HandleTypeDef *hsai);
 #define IS_SAI_BLOCK_MCK_OVERSAMPLING(VALUE) (((VALUE) == SAI_MCK_OVERSAMPLING_DISABLE) || \
                                               ((VALUE) == SAI_MCK_OVERSAMPLING_ENABLE))
 
-#define IS_SAI_PDM_MIC_PAIRS_NUMBER(VALUE)   ((1U <= (VALUE)) && ((VALUE) <= 4U))
+#define IS_SAI_PDM_MIC_PAIRS_NUMBER(VALUE)   ((1U <= (VALUE)) && ((VALUE) <= 3U))
 
 #define IS_SAI_PDM_CLOCK_ENABLE(CLOCK) (((CLOCK) != 0U) && \
-                                       (((CLOCK) & ~(SAI_PDM_CLOCK1_ENABLE | SAI_PDM_CLOCK2_ENABLE | \
-                                                     SAI_PDM_CLOCK3_ENABLE | SAI_PDM_CLOCK4_ENABLE)) == 0U))
+                                       (((CLOCK) & ~(SAI_PDM_CLOCK1_ENABLE | SAI_PDM_CLOCK2_ENABLE)) == 0U))
 
 #define IS_SAI_BLOCK_MODE(MODE)  (((MODE) == SAI_MODEMASTER_TX) || \
                                   ((MODE) == SAI_MODEMASTER_RX) || \
@@ -819,6 +890,9 @@ uint32_t HAL_SAI_GetError(SAI_HandleTypeDef *hsai);
                                        ((SYNCHRO) == SAI_SYNCHRONOUS)          || \
                                        ((SYNCHRO) == SAI_SYNCHRONOUS_EXT_SAI1) || \
                                        ((SYNCHRO) == SAI_SYNCHRONOUS_EXT_SAI2))
+
+#define IS_SAI_BLOCK_MCK_OUTPUT(VALUE) (((VALUE) == SAI_MCK_OUTPUT_ENABLE) || \
+                                        ((VALUE) == SAI_MCK_OUTPUT_DISABLE))
 
 #define IS_SAI_BLOCK_OUTPUT_DRIVE(DRIVE) (((DRIVE) == SAI_OUTPUTDRIVE_DISABLE) || \
                                           ((DRIVE) == SAI_OUTPUTDRIVE_ENABLE))
@@ -899,6 +973,6 @@ uint32_t HAL_SAI_GetError(SAI_HandleTypeDef *hsai);
 }
 #endif
 
-#endif /* __STM32H7xx_HAL_SAI_H */
+#endif /* STM32H7xx_HAL_SAI_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

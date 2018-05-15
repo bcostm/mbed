@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_dac.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of DAC HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_DAC_H
-#define __STM32H7xx_HAL_DAC_H
+#ifndef STM32H7xx_HAL_DAC_H
+#define STM32H7xx_HAL_DAC_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -91,6 +89,20 @@ typedef struct
   
   __IO uint32_t               ErrorCode;     /*!< DAC Error code                    */
   
+#if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+  void (* ConvCpltCallbackCh1)(struct __DAC_HandleTypeDef *hdac);
+  void (* ConvHalfCpltCallbackCh1)(struct __DAC_HandleTypeDef *hdac);
+  void (* ErrorCallbackCh1)(struct __DAC_HandleTypeDef *hdac);
+  void (* DMAUnderrunCallbackCh1)(struct __DAC_HandleTypeDef *hdac);
+  void (* ConvCpltCallbackCh2)(struct __DAC_HandleTypeDef *hdac);
+  void (* ConvHalfCpltCallbackCh2)(struct __DAC_HandleTypeDef *hdac);
+  void (* ErrorCallbackCh2)(struct __DAC_HandleTypeDef *hdac);
+  void (* DMAUnderrunCallbackCh2)(struct __DAC_HandleTypeDef *hdac);
+
+  void (* MspInitCallback)(struct __DAC_HandleTypeDef *hdac);
+  void (* MspDeInitCallback)(struct __DAC_HandleTypeDef *hdac);
+#endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+
 }DAC_HandleTypeDef;
 
 /** 
@@ -141,6 +153,31 @@ typedef struct
       
 }DAC_ChannelConfTypeDef;
 
+#if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+/**
+  * @brief  HAL DAC Callback ID enumeration definition
+  */
+typedef enum
+{
+  HAL_DAC_CH1_COMPLETE_CB_ID                 = 0x00U,  /*!< DAC CH1 Complete Callback ID      */
+  HAL_DAC_CH1_HALF_COMPLETE_CB_ID            = 0x01U,  /*!< DAC CH1 half Complete Callback ID */
+  HAL_DAC_CH1_ERROR_ID                       = 0x02U,  /*!< DAC CH1 error Callback ID         */
+  HAL_DAC_CH1_UNDERRUN_CB_ID                 = 0x03U,  /*!< DAC CH1 underrun Callback ID      */
+  HAL_DAC_CH2_COMPLETE_CB_ID                 = 0x04U,  /*!< DAC CH2 Complete Callback ID      */
+  HAL_DAC_CH2_HALF_COMPLETE_CB_ID            = 0x05U,  /*!< DAC CH2 half Complete Callback ID */
+  HAL_DAC_CH2_ERROR_ID                       = 0x06U,  /*!< DAC CH2 error Callback ID         */
+  HAL_DAC_CH2_UNDERRUN_CB_ID                 = 0x07U,  /*!< DAC CH2 underrun Callback ID      */
+  HAL_DAC_MSP_INIT_CB_ID                     = 0x08U,  /*!< DAC MspInit Callback ID           */
+  HAL_DAC_MSP_DEINIT_CB_ID                   = 0x09U,  /*!< DAC MspDeInit Callback ID         */
+  HAL_DAC_ALL_CB_ID                          = 0x0AU   /*!< DAC All ID                        */
+} HAL_DAC_CallbackIDTypeDef;
+
+/**
+  * @brief  HAL DAC Callback pointer definition
+  */
+typedef void (*pDAC_CallbackTypeDef)(DAC_HandleTypeDef *hdac);
+#endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
+
 /**
   * @}
   */
@@ -154,11 +191,14 @@ typedef struct
 /** @defgroup DAC_Error_Code DAC Error Code
   * @{
   */
-#define  HAL_DAC_ERROR_NONE              0x00    /*!< No error                          */
-#define  HAL_DAC_ERROR_DMAUNDERRUNCH1    0x01    /*!< DAC channel1 DMA underrun error   */
-#define  HAL_DAC_ERROR_DMAUNDERRUNCH2    0x02    /*!< DAC channel2 DMA underrun error   */
-#define  HAL_DAC_ERROR_DMA               0x04    /*!< DMA error                         */
-#define  HAL_DAC_ERROR_TIMEOUT           0x08    /*!< Timeout error                     */
+#define  HAL_DAC_ERROR_NONE              0x00U    /*!< No error                          */
+#define  HAL_DAC_ERROR_DMAUNDERRUNCH1    0x01U    /*!< DAC channel1 DMA underrun error   */
+#define  HAL_DAC_ERROR_DMAUNDERRUNCH2    0x02U    /*!< DAC channel2 DMA underrun error   */
+#define  HAL_DAC_ERROR_DMA               0x04U    /*!< DMA error                         */
+#define  HAL_DAC_ERROR_TIMEOUT           0x08U    /*!< Timeout error                     */
+#if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+#define HAL_DAC_ERROR_INVALID_CALLBACK   0x10U    /*!< Invalid callback error            */
+#endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
 /**
   * @}
   */
@@ -282,7 +322,15 @@ typedef struct
   * @param  __HANDLE__: specifies the DAC handle.
   * @retval None
   */
+#if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+#define __HAL_DAC_RESET_HANDLE_STATE(__HANDLE__) do {                                                        \
+                                                      (__HANDLE__)->State             = HAL_DAC_STATE_RESET; \
+                                                      (__HANDLE__)->MspInitCallback   = NULL;                  \
+                                                      (__HANDLE__)->MspDeInitCallback = NULL;                  \
+                                                     } while(0)
+#else
 #define __HAL_DAC_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_DAC_STATE_RESET)
+#endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
 
 /** @brief Enable the DAC channel.
   * @param  __HANDLE__: specifies the DAC handle.
@@ -432,6 +480,11 @@ void HAL_DAC_ConvCpltCallbackCh1(DAC_HandleTypeDef* hdac);
 void HAL_DAC_ConvHalfCpltCallbackCh1(DAC_HandleTypeDef* hdac);
 void HAL_DAC_ErrorCallbackCh1(DAC_HandleTypeDef *hdac);
 void HAL_DAC_DMAUnderrunCallbackCh1(DAC_HandleTypeDef *hdac);
+#if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+/* DAC callback registering/unregistering */
+HAL_StatusTypeDef     HAL_DAC_RegisterCallback(DAC_HandleTypeDef *hdac, HAL_DAC_CallbackIDTypeDef CallbackId, pDAC_CallbackTypeDef pCallback);
+HAL_StatusTypeDef     HAL_DAC_UnRegisterCallback(DAC_HandleTypeDef *hdac, HAL_DAC_CallbackIDTypeDef CallbackId);
+#endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
 /**
   * @}
   */
@@ -474,7 +527,7 @@ uint32_t HAL_DAC_GetError(DAC_HandleTypeDef *hdac);
 #endif 
   
 
-#endif /*__STM32H7xx_HAL_DAC_H */
+#endif /*STM32H7xx_HAL_DAC_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
 

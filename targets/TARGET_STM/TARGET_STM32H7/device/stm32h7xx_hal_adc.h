@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_adc.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of ADC HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_ADC_H
-#define __STM32H7xx_ADC_H
+#ifndef STM32H7xx_ADC_H
+#define STM32H7xx_ADC_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -187,11 +185,6 @@ typedef struct
   uint32_t LeftBitShift;             /*!< Configures the left shifting applied to the final result with or without oversampling.
                                           This parameter can be a value of @ref ADCEx_Left_Bit_Shift */
 
-  FunctionalState BoostMode;         /*!< Configures the Boost mode control.
-                                        When selecting an analog ADC clock frequency bigger than 20MHz,
-                                      it is mandatory to first enable the BOOST Mode.
-                                          This parameter can be set to ENABLE or DISABLE. */
-
   FunctionalState OversamplingMode;        /*!< Specify whether the oversampling feature is enabled or disabled.
                                         This parameter can be set to ENABLE or DISABLE.
                                         Note: This parameter can be modified only if there is no conversion is ongoing on ADC groups regular and injected */
@@ -303,6 +296,9 @@ typedef struct
 #define HAL_ADC_ERROR_OVR          ((uint32_t)0x02)   /*!< Overrun error                            */
 #define HAL_ADC_ERROR_DMA          ((uint32_t)0x04)   /*!< DMA transfer error                       */
 #define HAL_ADC_ERROR_JQOVF        ((uint32_t)0x08)   /*!< Injected context queue overflow error    */
+#if (USE_HAL_ADC_REGISTER_CALLBACKS == 1)
+#define HAL_ADC_ERROR_INVALID_CALLBACK  (0x10U)       /*!< Invalid Callback error */
+#endif /* USE_HAL_ADC_REGISTER_CALLBACKS */
 /**
   * @}
   */
@@ -313,10 +309,6 @@ typedef struct
 #define ADC_CLOCK_SYNC_PCLK_DIV1      ((uint32_t)ADC_CCR_CKMODE_0)  /*!< ADC synchronous clock derived from AHB clock not divided  */
 #define ADC_CLOCK_SYNC_PCLK_DIV2      ((uint32_t)ADC_CCR_CKMODE_1)  /*!< ADC synchronous clock derived from AHB clock divided by 2 */
 #define ADC_CLOCK_SYNC_PCLK_DIV4      ((uint32_t)ADC_CCR_CKMODE)    /*!< ADC synchronous clock derived from AHB clock divided by 4 */
-
-#define ADC_CLOCKPRESCALER_PCLK_DIV1   ADC_CLOCK_SYNC_PCLK_DIV1     /*!< Obsolete naming, kept for compatibility with some other devices */
-#define ADC_CLOCKPRESCALER_PCLK_DIV2   ADC_CLOCK_SYNC_PCLK_DIV2     /*!< Obsolete naming, kept for compatibility with some other devices */
-#define ADC_CLOCKPRESCALER_PCLK_DIV4   ADC_CLOCK_SYNC_PCLK_DIV4     /*!< Obsolete naming, kept for compatibility with some other devices */
 
 #define ADC_CLOCK_ASYNC_DIV1       ((uint32_t)0x00000000)                                        /*!< ADC asynchronous clock not divided    */
 #define ADC_CLOCK_ASYNC_DIV2       ((uint32_t)ADC_CCR_PRESC_0)                                   /*!< ADC asynchronous clock divided by 2   */
@@ -337,11 +329,11 @@ typedef struct
 /** @defgroup ADC_Resolution ADC Resolution
   * @{
   */
-#define ADC_RESOLUTION_16B      ((uint32_t)0x00000000)                             /*!<  ADC 16-bit resolution */
-#define ADC_RESOLUTION_14B      ((uint32_t)ADC_CFGR_RES_0)                         /*!<  ADC 14-bit resolution */
-#define ADC_RESOLUTION_12B      ((uint32_t)ADC_CFGR_RES_1)                         /*!<  ADC 12-bit resolution */
-#define ADC_RESOLUTION_10B      ((uint32_t)(ADC_CFGR_RES_1 | ADC_CFGR_RES_0))      /*!<  ADC 10-bit resolution */
-#define ADC_RESOLUTION_8B       ((uint32_t)ADC_CFGR_RES_2)                         /*!<  ADC 8-bit resolution */
+#define ADC_RESOLUTION_16B      ((uint32_t)0x00000000)                                         /*!<  ADC 16-bit resolution */
+#define ADC_RESOLUTION_14B      ((uint32_t)ADC_CFGR_RES_0)                                     /*!<  ADC 14-bit resolution */
+#define ADC_RESOLUTION_12B      ((uint32_t)ADC_CFGR_RES_1)                                     /*!<  ADC 12-bit resolution */
+#define ADC_RESOLUTION_10B      ((uint32_t)(ADC_CFGR_RES_1 | ADC_CFGR_RES_0))                  /*!<  ADC 10-bit resolution */
+#define ADC_RESOLUTION_8B       ((uint32_t)(ADC_CFGR_RES_2))                                   /*!<  ADC  8-bit resolution */
 /**
   * @}
   */
@@ -522,7 +514,11 @@ typedef struct
   * @param __HANDLE__: ADC handle
   * @retval Parameter of @ref ADC_Resolution set.
   */
-#define ADC_GET_RESOLUTION(__HANDLE__) (((__HANDLE__)->Instance->CFGR) & ADC_CFGR_RES)
+#define ADC_GET_RESOLUTION(__HANDLE__) \
+          ((((DBGMCU->IDCODE & 0xF0000000) == 0x10000000) || ((((__HANDLE__)->Instance->CFGR) & ADC_CFGR_RES_2) == RESET))? \
+          (((__HANDLE__)->Instance->CFGR) & ADC_CFGR_RES):                                 \
+          (((__HANDLE__)->Instance->CFGR) & (ADC_CFGR_RES & 0xFFFFFFF3)))                  \
+
 
 /**
   * @brief Clear ADC error code (set it to error code: "no error")
@@ -549,6 +545,16 @@ typedef struct
 #define ADC_IS_CONVERSION_ONGOING_REGULAR(__HANDLE__)                    \
        (( (((__HANDLE__)->Instance->CR) & ADC_CR_ADSTART) == RESET             \
         ) ? RESET : SET)
+
+/**
+  * @brief Check if ADC clock mode is synchronous
+  * @param __HANDLE__: ADC handle
+  * @retval SET (clock mode is synchronous) or RESET (clock mode is asynchronous)
+  */
+#define ADC_IS_SYNCHRONOUS_CLOCK_MODE(__HANDLE__)                                   \
+       (((((__HANDLE__)->Instance) == ADC1) || (((__HANDLE__)->Instance) == ADC2))? \
+	   ((ADC12_COMMON->CCR & ADC_CCR_CKMODE) != RESET)                              \
+	   :((((ADC3_COMMON)->CCR) & ADC_CCR_CKMODE) != RESET))
 
 /**
   * @brief Simultaneously clears and sets specific bits of the handle State
@@ -771,8 +777,16 @@ typedef struct
   * @param  __HANDLE__: ADC handle
   * @retval None
   */
+#if (USE_HAL_ADC_REGISTER_CALLBACKS == 1)
+#define __HAL_ADC_RESET_HANDLE_STATE(__HANDLE__)                               \
+  do{                                                                          \
+     (__HANDLE__)->State = HAL_ADC_STATE_RESET;                               \
+     (__HANDLE__)->MspInitCallback = NULL;                                     \
+     (__HANDLE__)->MspDeInitCallback = NULL;                                   \
+    } while(0)
+#else
 #define __HAL_ADC_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_ADC_STATE_RESET)
-
+#endif /* USE_HAL_ADC_REGISTER_CALLBACKS */
 /**
   * @brief  Checks if the specified ADC interrupt source is enabled or disabled.
   * @param __HANDLE__: ADC handle
@@ -897,6 +911,11 @@ HAL_StatusTypeDef       HAL_ADC_Init(ADC_HandleTypeDef* hadc);
 HAL_StatusTypeDef       HAL_ADC_DeInit(ADC_HandleTypeDef *hadc);
 void                    HAL_ADC_MspInit(ADC_HandleTypeDef* hadc);
 void                    HAL_ADC_MspDeInit(ADC_HandleTypeDef* hadc);
+#if (USE_HAL_ADC_REGISTER_CALLBACKS == 1)
+/* Callbacks Register/UnRegister functions  ***********************************/
+HAL_StatusTypeDef HAL_ADC_RegisterCallback(ADC_HandleTypeDef *hadc, HAL_ADC_CallbackIDTypeDef CallbackID, pADC_CallbackTypeDef pCallback);
+HAL_StatusTypeDef HAL_ADC_UnRegisterCallback(ADC_HandleTypeDef *hadc, HAL_ADC_CallbackIDTypeDef CallbackID);
+#endif /* USE_HAL_ADC_REGISTER_CALLBACKS */
 /**
   * @}
   */
@@ -968,6 +987,7 @@ HAL_StatusTypeDef ADC_Disable(ADC_HandleTypeDef* hadc);
 void ADC_DMAConvCplt(DMA_HandleTypeDef *hdma);
 void ADC_DMAHalfConvCplt(DMA_HandleTypeDef *hdma);
 void ADC_DMAError(DMA_HandleTypeDef *hdma);
+void ADC_ConfigureBoostMode(ADC_HandleTypeDef* hadc);
 
 /**
   * @}
@@ -990,6 +1010,6 @@ void ADC_DMAError(DMA_HandleTypeDef *hdma);
 #endif
 
 
-#endif /*__STM32H7xx_ADC_H */
+#endif /*STM32H7xx_ADC_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

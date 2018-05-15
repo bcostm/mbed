@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_irda_ex.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of IRDA HAL Extended module.
   ******************************************************************************
   * @attention
@@ -40,7 +38,7 @@
 #define __STM32H7xx_HAL_IRDA_EX_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -50,7 +48,7 @@
   * @{
   */
 
-/** @addtogroup IRDAEx
+/** @defgroup IRDAEx IRDAEx
   * @{
   */
 
@@ -66,8 +64,8 @@
   */
 
 /** @brief  Report the IRDA clock source.
-  * @param  __HANDLE__: specifies the IRDA Handle.
-  * @param  __CLOCKSOURCE__: output variable.
+  * @param  __HANDLE__ specifies the IRDA Handle.
+  * @param  __CLOCKSOURCE__ output variable.
   * @retval IRDA clocking source, written in __CLOCKSOURCE__.
   */
 #define IRDA_GETCLOCKSOURCE(__HANDLE__,__CLOCKSOURCE__)       \
@@ -79,10 +77,10 @@
         case RCC_USART1CLKSOURCE_D2PCLK2:                     \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_D2PCLK2;       \
           break;                                              \
-        case RCC_USART1CLKSOURCE_PLL2:                       \
+        case RCC_USART1CLKSOURCE_PLL2:                        \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL2Q;         \
           break;                                              \
-        case RCC_USART1CLKSOURCE_PLL3:                       \
+        case RCC_USART1CLKSOURCE_PLL3:                        \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL3Q;         \
           break;                                              \
         case RCC_USART1CLKSOURCE_HSI:                         \
@@ -103,10 +101,10 @@
         case RCC_USART2CLKSOURCE_D2PCLK1:                     \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
-        case RCC_USART2CLKSOURCE_PLL2:                       \
+        case RCC_USART2CLKSOURCE_PLL2:                        \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL2Q;         \
           break;                                              \
-        case RCC_USART2CLKSOURCE_PLL3:                       \
+        case RCC_USART2CLKSOURCE_PLL3:                        \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL3Q;         \
           break;                                              \
         case RCC_USART2CLKSOURCE_HSI:                         \
@@ -127,10 +125,10 @@
         case RCC_USART3CLKSOURCE_D2PCLK1:                     \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
-        case RCC_USART3CLKSOURCE_PLL2:                       \
+        case RCC_USART3CLKSOURCE_PLL2:                        \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL2Q;         \
           break;                                              \
-        case RCC_USART3CLKSOURCE_PLL3:                       \
+        case RCC_USART3CLKSOURCE_PLL3:                        \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL3Q;         \
           break;                                              \
         case RCC_USART3CLKSOURCE_HSI:                         \
@@ -151,10 +149,10 @@
         case RCC_UART4CLKSOURCE_D2PCLK1:                      \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
-        case RCC_UART4CLKSOURCE_PLL2:                        \
+        case RCC_UART4CLKSOURCE_PLL2:                         \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL2Q;         \
           break;                                              \
-        case RCC_UART4CLKSOURCE_PLL3:                        \
+        case RCC_UART4CLKSOURCE_PLL3:                         \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL3Q;         \
           break;                                              \
         case RCC_UART4CLKSOURCE_HSI:                          \
@@ -175,10 +173,10 @@
         case RCC_UART5CLKSOURCE_D2PCLK1:                      \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
-        case RCC_UART5CLKSOURCE_PLL2:                        \
+        case RCC_UART5CLKSOURCE_PLL2:                         \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL2Q;         \
           break;                                              \
-        case RCC_UART5CLKSOURCE_PLL3:                        \
+        case RCC_UART5CLKSOURCE_PLL3:                         \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL3Q;         \
           break;                                              \
         case RCC_UART5CLKSOURCE_HSI:                          \
@@ -199,10 +197,10 @@
         case RCC_USART6CLKSOURCE_D2PCLK2:                     \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_D2PCLK2;       \
           break;                                              \
-        case RCC_USART6CLKSOURCE_PLL2:                       \
+        case RCC_USART6CLKSOURCE_PLL2:                        \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL2Q;         \
           break;                                              \
-        case RCC_USART6CLKSOURCE_PLL3:                       \
+        case RCC_USART6CLKSOURCE_PLL3:                        \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL3Q;         \
           break;                                              \
         case RCC_USART6CLKSOURCE_HSI:                         \
@@ -223,10 +221,10 @@
         case RCC_UART7CLKSOURCE_D2PCLK1:                      \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
-        case RCC_UART7CLKSOURCE_PLL2:                        \
+        case RCC_UART7CLKSOURCE_PLL2:                         \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL2Q;         \
           break;                                              \
-        case RCC_UART7CLKSOURCE_PLL3:                        \
+        case RCC_UART7CLKSOURCE_PLL3:                         \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL3Q;         \
           break;                                              \
         case RCC_UART7CLKSOURCE_HSI:                          \
@@ -240,17 +238,17 @@
           break;                                              \
        }                                                      \
     }                                                         \
-    else if((__HANDLE__)->Instance == UART8)                 \
+    else if((__HANDLE__)->Instance == UART8)                  \
     {                                                         \
        switch(__HAL_RCC_GET_UART8_SOURCE())                   \
        {                                                      \
         case RCC_UART8CLKSOURCE_D2PCLK1:                      \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
-        case RCC_UART8CLKSOURCE_PLL2:                        \
+        case RCC_UART8CLKSOURCE_PLL2:                         \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL2Q;         \
           break;                                              \
-        case RCC_UART8CLKSOURCE_PLL3:                        \
+        case RCC_UART8CLKSOURCE_PLL3:                         \
           (__CLOCKSOURCE__) = IRDA_CLOCKSOURCE_PLL3Q;         \
           break;                                              \
         case RCC_UART8CLKSOURCE_HSI:                          \

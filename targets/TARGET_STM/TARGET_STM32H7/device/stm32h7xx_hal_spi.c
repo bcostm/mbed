@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_spi.c
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   SPI HAL module driver.
   *          This file provides firmware functions to manage the following
   *          functionalities of the Serial Peripheral Interface (SPI) peripheral:
@@ -27,7 +25,7 @@
           (##) SPI pins configuration
               (+++) Enable the clock for the SPI GPIOs
               (+++) Configure these SPI pins as alternate function push-pull
-          (##) NVIC configuration if you need to use interrupt process
+          (##) NVIC configuration if you need to use interrupt process or DMA process
               (+++) Configure the SPIx interrupt priority
               (+++) Enable the NVIC SPI IRQ handle
           (##) DMA Configuration if you need to use DMA process
@@ -44,6 +42,65 @@
       (#) Initialize the SPI registers by calling the HAL_SPI_Init() API:
           (++) This API configures also the low level Hardware GPIO, CLOCK, CORTEX...etc)
               by calling the customized HAL_SPI_MspInit() API.
+     [..]
+       Callback registration:
+
+      (#) The compilation flag USE_HAL_SPI_REGISTER_CALLBACKS when set to 1U
+          allows the user to configure dynamically the driver callbacks.
+          Use Functions HAL_SPI_RegisterCallback() to register an interrupt callback.
+
+          Function HAL_SPI_RegisterCallback() allows to register following callbacks:
+            (+) TxCpltCallback        : SPI Tx Completed callback
+            (+) RxCpltCallback        : SPI Rx Completed callback
+            (+) TxRxCpltCallback      : SPI TxRx Completed callback
+            (+) TxHalfCpltCallback    : SPI Tx Half Completed callback
+            (+) RxHalfCpltCallback    : SPI Rx Half Completed callback
+            (+) TxRxHalfCpltCallback  : SPI TxRx Half Completed callback
+            (+) ErrorCallback         : SPI Error callback
+            (+) AbortCpltCallback     : SPI Abort callback
+            (+) MspInitCallback       : SPI Msp Init callback
+            (+) MspDeInitCallback     : SPI Msp DeInit callback
+          This function takes as parameters the HAL peripheral handle, the Callback ID
+          and a pointer to the user callback function.
+
+
+      (#) Use function HAL_SPI_UnRegisterCallback to reset a callback to the default
+          weak function.
+          HAL_SPI_UnRegisterCallback takes as parameters the HAL peripheral handle,
+          and the Callback ID.
+          This function allows to reset following callbacks:
+            (+) TxCpltCallback        : SPI Tx Completed callback
+            (+) RxCpltCallback        : SPI Rx Completed callback
+            (+) TxRxCpltCallback      : SPI TxRx Completed callback
+            (+) TxHalfCpltCallback    : SPI Tx Half Completed callback
+            (+) RxHalfCpltCallback    : SPI Rx Half Completed callback
+            (+) TxRxHalfCpltCallback  : SPI TxRx Half Completed callback
+            (+) ErrorCallback         : SPI Error callback
+            (+) AbortCpltCallback     : SPI Abort callback
+            (+) MspInitCallback       : SPI Msp Init callback
+            (+) MspDeInitCallback     : SPI Msp DeInit callback
+
+       By default, after the HAL_SPI_Init() and when the state is HAL_SPI_STATE_RESET
+       all callbacks are set to the corresponding weak functions:
+       examples HAL_SPI_MasterTxCpltCallback(), HAL_SPI_MasterRxCpltCallback().
+       Exception done for MspInit and MspDeInit functions that are
+       reset to the legacy weak functions in the HAL_SPI_Init()/ HAL_SPI_DeInit() only when
+       these callbacks are null (not registered beforehand).
+       If MspInit or MspDeInit are not null, the HAL_SPI_Init()/ HAL_SPI_DeInit()
+       keep and use the user MspInit/MspDeInit callbacks (registered beforehand) whatever the state.
+
+       Callbacks can be registered/unregistered in HAL_SPI_STATE_READY state only.
+       Exception done MspInit/MspDeInit functions that can be registered/unregistered
+       in HAL_SPI_STATE_READY or HAL_SPI_STATE_RESET state,
+       thus registered (user) MspInit/DeInit callbacks can be used during the Init/DeInit.
+       Then, the user first registers the MspInit/MspDeInit user callbacks
+       using HAL_SPI_RegisterCallback() before calling HAL_SPI_DeInit()
+       or HAL_SPI_Init() function.
+
+       When The compilation define USE_HAL_PPP_REGISTER_CALLBACKS is set to 0 or
+       not defined, the callback registering feature is not available
+       and weak (surcharged) callbacks are used.
+
 
     [..]
       Circular mode restriction:
@@ -200,7 +257,7 @@ HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)
 {
   uint32_t crc_length = 0;
   uint32_t packet_length = 0;
-  
+
   /* Check the SPI handle allocation */
   if (hspi == NULL)
   {
@@ -235,7 +292,7 @@ HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)
 #else
   hspi->Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
 #endif /* USE_SPI_CRC */
-  
+
   /* Verify that the SPI instance supports Data Size higher than 16bits */
   if ((!IS_SPI_HIGHEND_INSTANCE(hspi->Instance)) && (hspi->Init.DataSize > SPI_DATASIZE_16BIT))
   {
@@ -282,8 +339,28 @@ HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)
     /* Allocate lock resource and initialize it */
     hspi->Lock = HAL_UNLOCKED;
 
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+    /* Init the SPI Callback settings */
+    hspi->TxCpltCallback       = HAL_SPI_TxCpltCallback;       /* Legacy weak TxCpltCallback       */
+    hspi->RxCpltCallback       = HAL_SPI_RxCpltCallback;       /* Legacy weak RxCpltCallback       */
+    hspi->TxRxCpltCallback     = HAL_SPI_TxRxCpltCallback;     /* Legacy weak TxRxCpltCallback     */
+    hspi->TxHalfCpltCallback   = HAL_SPI_TxHalfCpltCallback;   /* Legacy weak TxHalfCpltCallback   */
+    hspi->RxHalfCpltCallback   = HAL_SPI_RxHalfCpltCallback;   /* Legacy weak RxHalfCpltCallback   */
+    hspi->TxRxHalfCpltCallback = HAL_SPI_TxRxHalfCpltCallback; /* Legacy weak TxRxHalfCpltCallback */
+    hspi->ErrorCallback        = HAL_SPI_ErrorCallback;        /* Legacy weak ErrorCallback        */
+    hspi->AbortCpltCallback    = HAL_SPI_AbortCpltCallback;    /* Legacy weak AbortCpltCallback    */
+
+    if (hspi->MspInitCallback == NULL)
+    {
+      hspi->MspInitCallback = HAL_SPI_MspInit; /* Legacy weak MspInit  */
+    }
+
+    /* Init the low level hardware : GPIO, CLOCK, NVIC... */
+    hspi->MspInitCallback(hspi);
+#else
     /* Init the low level hardware : GPIO, CLOCK, NVIC... */
     HAL_SPI_MspInit(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
   }
 
   hspi->State = HAL_SPI_STATE_BUSY;
@@ -294,7 +371,7 @@ HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)
   /*----------------------- SPIx CR1 & CR2 Configuration ---------------------*/
   /* Configure : SPI Mode, Communication Mode, Clock polarity and phase, NSS management,
   Communication speed, First bit, CRC calculation state, CRC Length */
- 
+
   if ((hspi->Init.NSS == SPI_NSS_SOFT) && (hspi->Init.Mode == SPI_MODE_MASTER) && (hspi->Init.NSSPolarity == SPI_NSS_POLARITY_LOW))
   {
     SET_BIT(hspi->Instance->CR1, SPI_CR1_SSI);
@@ -320,13 +397,13 @@ HAL_StatusTypeDef HAL_SPI_Init(SPI_HandleTypeDef *hspi)
       SET_BIT(hspi->Instance->CR1, SPI_CR1_TCRCINI);
     else
       CLEAR_BIT(hspi->Instance->CR1, SPI_CR1_TCRCINI);
-    
+
     /* Initialize RXCRC Pattern Initial Value */
     if (hspi->Init.RxCRCInitializationPattern == SPI_CRC_INITIALIZATION_ALL_ONE_PATTERN)
       SET_BIT(hspi->Instance->CR1, SPI_CR1_RCRCINI);
     else
       CLEAR_BIT(hspi->Instance->CR1, SPI_CR1_RCRCINI);
-    
+
     /* Enable 33/17 bits CRC computation */
     if (((!IS_SPI_HIGHEND_INSTANCE(hspi->Instance)) && (crc_length == SPI_CRC_LENGTH_16BIT)) ||
         ((IS_SPI_HIGHEND_INSTANCE(hspi->Instance))  && (crc_length == SPI_CRC_LENGTH_32BIT)) )
@@ -392,8 +469,18 @@ HAL_StatusTypeDef HAL_SPI_DeInit(SPI_HandleTypeDef *hspi)
   /* Disable the SPI Peripheral Clock */
   __HAL_SPI_DISABLE(hspi);
 
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+  if (hspi->MspDeInitCallback == NULL)
+  {
+    hspi->MspDeInitCallback = HAL_SPI_MspDeInit; /* Legacy weak MspDeInit  */
+  }
+
+  /* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
+  hspi->MspDeInitCallback(hspi);
+#else
   /* DeInit the low level hardware: GPIO, CLOCK, NVIC... */
   HAL_SPI_MspDeInit(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 
   hspi->ErrorCode = HAL_SPI_ERROR_NONE;
   hspi->State = HAL_SPI_STATE_RESET;
@@ -436,6 +523,221 @@ __weak void HAL_SPI_MspDeInit(SPI_HandleTypeDef *hspi)
    */
 }
 
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+/**
+  * @brief  Register a User SPI Callback
+  *         To be used instead of the weak predefined callback
+  * @param  hspi Pointer to a SPI_HandleTypeDef structure that contains
+  *                the configuration information for the specified SPI.
+  * @param  CallbackID ID of the callback to be registered
+  * @param  pCallback pointer to the Callback function
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_SPI_RegisterCallback(SPI_HandleTypeDef *hspi, HAL_SPI_CallbackIDTypeDef CallbackID, pSPI_CallbackTypeDef pCallback)
+{
+  HAL_StatusTypeDef status = HAL_OK;
+
+  if (pCallback == NULL)
+  {
+    /* Update the error code */
+    hspi->ErrorCode |= HAL_SPI_ERROR_INVALID_CALLBACK;
+
+    return HAL_ERROR;
+  }
+  /* Process locked */
+  __HAL_LOCK(hspi);
+
+  if (HAL_SPI_STATE_READY == hspi->State)
+  {
+    switch (CallbackID)
+    {
+      case HAL_SPI_TX_COMPLETE_CB_ID :
+        hspi->TxCpltCallback = pCallback;
+        break;
+
+      case HAL_SPI_RX_COMPLETE_CB_ID :
+        hspi->RxCpltCallback = pCallback;
+        break;
+
+      case HAL_SPI_TX_RX_COMPLETE_CB_ID :
+        hspi->TxRxCpltCallback = pCallback;
+        break;
+
+      case HAL_SPI_TX_HALF_COMPLETE_CB_ID :
+        hspi->TxHalfCpltCallback = pCallback;
+        break;
+
+      case HAL_SPI_RX_HALF_COMPLETE_CB_ID :
+        hspi->RxHalfCpltCallback = pCallback;
+        break;
+
+      case HAL_SPI_TX_RX_HALF_COMPLETE_CB_ID :
+        hspi->TxRxHalfCpltCallback = pCallback;
+        break;
+
+      case HAL_SPI_ERROR_CB_ID :
+        hspi->ErrorCallback = pCallback;
+        break;
+
+      case HAL_SPI_ABORT_CB_ID :
+        hspi->AbortCpltCallback = pCallback;
+        break;
+
+      case HAL_SPI_MSPINIT_CB_ID :
+        hspi->MspInitCallback = pCallback;
+        break;
+
+      case HAL_SPI_MSPDEINIT_CB_ID :
+        hspi->MspDeInitCallback = pCallback;
+        break;
+
+      default :
+        /* Update the error code */
+        SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_INVALID_CALLBACK);
+
+        /* Return error status */
+        status =  HAL_ERROR;
+        break;
+    }
+  }
+  else if (HAL_SPI_STATE_RESET == hspi->State)
+  {
+    switch (CallbackID)
+    {
+      case HAL_SPI_MSPINIT_CB_ID :
+        hspi->MspInitCallback = pCallback;
+        break;
+
+      case HAL_SPI_MSPDEINIT_CB_ID :
+        hspi->MspDeInitCallback = pCallback;
+        break;
+
+      default :
+        /* Update the error code */
+        SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_INVALID_CALLBACK);
+
+        /* Return error status */
+        status =  HAL_ERROR;
+        break;
+    }
+  }
+  else
+  {
+    /* Update the error code */
+    SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_INVALID_CALLBACK);
+
+    /* Return error status */
+    status =  HAL_ERROR;
+  }
+
+  /* Release Lock */
+  __HAL_UNLOCK(hspi);
+  return status;
+}
+
+/**
+  * @brief  Unregister an SPI Callback
+  *         SPI callback is redirected to the weak predefined callback
+  * @param  hspi Pointer to a SPI_HandleTypeDef structure that contains
+  *                the configuration information for the specified SPI.
+  * @param  CallbackID ID of the callback to be unregistered
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_SPI_UnRegisterCallback(SPI_HandleTypeDef *hspi, HAL_SPI_CallbackIDTypeDef CallbackID)
+{
+  HAL_StatusTypeDef status = HAL_OK;
+
+  /* Process locked */
+  __HAL_LOCK(hspi);
+
+  if (HAL_SPI_STATE_READY == hspi->State)
+  {
+    switch (CallbackID)
+    {
+      case HAL_SPI_TX_COMPLETE_CB_ID :
+        hspi->TxCpltCallback = HAL_SPI_TxCpltCallback;             /* Legacy weak TxCpltCallback       */
+        break;
+
+      case HAL_SPI_RX_COMPLETE_CB_ID :
+        hspi->RxCpltCallback = HAL_SPI_RxCpltCallback;             /* Legacy weak RxCpltCallback       */
+        break;
+
+      case HAL_SPI_TX_RX_COMPLETE_CB_ID :
+        hspi->TxRxCpltCallback = HAL_SPI_TxRxCpltCallback;         /* Legacy weak TxRxCpltCallback     */
+        break;
+
+      case HAL_SPI_TX_HALF_COMPLETE_CB_ID :
+        hspi->TxHalfCpltCallback = HAL_SPI_TxHalfCpltCallback;     /* Legacy weak TxHalfCpltCallback   */
+        break;
+
+      case HAL_SPI_RX_HALF_COMPLETE_CB_ID :
+        hspi->RxHalfCpltCallback = HAL_SPI_RxHalfCpltCallback;     /* Legacy weak RxHalfCpltCallback   */
+        break;
+
+      case HAL_SPI_TX_RX_HALF_COMPLETE_CB_ID :
+        hspi->TxRxHalfCpltCallback = HAL_SPI_TxRxHalfCpltCallback; /* Legacy weak TxRxHalfCpltCallback */
+        break;
+
+      case HAL_SPI_ERROR_CB_ID :
+        hspi->ErrorCallback = HAL_SPI_ErrorCallback;               /* Legacy weak ErrorCallback        */
+        break;
+
+      case HAL_SPI_ABORT_CB_ID :
+        hspi->AbortCpltCallback = HAL_SPI_AbortCpltCallback;       /* Legacy weak AbortCpltCallback    */
+        break;
+
+      case HAL_SPI_MSPINIT_CB_ID :
+        hspi->MspInitCallback = HAL_SPI_MspInit;                   /* Legacy weak MspInit              */
+        break;
+
+      case HAL_SPI_MSPDEINIT_CB_ID :
+        hspi->MspDeInitCallback = HAL_SPI_MspDeInit;               /* Legacy weak MspDeInit            */
+        break;
+
+      default :
+        /* Update the error code */
+        SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_INVALID_CALLBACK);
+
+        /* Return error status */
+        status =  HAL_ERROR;
+        break;
+    }
+  }
+  else if (HAL_SPI_STATE_RESET == hspi->State)
+  {
+    switch (CallbackID)
+    {
+      case HAL_SPI_MSPINIT_CB_ID :
+        hspi->MspInitCallback = HAL_SPI_MspInit;                   /* Legacy weak MspInit              */
+        break;
+
+      case HAL_SPI_MSPDEINIT_CB_ID :
+        hspi->MspDeInitCallback = HAL_SPI_MspDeInit;               /* Legacy weak MspDeInit            */
+        break;
+
+      default :
+        /* Update the error code */
+        SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_INVALID_CALLBACK);
+
+        /* Return error status */
+        status =  HAL_ERROR;
+        break;
+    }
+  }
+  else
+  {
+    /* Update the error code */
+    SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_INVALID_CALLBACK);
+
+    /* Return error status */
+    status =  HAL_ERROR;
+  }
+
+  /* Release Lock */
+  __HAL_UNLOCK(hspi);
+  return status;
+}
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 /**
   * @}
   */
@@ -1393,7 +1695,7 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive_IT(SPI_HandleTypeDef *hspi, uint8_t *p
 
   /* Set the number if data at current transfer */
   MODIFY_REG(hspi->Instance->CR2, SPI_CR2_TSIZE, Size);
-  
+
   /* Enable SPI peripheral */
   __HAL_SPI_ENABLE(hspi);
 
@@ -1425,7 +1727,7 @@ HAL_StatusTypeDef HAL_SPI_Transmit_DMA(SPI_HandleTypeDef *hspi, uint8_t *pData, 
 
   /* Check Direction parameter */
   assert_param(IS_SPI_DIRECTION_2LINES_OR_1LINE_2LINES_TXONLY(hspi->Init.Direction));
-  
+
   /* Process Locked */
   __HAL_LOCK(hspi);
 
@@ -1749,7 +2051,7 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive_DMA(SPI_HandleTypeDef *hspi, uint8_t *
     __HAL_UNLOCK(hspi);
     return errorcode;
   }
-  
+
   /* Adjust XferCount according to DMA alignement / Data size */
   if (hspi->Init.DataSize <= SPI_DATASIZE_8BIT)
   {
@@ -1853,9 +2155,9 @@ HAL_StatusTypeDef HAL_SPI_TransmitReceive_DMA(SPI_HandleTypeDef *hspi, uint8_t *
   * @note   This procedure could be used for aborting any ongoing transfer (Tx and Rx),
   *         started in Interrupt or DMA mode.
   * @note   This procedure performs following operations :
-  *          + Disable SPI Interrupts (depending of transfer direction) 
-  *          + Disable the DMA transfer in the peripheral register (if enabled) 
-  *          + Abort DMA transfer by calling HAL_DMA_Abort (in case of transfer in DMA mode) 
+  *          + Disable SPI Interrupts (depending of transfer direction)
+  *          + Disable the DMA transfer in the peripheral register (if enabled)
+  *          + Abort DMA transfer by calling HAL_DMA_Abort (in case of transfer in DMA mode)
   *          + Set handle State to READY.
   * @note   This procedure is executed in blocking mode : when exiting function, Abort is considered as completed.
   * @retval HAL status
@@ -1958,10 +2260,10 @@ HAL_StatusTypeDef HAL_SPI_Abort(SPI_HandleTypeDef *hspi)
   * @note   This procedure could be used for aborting any ongoing transfer (Tx and Rx),
   *         started in Interrupt or DMA mode.
   * @note   This procedure performs following operations :
-  *          + Disable SPI Interrupts (depending of transfer direction) 
-  *          + Disable the DMA transfer in the peripheral register (if enabled) 
-  *          + Abort DMA transfer by calling HAL_DMA_Abort_IT (in case of transfer in DMA mode) 
-  *          + Set handle State to READY 
+  *          + Disable SPI Interrupts (depending of transfer direction)
+  *          + Disable the DMA transfer in the peripheral register (if enabled)
+  *          + Abort DMA transfer by calling HAL_DMA_Abort_IT (in case of transfer in DMA mode)
+  *          + Set handle State to READY
   *          + At abort completion, call user abort complete callback.
   * @note   This procedure is executed in Interrupt mode, meaning that abort procedure could be
   *         considered as completed only when user abort complete callback is executed (not when exiting function).
@@ -2068,7 +2370,11 @@ HAL_StatusTypeDef HAL_SPI_Abort_IT(SPI_HandleTypeDef *hspi)
     hspi->State = HAL_SPI_STATE_READY;
 
     /* Call user Abort complete callback */
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+    hspi->AbortCpltCallback(hspi);
+#else
     HAL_SPI_AbortCpltCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
   }
 
   return errorcode;
@@ -2151,7 +2457,7 @@ void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi)
 
   if (handled != 0)
     return;
-  
+
   /* SPI End Of Transfer: DMA or IT based transfer */
   if (HAL_IS_BIT_SET(trigger, SPI_FLAG_EOT))
   {
@@ -2202,11 +2508,30 @@ void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi)
       hspi->State = HAL_SPI_STATE_READY;
       if (hspi->ErrorCode != HAL_SPI_ERROR_NONE)
       {
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+        hspi->ErrorCallback(hspi);
+#else
         HAL_SPI_ErrorCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
         return;
       }
     }
 
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+    /* Call appropriate user callback */
+    if (State == HAL_SPI_STATE_BUSY_TX_RX)
+    {
+      hspi->TxRxCpltCallback(hspi);
+    }
+    else if (State == HAL_SPI_STATE_BUSY_RX)
+    {
+      hspi->RxCpltCallback(hspi);
+    }
+    else if (State == HAL_SPI_STATE_BUSY_TX)
+    {
+      hspi->TxCpltCallback(hspi);
+    }
+#else
     /* Call appropriate user callback */
     if (State == HAL_SPI_STATE_BUSY_TX_RX)
     {
@@ -2220,6 +2545,8 @@ void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi)
     {
       HAL_SPI_TxCpltCallback(hspi);
     }
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
+
     return;
   }
 
@@ -2227,7 +2554,7 @@ void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi)
   {
     /* Abort on going, clear SUSP flag to avoid infinit looping */
     __HAL_SPI_CLEAR_SUSPFLAG(hspi);
-    
+
     return;
   }
 
@@ -2299,7 +2626,11 @@ void HAL_SPI_IRQHandler(SPI_HandleTypeDef *hspi)
         hspi->State = HAL_SPI_STATE_READY;
 
         /* Call user error callback */
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+        hspi->ErrorCallback(hspi);
+#else
         HAL_SPI_ErrorCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
       }
     }
     return;
@@ -2506,7 +2837,11 @@ static void SPI_DMATransmitCplt(DMA_HandleTypeDef *hdma)
   {
     if (hspi->hdmatx->Init.Mode == DMA_CIRCULAR)
     {
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+      hspi->TxCpltCallback(hspi);
+#else
       HAL_SPI_TxCpltCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
     }
     else
     {
@@ -2530,7 +2865,11 @@ static void SPI_DMAReceiveCplt(DMA_HandleTypeDef *hdma)
   {
     if (hspi->hdmarx->Init.Mode == DMA_CIRCULAR)
     {
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+      hspi->RxCpltCallback(hspi);
+#else
       HAL_SPI_RxCpltCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
     }
     else
     {
@@ -2554,7 +2893,11 @@ static void SPI_DMATransmitReceiveCplt(DMA_HandleTypeDef *hdma)
   {
     if (hspi->hdmatx->Init.Mode == DMA_CIRCULAR)
     {
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+      hspi->TxRxCpltCallback(hspi);
+#else
       HAL_SPI_TxRxCpltCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
     }
     else
     {
@@ -2574,7 +2917,11 @@ static void SPI_DMAHalfTransmitCplt(DMA_HandleTypeDef *hdma)
 {
   SPI_HandleTypeDef *hspi = (SPI_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
 
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+  hspi->TxHalfCpltCallback(hspi);
+#else
   HAL_SPI_TxHalfCpltCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 }
 
 /**
@@ -2587,7 +2934,11 @@ static void SPI_DMAHalfReceiveCplt(DMA_HandleTypeDef *hdma)
 {
   SPI_HandleTypeDef *hspi = (SPI_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
 
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+  hspi->RxHalfCpltCallback(hspi);
+#else
   HAL_SPI_RxHalfCpltCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 }
 
 /**
@@ -2600,7 +2951,11 @@ static void SPI_DMAHalfTransmitReceiveCplt(DMA_HandleTypeDef *hdma)
 {
   SPI_HandleTypeDef *hspi = (SPI_HandleTypeDef *)((DMA_HandleTypeDef *)hdma)->Parent;
 
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+  hspi->TxRxHalfCpltCallback(hspi);
+#else
   HAL_SPI_TxRxHalfCpltCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 }
 
 /**
@@ -2621,7 +2976,11 @@ static void SPI_DMAError(DMA_HandleTypeDef *hdma)
 
     SET_BIT(hspi->ErrorCode, HAL_SPI_ERROR_DMA);
     hspi->State = HAL_SPI_STATE_READY;
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+    hspi->ErrorCallback(hspi);
+#else
     HAL_SPI_ErrorCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
   }
 }
 
@@ -2640,7 +2999,11 @@ static void SPI_DMAAbortOnError(DMA_HandleTypeDef *hdma)
   /* Restore hspi->State to Ready */
   hspi->State = HAL_SPI_STATE_READY;
 
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+  hspi->ErrorCallback(hspi);
+#else
   HAL_SPI_ErrorCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 }
 
 /**
@@ -2673,7 +3036,11 @@ static void SPI_DMATxAbortCallback(DMA_HandleTypeDef *hdma)
   hspi->State = HAL_SPI_STATE_READY;
 
   /* Call user Abort complete callback */
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+  hspi->AbortCpltCallback(hspi);
+#else
   HAL_SPI_AbortCpltCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 }
 
 /**
@@ -2706,7 +3073,11 @@ static void SPI_DMARxAbortCallback(DMA_HandleTypeDef *hdma)
   hspi->State = HAL_SPI_STATE_READY;
 
   /* Call user Abort complete callback */
+#if (USE_HAL_SPI_REGISTER_CALLBACKS == 1U)
+  hspi->AbortCpltCallback(hspi);
+#else
   HAL_SPI_AbortCpltCallback(hspi);
+#endif /* USE_HAL_SPI_REGISTER_CALLBACKS */
 }
 
 /**

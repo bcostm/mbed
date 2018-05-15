@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_dma_ex.c
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   DMA Extension HAL module driver
   *          This file provides firmware functions to manage the following
   *          functionalities of the DMA Extension peripheral:
@@ -142,7 +140,7 @@ static void DMA_MultiBufferSetConfig(DMA_HandleTypeDef *hdma, uint32_t SrcAddres
 HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t DstAddress, uint32_t SecondMemAddress, uint32_t DataLength)
 {
   HAL_StatusTypeDef status = HAL_OK;
-  __IO uint32_t *ifcRegister_Base = NULL; /* DMA Stream Interrupt Clear register */
+  __IO uint32_t *ifcRegister_Base; /* DMA Stream Interrupt Clear register */
 
   /* Check the parameters */
   assert_param(IS_DMA_BUFFER_SIZE(DataLength));
@@ -180,7 +178,7 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart(DMA_HandleTypeDef *hdma, uint32_t S
       ifcRegister_Base = (uint32_t *)((uint32_t)(hdma->StreamBaseAddress + 8U));
 
       /* Clear all flags */
-      *ifcRegister_Base = 0x3FU << hdma->StreamIndex;
+      *ifcRegister_Base = 0x3FUL << hdma->StreamIndex;
 
       /* Clear the DMAMUX synchro overrun flag */
       hdma->DMAmuxChannelStatus->CFR = hdma->DMAmuxChannelStatusMask;
@@ -219,7 +217,7 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart(DMA_HandleTypeDef *hdma, uint32_t S
 HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart_IT(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t DstAddress, uint32_t SecondMemAddress, uint32_t DataLength)
 {
   HAL_StatusTypeDef status = HAL_OK;
-  __IO uint32_t *ifcRegister_Base = NULL; /* DMA Stream Interrupt Clear register */
+  __IO uint32_t *ifcRegister_Base; /* DMA Stream Interrupt Clear register */
 
   /* Check the parameters */
   assert_param(IS_DMA_BUFFER_SIZE(DataLength));
@@ -256,7 +254,7 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart_IT(DMA_HandleTypeDef *hdma, uint32_
     ifcRegister_Base = (uint32_t *)((uint32_t)(hdma->StreamBaseAddress + 8U));
 
     /* Clear all flags */
-    *ifcRegister_Base = 0x3FU << hdma->StreamIndex;
+    *ifcRegister_Base = 0x3FUL << hdma->StreamIndex;
 
     /* Clear the DMAMUX synchro overrun flag */
     hdma->DMAmuxChannelStatus->CFR = hdma->DMAmuxChannelStatusMask;
@@ -278,7 +276,7 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart_IT(DMA_HandleTypeDef *hdma, uint32_
     }
 
     /* Check if DMAMUX Synchronization is enabled*/
-    if((hdma->DMAmuxChannel->CCR & DMAMUX_CxCR_SE) != 0)
+    if((hdma->DMAmuxChannel->CCR & DMAMUX_CxCR_SE) != 0U)
     {
       /* Enable DMAMUX sync overrun IT*/
       hdma->DMAmuxChannel->CCR |= DMAMUX_CxCR_SOIE;
@@ -383,8 +381,8 @@ HAL_StatusTypeDef HAL_DMAEx_ConfigMuxSync(DMA_HandleTypeDef *hdma, HAL_DMA_MuxSy
                (~DMAMUX_CxCR_DMAREQ_ID) , \
                (syncSignalID << POSITION_VAL(DMAMUX_CxCR_SYNC_ID))       | \
                ((pSyncConfig->RequestNumber - 1U) << POSITION_VAL(DMAMUX_CxCR_NBREQ)) | \
-               syncPolarity | (pSyncConfig->SyncEnable << DMAMUX_POSITION_CxCR_SE)    | \
-               (pSyncConfig->EventEnable << DMAMUX_POSITION_CxCR_EGE));
+               syncPolarity | ((uint32_t)pSyncConfig->SyncEnable << DMAMUX_POSITION_CxCR_SE)    | \
+               ((uint32_t)pSyncConfig->EventEnable << DMAMUX_POSITION_CxCR_EGE));
 
       /* Process Locked */
     __HAL_UNLOCK(hdma);
@@ -412,7 +410,7 @@ HAL_StatusTypeDef HAL_DMAEx_ConfigMuxSync(DMA_HandleTypeDef *hdma, HAL_DMA_MuxSy
   */
 HAL_StatusTypeDef HAL_DMAEx_ConfigMuxRequestGenerator (DMA_HandleTypeDef *hdma, HAL_DMA_MuxRequestGeneratorConfigTypeDef *pRequestGeneratorConfig)
 {
-  HAL_StatusTypeDef status = HAL_OK;
+  HAL_StatusTypeDef status;
 
   /* Check the parameters */
   assert_param(IS_DMA_STREAM_ALL_INSTANCE(hdma->Instance));
@@ -441,7 +439,7 @@ HAL_StatusTypeDef HAL_DMAEx_ConfigMuxRequestGenerator (DMA_HandleTypeDef *hdma, 
     /* error status */
     status = HAL_ERROR;
   }
-  else if((hdma->State == HAL_DMA_STATE_READY) && ((hdma->DMAmuxRequestGen->RGCR & DMAMUX_RGxCR_GE) == 0))
+  else if((hdma->State == HAL_DMA_STATE_READY) && ((hdma->DMAmuxRequestGen->RGCR & DMAMUX_RGxCR_GE) == 0U))
   {
     /* RequestGenerator must be disable prior to the configuration i.e GE bit is 0 */
 
@@ -450,7 +448,7 @@ HAL_StatusTypeDef HAL_DMAEx_ConfigMuxRequestGenerator (DMA_HandleTypeDef *hdma, 
 
     /* Set the request generator new parameters*/
     hdma->DMAmuxRequestGen->RGCR = pRequestGeneratorConfig->SignalID | \
-                                  ((pRequestGeneratorConfig->RequestNumber - 1U) << POSITION_VAL(DMAMUX_RGxCR_NBREQ))| \
+                                  ((pRequestGeneratorConfig->RequestNumber - 1U) << POSITION_VAL(DMAMUX_RGxCR_GNBREQ))| \
                                   pRequestGeneratorConfig->Polarity;
     /* Process Locked */
     __HAL_UNLOCK(hdma);

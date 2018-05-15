@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_dac_ex.c
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Extended DAC HAL module driver.
   *         This file provides firmware functions to manage the extended 
   *         functionalities of DAC peripheral.
@@ -220,7 +218,7 @@ HAL_StatusTypeDef HAL_DACEx_NoiseWaveGenerate(DAC_HandleTypeDef* hdac, uint32_t 
   */
 HAL_StatusTypeDef HAL_DACEx_DualSetValue(DAC_HandleTypeDef* hdac, uint32_t Alignment, uint32_t Data1, uint32_t Data2)
 {  
-  uint32_t data = 0, tmp = 0;
+  uint32_t data, tmp ;
   
   /* Check the parameters */
   assert_param(IS_DAC_ALIGN(Alignment));
@@ -331,18 +329,23 @@ HAL_StatusTypeDef HAL_DACEx_SelfCalibrate (DAC_HandleTypeDef* hdac, DAC_ChannelC
   HAL_StatusTypeDef status = HAL_OK;
    
   __IO uint32_t tmp = 0;
-  uint32_t trimmingvalue = 0;
+  uint32_t trimmingvalue ;
   uint32_t delta;
   
   /* store/restore channel configuration structure purpose */
-  uint32_t oldmodeconfiguration = 0;
+  uint32_t oldmodeconfiguration ;
   
   /* Check the parameters */
   assert_param(IS_DAC_CHANNEL(Channel));
     
  /* Check the DAC handle allocation */
- /* Check if DAC running */
-  if((hdac == NULL) || (hdac->State == HAL_DAC_STATE_BUSY))
+  if (hdac == NULL)
+  {
+    status = HAL_ERROR;
+  }
+
+  /* Check if DAC running */ 
+  if (hdac->State == HAL_DAC_STATE_BUSY)
   {
     status = HAL_ERROR;
   }
@@ -381,7 +384,7 @@ HAL_StatusTypeDef HAL_DACEx_SelfCalibrate (DAC_HandleTypeDef* hdac, DAC_ChannelC
     /* Medium value */
     trimmingvalue = 16; 
     delta = 8;
-    while (delta != 0) 
+    while (delta != 0U) 
     {
       /* Set candidate trimming */
       MODIFY_REG(hdac->Instance->CCR, (DAC_CCR_OTRIM1<<Channel), (trimmingvalue<<Channel));
@@ -413,7 +416,7 @@ HAL_StatusTypeDef HAL_DACEx_SelfCalibrate (DAC_HandleTypeDef* hdac, DAC_ChannelC
     /* i.e. minimum time needed between two calibration steps */
     HAL_Delay(1);
 
-    if (!(hdac->Instance->SR & (DAC_SR_CAL_FLAG1<<Channel)))
+    if ((hdac->Instance->SR & (DAC_SR_CAL_FLAG1<<Channel)) == 0U)
     { 
       /* Trimming is actually one value more */
       trimmingvalue ++;
@@ -502,24 +505,17 @@ HAL_StatusTypeDef HAL_DACEx_SetUserTrimming (DAC_HandleTypeDef* hdac, DAC_Channe
 
 uint32_t HAL_DACEx_GetTrimOffset (DAC_HandleTypeDef *hdac, uint32_t Channel)
 {
-  uint32_t trimmingvalue = 0;
+  uint32_t trimmingvalue ;
   
-  /* Check the DAC handle allocation */
-  /* And not in Reset state */
-  if((hdac == NULL) || (hdac->State == HAL_DAC_STATE_RESET))
-  {
-    return HAL_ERROR;
-  }
-  else
-  {
-    /* Check the parameter */
-    assert_param(IS_DAC_CHANNEL(Channel));
+  /* Check the parameter */
+  assert_param(IS_DAC_CHANNEL(Channel));
 
-    /* Retrieve trimming  */
-    trimmingvalue = ((hdac->Instance->CCR & (DAC_CCR_OTRIM1 << Channel)) >> Channel);
-  }  
+  /* Retrieve trimming  */
+  trimmingvalue = ((hdac->Instance->CCR & (DAC_CCR_OTRIM1 << Channel)) >> Channel);
+  
   return trimmingvalue;
 }
+
 /**
   * @}
   */
@@ -578,9 +574,12 @@ uint32_t HAL_DACEx_DualGetValue(DAC_HandleTypeDef* hdac)
 void DAC_DMAConvCpltCh2(DMA_HandleTypeDef *hdma)   
 {
   DAC_HandleTypeDef* hdac = ( DAC_HandleTypeDef* )((DMA_HandleTypeDef* )hdma)->Parent;
-  
+#if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+  hdac->ConvCpltCallbackCh2(hdac);
+#else  
   HAL_DACEx_ConvCpltCallbackCh2(hdac); 
-  
+#endif /* USE_HAL_DAC_REGISTER_CALLBACKS */ 
+ 
   hdac->State= HAL_DAC_STATE_READY;
 }
 
@@ -593,8 +592,13 @@ void DAC_DMAConvCpltCh2(DMA_HandleTypeDef *hdma)
 void DAC_DMAHalfConvCpltCh2(DMA_HandleTypeDef *hdma)   
 {
     DAC_HandleTypeDef* hdac = ( DAC_HandleTypeDef* )((DMA_HandleTypeDef* )hdma)->Parent;
-    /* Conversion complete callback */
-    HAL_DACEx_ConvHalfCpltCallbackCh2(hdac); 
+    
+	/* Conversion complete callback */
+#if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+  hdac->ConvHalfCpltCallbackCh2(hdac);
+#else
+    HAL_DACEx_ConvHalfCpltCallbackCh2(hdac);
+#endif /* USE_HAL_DAC_REGISTER_CALLBACKS */
 }
 
 /**
@@ -609,9 +613,12 @@ void DAC_DMAErrorCh2(DMA_HandleTypeDef *hdma)
     
   /* Set DAC error code to DMA error */
   hdac->ErrorCode |= HAL_DAC_ERROR_DMA;
-    
+
+#if (USE_HAL_DAC_REGISTER_CALLBACKS == 1)
+  hdac->ErrorCallbackCh2(hdac);
+#else  
   HAL_DACEx_ErrorCallbackCh2(hdac); 
-    
+#endif /* USE_HAL_DAC_REGISTER_CALLBACKS */   
   hdac->State= HAL_DAC_STATE_READY;
 }
 

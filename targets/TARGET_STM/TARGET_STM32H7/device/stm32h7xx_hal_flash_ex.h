@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32H7xx_hal_flash_ex.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of FLASH HAL module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_FLASH_EX_H
-#define __STM32H7xx_HAL_FLASH_EX_H
+#ifndef STM32H7xx_HAL_FLASH_EX_H
+#define STM32H7xx_HAL_FLASH_EX_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -127,6 +125,17 @@ typedef struct
 
   uint32_t BootAddr1;   /*!< Boot Address 1.
                                 This parameter must be a value between begin and end of a bank */
+#if defined(DUAL_CORE)
+  uint32_t CM4BootConfig;  /*!< specifies if the CM4 boot Address to be configured BOOT_ADD0, BOOT_ADD1
+                                or both.  
+                                This parameter must be a value of @ref FLASHEx_OB_BOOT_OPTION enumeration */
+
+  uint32_t CM4BootAddr0;   /*!< CM4 Boot Address 0.
+                                This parameter must be a value between begin and end of a bank */
+
+  uint32_t CM4BootAddr1;   /*!< CM4 Boot Address 1.
+                                This parameter must be a value between begin and end of a bank */
+#endif /*DUAL_CORE*/
   
   uint32_t SecureAreaConfig;  /*!< specifies if the bank secured area shall be erased or not 
                                    when RDP level decreased from Level 1 to Level 0 or during a mass erase.
@@ -188,7 +197,13 @@ typedef struct
 #define OPTIONBYTE_PCROP         ((uint32_t)0x08U)  /*!< PCROP option byte configuration */
 #define OPTIONBYTE_BOR           ((uint32_t)0x10U)  /*!< BOR option byte configuration */
 #define OPTIONBYTE_SECURE_AREA   ((uint32_t)0x20U)  /*!< secure area option byte configuration */
+#if defined(DUAL_CORE)
+#define OPTIONBYTE_CM7_BOOTADD   ((uint32_t)0x40U)       /*!< CM7 BOOT ADD option byte configuration */
+#define OPTIONBYTE_CM4_BOOTADD   ((uint32_t)0x80U)       /*!< CM4 BOOT ADD option byte configuration */
+#define OPTIONBYTE_BOOTADD       OPTIONBYTE_CM7_BOOTADD  /*!< BOOT ADD option byte configuration */
+#else /* Single core*/
 #define OPTIONBYTE_BOOTADD       ((uint32_t)0x40U)  /*!< BOOT ADD option byte configuration */
+#endif /*DUAL_CORE*/
 /**
   * @}
   */
@@ -354,6 +369,26 @@ typedef struct
   * @}
   */  
 
+#if defined(DUAL_CORE)  
+/** @defgroup FLASHEx_OB_BCM7  FLASHEx OB BCM7
+  * @{
+  */
+#define OB_BCM7_DISABLE       ((uint32_t)0x00000U)                 /*!< CM7 Boot disabled */
+#define OB_BCM7_ENABLE        ((uint32_t)FLASH_OPTSR_BCM7)         /*!< CM7 Boot enabled */
+
+/**
+  * @}
+  */
+
+/** @defgroup FLASHEx_OB_BCM4
+  * @{
+  */
+#define OB_BCM4_DISABLE       ((uint32_t)0x00000U)                           /*!< CM4 Boot disabled */
+#define OB_BCM4_ENABLE        ((uint32_t)FLASH_OPTSR_BCM4)                   /*!< CM4 Boot enabled */
+/**
+  * @}
+  */
+#endif /*DUAL_CORE*/
 
   
 /** @defgroup FLASHEx_OB_IWDG1_SW  FLASHEx OB IWDG1 SW
@@ -364,6 +399,16 @@ typedef struct
 /**
   * @}
   */
+#if defined(DUAL_CORE)
+/** @defgroup FLASHEx_OB_IWDG2_SW  FLASHEx OB IWDG2 SW
+  * @{
+  */
+#define OB_IWDG2_SW             ((uint32_t)FLASH_OPTSR_IWDG2_SW)  /*!< Hardware independent watchdog 2*/
+#define OB_IWDG2_HW             ((uint32_t)0x00000U)              /*!< Software independent watchdog 2*/
+/**
+  * @}
+  */
+#endif
 /** @defgroup FLASHEx_OB_NRST_STOP_D1  FLASHEx OB NRST STOP D1
   * @{
   */
@@ -384,6 +429,25 @@ typedef struct
   * @}
   */
 
+#if defined(DUAL_CORE)
+/** @defgroup FLASHEx_OB_NRST_STOP_D2  FLASHEx OB NRST STOP D2
+  * @{
+  */
+#define OB_STOP_RST_D2            ((uint32_t)0x0000U)                       /*!< Reset generated when entering the D2 to stop mode */
+#define OB_STOP_NO_RST_D2         ((uint32_t)FLASH_OPTSR_NRST_STOP_D2)     /*!< No reset generated when entering the D2 to stop mode */
+/**
+  * @}
+  */
+  
+/** @defgroup FLASHEx_OB_NRST_STDBY_D2  FLASHEx OB NRST STDBY D2
+  * @{
+  */
+#define OB_STDBY_RST_D2           ((uint32_t)0x0000U)                       /*!< Reset generated when entering the D2 to standby mode */
+#define OB_STDBY_NO_RST_D2        ((uint32_t)FLASH_OPTSR_NRST_STBY_D2)     /*!< No reset generated when entering the D2 to standby mode */
+/**
+  * @}
+  */
+#endif
 /** @defgroup FLASHEx_OB_SWAP_BANK  FLASHEx OB SWAP BANK
   * @{
   */
@@ -429,6 +493,13 @@ typedef struct
 #define OB_USER_SWAP_BANK         ((uint32_t)0x0100U) /*!< Bank swap selection */
 #define OB_USER_IOHSLV            ((uint32_t)0x0200U) /*!< IO HSLV selection */
 #define OB_USER_IWDG1_SW          ((uint32_t)0x0400U) /*!< Independent watchdog selection */
+#if defined(DUAL_CORE)
+#define OB_USER_NRST_STOP_D2      ((uint32_t)0x0040U) /*!< Reset when entering Stop mode selection*/
+#define OB_USER_NRST_STDBY_D2     ((uint32_t)0x0080U) /*!< Reset when entering standby mode selection*/
+#define OB_USER_IWDG2_SW          ((uint32_t)0x0800U) /*!< Window watchdog selection */
+#define OB_USER_BCM4              ((uint32_t)0x1000U) /*!< CM4 boot selection */
+#define OB_USER_BCM7              ((uint32_t)0x2000U) /*!< CM7 boot selection */
+#endif /*DUAL_CORE*/
 
 /**
   * @}
@@ -509,10 +580,18 @@ HAL_StatusTypeDef HAL_FLASHEx_Lock_Bank2(void);
 
 #define IS_WRPSTATE(VALUE)    (((VALUE) == OB_WRPSTATE_DISABLE) || \
                                ((VALUE) == OB_WRPSTATE_ENABLE))  
+#if defined(DUAL_CORE)
+#define IS_OPTIONBYTE(VALUE)    ((VALUE) <= (OB_USER_IWDG1_SW      | OB_USER_IWDG2_SW      | OB_USER_NRST_STOP_D1  |\
+                                             OB_USER_NRST_STDBY_D1 | OB_USER_IWDG_STOP     | OB_USER_IWDG_STDBY    |\
+                                             OB_USER_ST_RAM_SIZE   | OB_USER_SECURITY      | OB_USER_BCM4          |\
+                                             OB_USER_BCM7          | OB_USER_NRST_STOP_D2  | OB_USER_NRST_STDBY_D2 |\
+                                             OB_USER_SWAP_BANK))
+#else
 #define IS_OPTIONBYTE(VALUE)    ((VALUE) <= (OB_USER_IWDG1_SW | OB_USER_NRST_STDBY_D1 | OB_USER_NRST_STOP_D1  |\
                                              OB_USER_IWDG_STOP| OB_USER_IWDG_STDBY    | OB_USER_SWAP_BANK     |\
                                              OB_USER_ST_RAM_SIZE   | OB_USER_SECURITY))
                                              
+#endif /*DUAL_CORE*/
 
 #define IS_OB_BOOT_ADDRESS(ADDRESS)     ((ADDRESS) <= 0x8013U)
 
@@ -547,7 +626,7 @@ HAL_StatusTypeDef HAL_FLASHEx_Lock_Bank2(void);
 
 #define IS_FLASH_ADDRESS(ADDRESS) ((((ADDRESS) >= FLASH_BASE) && ((ADDRESS) <= FLASH_END)) || \
                                    (((ADDRESS) >= FLASH_OTP_BANK1_BASE) && ((ADDRESS) <= FLASH_OTP_BANK1_END)) || \
-								   (((ADDRESS) >= FLASH_OTP_BANK2_BASE) && ((ADDRESS) <= FLASH_OTP_BANK2_END)))
+                                   (((ADDRESS) >= FLASH_OTP_BANK2_BASE) && ((ADDRESS) <= FLASH_OTP_BANK2_END)))
 
 #define IS_FLASH_NBSECTORS(NBSECTORS) (((NBSECTORS) != 0U) && ((NBSECTORS) <= FLASH_SECTOR_TOTAL))
 
@@ -557,10 +636,6 @@ HAL_StatusTypeDef HAL_FLASHEx_Lock_Bank2(void);
                                  ((SECTOR) == FLASH_SECTOR_6)   || ((SECTOR) == FLASH_SECTOR_7))
 
 #define IS_OB_WRP_SECTOR(SECTOR)  ((((SECTOR) & (uint32_t)0xFFFFFF00) == 0x00000000U) && ((SECTOR) != 0x00000000U))
-
-#define IS_FLASH_BANK(BANK)        (((BANK) == FLASH_BANK_1)  || \
-                                    ((BANK) == FLASH_BANK_2)  || \
-                                    ((BANK) == FLASH_BANK_BOTH))
 
 #define IS_OB_PCROP_RDP(CONFIG)         (((CONFIG) == OB_PCROP_RDP_NOT_ERASE) || \
                                              ((CONFIG) == OB_PCROP_RDP_ERASE))
@@ -573,6 +648,9 @@ HAL_StatusTypeDef HAL_FLASHEx_Lock_Bank2(void);
 #define IS_OB_USER_IOHSLV(VALUE)         (((VALUE) == OB_IOHSLV_DISABLE) || ((VALUE) == OB_IOHSLV_ENABLE))
 
 #define IS_OB_IWDG1_SOURCE(SOURCE)       (((SOURCE) == OB_IWDG1_SW) || ((SOURCE) == OB_IWDG1_HW))
+#if defined(DUAL_CORE)
+#define IS_OB_IWDG2_SOURCE(SOURCE)       (((SOURCE) == OB_IWDG2_SW) || ((SOURCE) == OB_IWDG2_HW))  
+#endif /*DUAL_CORE*/
 #define IS_OB_STOP_D1_RESET(VALUE)       (((VALUE) == OB_STOP_NO_RST_D1) || ((VALUE) == OB_STOP_RST_D1))
 
 #define IS_OB_STDBY_D1_RESET(VALUE)      (((VALUE) == OB_STDBY_NO_RST_D1) || ((VALUE) == OB_STDBY_RST_D1))
@@ -582,7 +660,20 @@ HAL_StatusTypeDef HAL_FLASHEx_Lock_Bank2(void);
 #define IS_OB_USER_IWDG_STDBY(VALUE)     (((VALUE) == OB_IWDG_STDBY_FREEZE) || ((VALUE) == OB_IWDG_STDBY_ACTIVE))
 
 #define IS_OB_USER_SECURITY(VALUE)       (((VALUE) == OB_SECURITY_ENABLE) || ((VALUE) == OB_SECURITY_DISABLE))  /*User can only move the security bit from 0 to 1*/                      
-#define IS_OB_USER_TYPE(TYPE)            (((TYPE) <= (uint32_t)0x400U) && ((TYPE) != 0))
+#if defined(DUAL_CORE)
+#define IS_OB_USER_BCM4(VALUE)           (((VALUE) == OB_BCM4_DISABLE) || ((VALUE) == OB_BCM4_ENABLE))
+
+#define IS_OB_USER_BCM7(VALUE)           (((VALUE) == OB_BCM7_DISABLE) || ((VALUE) == OB_BCM7_ENABLE))
+
+#define IS_OB_STOP_D2_RESET(VALUE)       (((VALUE) == OB_STOP_NO_RST_D2) || ((VALUE) == OB_STOP_RST_D2))
+
+#define IS_OB_STDBY_D2_RESET(VALUE)      (((VALUE) == OB_STDBY_NO_RST_D2) || ((VALUE) == OB_STDBY_RST_D2))
+#endif /*DUAL_CORE*/
+#if defined(DUAL_CORE)
+#define IS_OB_USER_TYPE(TYPE)            (((TYPE) <= (uint32_t)0x3FFFU) && ((TYPE) != 0))
+#else
+#define IS_OB_USER_TYPE(TYPE)            (((TYPE) <= (uint32_t)0x73FU) && ((TYPE) != 0))
+#endif
 
 #define IS_OB_BOOT_ADD_OPTION(VALUE)     (((VALUE) == OB_BOOT_ADD0) || \
                                            ((VALUE) == OB_BOOT_ADD1)  || \
@@ -621,6 +712,6 @@ void FLASH_Erase_Sector(uint32_t Sector, uint32_t Bank, uint32_t VoltageRange);
 }
 #endif
 
-#endif /* __STM32H7xx_HAL_FLASH_EX_H */
+#endif /* STM32H7xx_HAL_FLASH_EX_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

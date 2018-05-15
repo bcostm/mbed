@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_ll_fmc.c
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   FMC Low Layer HAL module driver.
   *    
   *          This file provides firmware functions to manage the following 
@@ -147,7 +145,7 @@
   */
 HAL_StatusTypeDef  FMC_NORSRAM_Init(FMC_NORSRAM_TypeDef *Device, FMC_NORSRAM_InitTypeDef* Init)
 { 
-  uint32_t tmpr = 0;
+  uint32_t tmpr;
     
   /* Check the parameters */
   assert_param(IS_FMC_NORSRAM_DEVICE(Device));
@@ -261,7 +259,7 @@ HAL_StatusTypeDef FMC_NORSRAM_DeInit(FMC_NORSRAM_TypeDef *Device, FMC_NORSRAM_EX
   */
 HAL_StatusTypeDef FMC_NORSRAM_Timing_Init(FMC_NORSRAM_TypeDef *Device, FMC_NORSRAM_TimingTypeDef *Timing, uint32_t Bank)
 {
-  uint32_t tmpr = 0;
+  uint32_t tmpr;
   
   /* Check the parameters */
   assert_param(IS_FMC_NORSRAM_DEVICE(Device));
@@ -315,7 +313,7 @@ HAL_StatusTypeDef FMC_NORSRAM_Timing_Init(FMC_NORSRAM_TypeDef *Device, FMC_NORSR
   */
 HAL_StatusTypeDef  FMC_NORSRAM_Extended_Timing_Init(FMC_NORSRAM_EXTENDED_TypeDef *Device, FMC_NORSRAM_TimingTypeDef *Timing, uint32_t Bank, uint32_t ExtendedMode)
 {  
-  uint32_t tmpr = 0;
+  uint32_t tmpr;
  
   /* Check the parameters */
   assert_param(IS_FMC_EXTENDED_MODE(ExtendedMode));
@@ -470,7 +468,7 @@ HAL_StatusTypeDef FMC_NORSRAM_WriteOperation_Disable(FMC_NORSRAM_TypeDef *Device
   */
 HAL_StatusTypeDef FMC_NAND_Init(FMC_NAND_TypeDef *Device, FMC_NAND_InitTypeDef *Init)
 {
-  uint32_t tmpr  = 0; 
+  uint32_t tmpr; 
     
   /* Check the parameters */
   assert_param(IS_FMC_NAND_DEVICE(Device));
@@ -515,7 +513,7 @@ HAL_StatusTypeDef FMC_NAND_Init(FMC_NAND_TypeDef *Device, FMC_NAND_InitTypeDef *
   */
 HAL_StatusTypeDef FMC_NAND_CommonSpace_Timing_Init(FMC_NAND_TypeDef *Device, FMC_NAND_PCC_TimingTypeDef *Timing, uint32_t Bank)
 {
-  uint32_t tmpr = 0;  
+  uint32_t tmpr;  
   
   /* Check the parameters */
   assert_param(IS_FMC_NAND_DEVICE(Device));
@@ -554,7 +552,7 @@ HAL_StatusTypeDef FMC_NAND_CommonSpace_Timing_Init(FMC_NAND_TypeDef *Device, FMC
   */
 HAL_StatusTypeDef FMC_NAND_AttributeSpace_Timing_Init(FMC_NAND_TypeDef *Device, FMC_NAND_PCC_TimingTypeDef *Timing, uint32_t Bank)
 {
-  uint32_t tmpr = 0;  
+  uint32_t tmpr;  
   
   /* Check the parameters */ 
   assert_param(IS_FMC_NAND_DEVICE(Device)); 
@@ -673,7 +671,7 @@ HAL_StatusTypeDef FMC_NAND_ECC_Disable(FMC_NAND_TypeDef *Device, uint32_t Bank)
   */
 HAL_StatusTypeDef FMC_NAND_GetECC(FMC_NAND_TypeDef *Device, uint32_t *ECCval, uint32_t Bank, uint32_t Timeout)
 {
-  uint32_t tickstart = 0;
+  uint32_t tickstart;
 
   /* Check the parameters */ 
   assert_param(IS_FMC_NAND_DEVICE(Device)); 
@@ -688,7 +686,7 @@ HAL_StatusTypeDef FMC_NAND_GetECC(FMC_NAND_TypeDef *Device, uint32_t *ECCval, ui
     /* Check for the Timeout */
     if(Timeout != HAL_MAX_DELAY)
     {
-      if((Timeout == 0)||((HAL_GetTick() - tickstart ) > Timeout))
+      if(((HAL_GetTick() - tickstart ) > Timeout)||(Timeout == 0))
       {
         return HAL_TIMEOUT;
       }
@@ -757,8 +755,8 @@ HAL_StatusTypeDef FMC_NAND_GetECC(FMC_NAND_TypeDef *Device, uint32_t *ECCval, ui
   */
 HAL_StatusTypeDef FMC_SDRAM_Init(FMC_SDRAM_TypeDef *Device, FMC_SDRAM_InitTypeDef *Init)
 {
-  uint32_t tmpr1 = 0;
-  uint32_t tmpr2 = 0;
+  uint32_t tmpr1;
+  uint32_t tmpr2;
     
   /* Check the parameters */
   assert_param(IS_FMC_SDRAM_DEVICE(Device));
@@ -837,8 +835,8 @@ HAL_StatusTypeDef FMC_SDRAM_Init(FMC_SDRAM_TypeDef *Device, FMC_SDRAM_InitTypeDe
   */
 HAL_StatusTypeDef FMC_SDRAM_Timing_Init(FMC_SDRAM_TypeDef *Device, FMC_SDRAM_TimingTypeDef *Timing, uint32_t Bank)
 {
-  uint32_t tmpr1 = 0;
-  uint32_t tmpr2 = 0;
+  uint32_t tmpr1;
+  uint32_t tmpr2;
     
   /* Check the parameters */
   assert_param(IS_FMC_SDRAM_DEVICE(Device));
@@ -1055,7 +1053,7 @@ HAL_StatusTypeDef FMC_SDRAM_SetAutoRefreshNumber(FMC_SDRAM_TypeDef *Device, uint
   */
 uint32_t FMC_SDRAM_GetModeStatus(FMC_SDRAM_TypeDef *Device, uint32_t Bank)
 {
-  uint32_t tmpreg = 0;
+  uint32_t tmpreg;
   
   /* Check the parameters */
   assert_param(IS_FMC_SDRAM_DEVICE(Device));

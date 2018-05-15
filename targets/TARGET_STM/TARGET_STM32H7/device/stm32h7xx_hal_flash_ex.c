@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_flash_ex.c
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Extended FLASH HAL module driver.
   *          This file provides firmware functions to manage the following 
   *          functionalities of the FLASH extension peripheral:
@@ -102,12 +100,9 @@
   */
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-extern FLASH_ProcessTypeDef pFlash;
-
 /* Private function prototypes -----------------------------------------------*/
 
 static void FLASH_MassErase(uint32_t VoltageRange, uint32_t Banks);
-void FLASH_Erase_Sector(uint32_t Sector, uint32_t Bank, uint32_t VoltageRange);
 static HAL_StatusTypeDef FLASH_OB_EnableWRP(uint32_t WRPSector, uint32_t Banks);
 static HAL_StatusTypeDef FLASH_OB_DisableWRP(uint32_t WRPSector, uint32_t Bank);
 static void FLASH_OB_GetWRP(uint32_t *WRPState, uint32_t *WRPSector, uint32_t Bank);
@@ -124,6 +119,10 @@ static void FLASH_OB_GetBootAdd(uint32_t *BootAddress0, uint32_t *BootAddress1);
 static HAL_StatusTypeDef FLASH_OB_SecureAreaConfig(uint32_t SecureAreaConfig, uint32_t SecureAreaStartAddr, uint32_t SecureAreaEndAddr, uint32_t Banks);
 static void FLASH_OB_GetSecureArea(uint32_t *SecureAreaConfig, uint32_t *SecureAreaStartAddr, uint32_t *SecureAreaEndAddr, uint32_t Bank);
 
+#if defined(DUAL_CORE)
+static HAL_StatusTypeDef FLASH_OB_CM4BootAddConfig(uint32_t BootOption, uint32_t BootAddress0, uint32_t BootAddress1);
+static void FLASH_OB_GetCM4BootAdd(uint32_t *BootAddress0, uint32_t *BootAddress1);
+#endif /*DUAL_CORE*/
 
 
 
@@ -162,7 +161,7 @@ static void FLASH_OB_GetSecureArea(uint32_t *SecureAreaConfig, uint32_t *SecureA
 HAL_StatusTypeDef HAL_FLASHEx_Erase(FLASH_EraseInitTypeDef *pEraseInit, uint32_t *SectorError)
 {
   HAL_StatusTypeDef status = HAL_OK;
-  uint32_t index = 0;
+  uint32_t index;
   
   /* Process Locked */
   __HAL_LOCK(&pFlash);
@@ -187,7 +186,7 @@ HAL_StatusTypeDef HAL_FLASHEx_Erase(FLASH_EraseInitTypeDef *pEraseInit, uint32_t
   if(status == HAL_OK)
   {
     /*Initialization of SectorError variable*/
-    *SectorError = 0xFFFFFFFF;
+    *SectorError = 0xFFFFFFFFU;
     
     if(pEraseInit->TypeErase == FLASH_TYPEERASE_MASSERASE)
     {
@@ -433,6 +432,31 @@ HAL_StatusTypeDef HAL_FLASHEx_OBProgram(FLASH_OBProgramInitTypeDef *pOBInit)
     }
   }
   
+#if defined(DUAL_CORE)
+  /*CM7 Boot Address  configuration*/
+  if((pOBInit->OptionType & OPTIONBYTE_CM7_BOOTADD) == OPTIONBYTE_CM7_BOOTADD)
+  {
+    status = FLASH_OB_BootAddConfig(pOBInit->BootConfig, pOBInit->BootAddr0, pOBInit->BootAddr1);
+    if(status != HAL_OK)
+    {
+      /* Process Unlocked */
+      __HAL_UNLOCK(&pFlash);
+      return status;
+    }
+  }
+  
+  /*CM4 Boot Address  configuration*/
+  if((pOBInit->OptionType & OPTIONBYTE_CM4_BOOTADD) == OPTIONBYTE_CM4_BOOTADD)
+  {
+    status = FLASH_OB_CM4BootAddConfig(pOBInit->CM4BootConfig, pOBInit->CM4BootAddr0, pOBInit->CM4BootAddr1);
+    if(status != HAL_OK)
+    {
+      /* Process Unlocked */
+      __HAL_UNLOCK(&pFlash);
+      return status;
+    }
+  }
+#else /* Single Core*/
   /*Boot Address  configuration*/
   if((pOBInit->OptionType & OPTIONBYTE_BOOTADD) == OPTIONBYTE_BOOTADD)
   {
@@ -444,6 +468,7 @@ HAL_StatusTypeDef HAL_FLASHEx_OBProgram(FLASH_OBProgramInitTypeDef *pOBInit)
       return status;
     }
   }  
+#endif /*DUAL_CORE*/
   /*Bank1 secure area  configuration*/
   if((pOBInit->OptionType & OPTIONBYTE_SECURE_AREA) == OPTIONBYTE_SECURE_AREA)
   {
@@ -475,10 +500,17 @@ void HAL_FLASHEx_OBGetConfig(FLASH_OBProgramInitTypeDef *pOBInit)
 {
   /* Check the parameters */
   assert_param(IS_FLASH_BANK_EXCLUSIVE(pOBInit->Banks));  
+#if defined(DUAL_CORE)    
+  pOBInit->OptionType = (OPTIONBYTE_WRP  | OPTIONBYTE_RDP         | \
+                         OPTIONBYTE_USER | OPTIONBYTE_PCROP       | \
+                         OPTIONBYTE_BOR  | OPTIONBYTE_CM7_BOOTADD | \
+                         OPTIONBYTE_CM4_BOOTADD | OPTIONBYTE_SECURE_AREA);
+#else
   pOBInit->OptionType = (OPTIONBYTE_WRP  | OPTIONBYTE_RDP         | \
                          OPTIONBYTE_USER | OPTIONBYTE_PCROP       | \
                          OPTIONBYTE_BOR  | OPTIONBYTE_BOOTADD | \
                          OPTIONBYTE_SECURE_AREA);
+#endif
 
   /* Get write protection on the selected area */
   FLASH_OB_GetWRP(&(pOBInit->WRPState), &(pOBInit->WRPSector), pOBInit->Banks);
@@ -497,6 +529,10 @@ void HAL_FLASHEx_OBGetConfig(FLASH_OBProgramInitTypeDef *pOBInit)
   
   /*Get Boot Address*/
   FLASH_OB_GetBootAdd(&(pOBInit->BootAddr0), &(pOBInit->BootAddr1));
+#if defined(DUAL_CORE)
+  /*Get CM4 Boot Address*/
+  FLASH_OB_GetCM4BootAdd(&(pOBInit->CM4BootAddr0), &(pOBInit->CM4BootAddr1));
+#endif /*DUAL_CORE*/
   /*Get Bank Secure area*/
   FLASH_OB_GetSecureArea(&(pOBInit->SecureAreaConfig), &(pOBInit->SecureAreaStartAddr), &(pOBInit->SecureAreaEndAddr), pOBInit->Banks);
 }
@@ -851,7 +887,7 @@ static void FLASH_OB_GetWRP(uint32_t *WRPState, uint32_t *WRPSector, uint32_t Ba
   */
 static HAL_StatusTypeDef FLASH_OB_RDPConfig(uint32_t RDPLevel)
 {
-  HAL_StatusTypeDef status = HAL_OK;
+  HAL_StatusTypeDef status;
 
   /* Check the parameters */
   assert_param(IS_OB_RDP_LEVEL(RDPLevel));
@@ -886,6 +922,27 @@ static uint32_t FLASH_OB_GetRDP(void)
   return (FLASH->OPTSR_CUR & FLASH_OPTSR_RDP);
 }
 
+#if defined(DUAL_CORE)
+/**
+  * @brief  Program the FLASH User Option Byte.
+  *   
+  * @note   To configure the user option bytes, the option lock bit OPTLOCK must
+  *         be cleared with the call of the HAL_FLASH_OB_Unlock() function.
+  *
+  * @note   To validate the user option bytes, the option bytes must be reloaded 
+  *         through the call of the HAL_FLASH_OB_Launch() function.
+  *   
+  * @param  UserType The FLASH User Option Bytes to be modified :
+  *                   a combination of @ref FLASH_OB_USER_Type 
+  *
+  * @param  UserConfig The FLASH User Option Bytes values: 
+  *         IWDG_SW(Bit4), WWDG_SW(Bit 5), nRST_STOP(Bit 6), nRST_STDY(Bit 7),
+  *         FZ_IWDG_STOP(Bit 17), FZ_IWDG_SDBY(Bit 18), ST_RAM_SIZE(Bit[19:20]),
+  *         ePcROP_EN(Bit 21), BCM4(Bit 29), BCM7(Bit 30), SWAP_BANK_OPT(Bit 31) .
+  * 
+  * @retval HAL status
+  */
+#else
 /**
   * @brief  Program the FLASH User Option Byte.
   * 
@@ -896,7 +953,7 @@ static uint32_t FLASH_OB_GetRDP(void)
   *         through the call of the HAL_FLASH_OB_Launch() function.
   *   
   * @param  UserType The FLASH User Option Bytes to be modified :
-  *                   a combination of @arg FLASH_OB_USER_Type 
+  *                   a combination of @arg FLASHEx_OB_USER_Type 
   *
   * @param  UserConfig The FLASH User Option Bytes values: 
   *         IWDG_SW(Bit4), WWDG_SW(Bit 5), nRST_STOP(Bit 6), nRST_STDY(Bit 7),
@@ -905,11 +962,12 @@ static uint32_t FLASH_OB_GetRDP(void)
   *   
   * @retval HAL status
   */
+#endif /*DUAL_CORE*/
 static HAL_StatusTypeDef FLASH_OB_UserConfig(uint32_t UserType, uint32_t UserConfig)
 {
   uint32_t optr_reg_val = 0;
   uint32_t optr_reg_mask = 0;
-  HAL_StatusTypeDef status = HAL_OK;
+  HAL_StatusTypeDef status;
 
   /* Check the parameters */
   assert_param(IS_OB_USER_TYPE(UserType));
@@ -928,6 +986,17 @@ static HAL_StatusTypeDef FLASH_OB_UserConfig(uint32_t UserType, uint32_t UserCon
       optr_reg_val |= (UserConfig & FLASH_OPTSR_IWDG1_SW);
       optr_reg_mask |= FLASH_OPTSR_IWDG1_SW;
     }
+#if defined(DUAL_CORE)
+    if((UserType & OB_USER_IWDG2_SW) != RESET)
+    {
+      /* WWDG_SW option byte should be modified */
+      assert_param(IS_OB_IWDG2_SOURCE(UserConfig & FLASH_OPTSR_IWDG2_SW));
+    
+      /* Set value and mask for WWDG_SW option byte */
+      optr_reg_val |= (UserConfig & FLASH_OPTSR_IWDG2_SW);
+      optr_reg_mask |= FLASH_OPTSR_IWDG2_SW;
+    }
+#endif /*DUAL_CORE*/
     if((UserType & OB_USER_NRST_STOP_D1) != RESET)
     {
       /* NRST_STOP option byte should be modified */
@@ -977,6 +1046,47 @@ static HAL_StatusTypeDef FLASH_OB_UserConfig(uint32_t UserType, uint32_t UserCon
       optr_reg_val |= (UserConfig & FLASH_OPTSR_SECURITY);
       optr_reg_mask |= FLASH_OPTSR_SECURITY;
     }
+#if defined(DUAL_CORE)
+    if((UserType & OB_USER_BCM4) != RESET)
+    {
+      /* BCM4 option byte should be modified */
+      assert_param(IS_OB_USER_BCM4(UserConfig & FLASH_OPTSR_BCM4));
+    
+      /* Set value and mask for BCM4 option byte */
+      optr_reg_val |= (UserConfig & FLASH_OPTSR_BCM4);
+      optr_reg_mask |= FLASH_OPTSR_BCM4;
+    }
+
+    if((UserType & OB_USER_BCM7) != RESET)
+    {
+      /* BCM7 option byte should be modified */
+      assert_param(IS_OB_USER_BCM7(UserConfig & FLASH_OPTSR_BCM7));
+    
+      /* Set value and mask for BCM7 option byte */
+      optr_reg_val |= (UserConfig & FLASH_OPTSR_BCM7);
+      optr_reg_mask |= FLASH_OPTSR_BCM7;
+    }
+
+    if((UserType & OB_USER_NRST_STOP_D2) != RESET)
+    {
+      /* NRST_STOP option byte should be modified */
+      assert_param(IS_OB_STOP_D2_RESET(UserConfig & FLASH_OPTSR_NRST_STOP_D2));
+    
+      /* Set value and mask for NRST_STOP option byte */
+      optr_reg_val |= (UserConfig & FLASH_OPTSR_NRST_STOP_D2);
+      optr_reg_mask |= FLASH_OPTSR_NRST_STOP_D2;
+    }
+
+    if((UserType & OB_USER_NRST_STDBY_D2) != RESET)
+    {
+      /* NRST_STDBY option byte should be modified */
+      assert_param(IS_OB_STDBY_D2_RESET(UserConfig & FLASH_OPTSR_NRST_STBY_D2));
+    
+      /* Set value and mask for NRST_STDBY option byte */
+      optr_reg_val |= (UserConfig & FLASH_OPTSR_NRST_STBY_D2);
+      optr_reg_mask |= FLASH_OPTSR_NRST_STBY_D2;
+    }    
+#endif /*DUAL_CORE*/  
     if((UserType & OB_USER_SWAP_BANK) != RESET)
     {
       /* SWAP_BANK_OPT option byte should be modified */
@@ -1003,6 +1113,15 @@ static HAL_StatusTypeDef FLASH_OB_UserConfig(uint32_t UserType, uint32_t UserCon
 
   return status;            
 }
+#if defined(DUAL_CORE)
+/**
+  * @brief  Return the FLASH User Option Byte value.
+  * @retval The FLASH User Option Bytes values
+  *         IWDG_SW(Bit4), WWDG_SW(Bit 5), nRST_STOP(Bit 6), nRST_STDY(Bit 7),
+  *         FZ_IWDG_STOP(Bit 17), FZ_IWDG_SDBY(Bit 18), ST_RAM_SIZE(Bit[19:20]),
+  *         ePcROP_EN(Bit 21), BCM4(Bit 29), BCM7(Bit 30), SWAP_BANK_OPT(Bit 31) .
+  */
+#else
 /**
   * @brief  Return the FLASH User Option Byte value.
   * @retval The FLASH User Option Bytes values
@@ -1010,6 +1129,7 @@ static HAL_StatusTypeDef FLASH_OB_UserConfig(uint32_t UserType, uint32_t UserCon
   *         FZ_IWDG_STOP(Bit 17), FZ_IWDG_SDBY(Bit 18), ST_RAM_SIZE(Bit[19:20]),
   *         ePcROP_EN(Bit 21), SWAP_BANK_OPT(Bit 31) .
   */
+#endif /*DUAL_CORE*/
 static uint32_t FLASH_OB_GetUser(void)
 {
   uint32_t userConfig = READ_REG(FLASH->OPTSR_CUR);
@@ -1156,7 +1276,7 @@ static void FLASH_OB_GetPCROP(uint32_t *PCROPConfig, uint32_t *PCROPStartAddr,ui
   */
 static HAL_StatusTypeDef FLASH_OB_BOR_LevelConfig(uint8_t Level)
 {
-  HAL_StatusTypeDef status = HAL_OK;
+  HAL_StatusTypeDef status;
   
   assert_param(IS_OB_BOR_LEVEL(Level));
    
@@ -1202,7 +1322,7 @@ static uint32_t FLASH_OB_GetBOR(void)
   */
 static HAL_StatusTypeDef FLASH_OB_BootAddConfig(uint32_t BootOption, uint32_t BootAddress0, uint32_t BootAddress1)
 {
-  HAL_StatusTypeDef status = HAL_OK;
+  HAL_StatusTypeDef status;
   
   /* Check the parameters */
   assert_param(IS_OB_BOOT_ADD_OPTION(BootOption));
@@ -1217,9 +1337,12 @@ static HAL_StatusTypeDef FLASH_OB_BootAddConfig(uint32_t BootOption, uint32_t Bo
     {
       /* Check the parameters */
       assert_param(IS_BOOT_ADDRESS(BootAddress0));
-    
-      /* Configure BOOT ADD0 */
+     /* Configure CM7 BOOT ADD0 */
+#if defined(DUAL_CORE)
+      MODIFY_REG(FLASH->BOOT7_PRG, FLASH_BOOT7_BCM7_ADD0, (BootAddress0 >> 16));
+#else /* Single Core*/      
       MODIFY_REG(FLASH->BOOT_PRG, FLASH_BOOT_ADD0, (BootAddress0 >> 16));
+#endif /* DUAL_CORE */
     }
 
     if((BootOption & OB_BOOT_ADD1) == OB_BOOT_ADD1)
@@ -1227,8 +1350,12 @@ static HAL_StatusTypeDef FLASH_OB_BootAddConfig(uint32_t BootOption, uint32_t Bo
       /* Check the parameters */
       assert_param(IS_BOOT_ADDRESS(BootAddress1));
     
-      /* Configure BOOT ADD1 */
+      /* Configure CM7 BOOT ADD1 */
+#if defined(DUAL_CORE)
+      MODIFY_REG(FLASH->BOOT7_PRG, FLASH_BOOT7_BCM7_ADD1, BootAddress1);
+#else /* Single Core*/ 
       MODIFY_REG(FLASH->BOOT_PRG, FLASH_BOOT_ADD1, BootAddress1 );
+#endif /* DUAL_CORE */      
     }
 
     /* Wait for last operation to be completed */
@@ -1247,16 +1374,94 @@ static HAL_StatusTypeDef FLASH_OB_BootAddConfig(uint32_t BootOption, uint32_t Bo
   */
 static void FLASH_OB_GetBootAdd(uint32_t *BootAddress0, uint32_t *BootAddress1)
 {
-  uint32_t regvalue = 0;
+  uint32_t regvalue;
 
+#if defined(DUAL_CORE)
+  regvalue = FLASH->BOOT7_CUR;  
+
+  (*BootAddress0) = (regvalue & FLASH_BOOT7_BCM7_ADD0) << 16;
+
+  (*BootAddress1) = (regvalue & FLASH_BOOT7_BCM7_ADD1);
+  
+#else /* Single Core */
   regvalue = FLASH->BOOT_CUR;  
 
   (*BootAddress0) = (regvalue & FLASH_BOOT_ADD0) << 16;
 
   (*BootAddress1) = (regvalue & FLASH_BOOT_ADD1);
 
+#endif /* DUAL_CORE */  
 }
 
+#if defined(DUAL_CORE)
+/**
+  * @brief  Set CM4 Boot address
+  * @param  BootOption Boot address option byte to be programmed,
+  *                     This parameter must be a value of @ref FLASHEx_OB_BOOT_OPTION 
+                        (OB_BOOT_ADD0, OB_BOOT_ADD1 or OB_BOOT_ADD_BOTH)
+  *
+  * @param  BootAddress0 Specifies the CM4 Boot Address 0.
+  * @param  BootAddress1 Specifies the CM4 Boot Address 1.
+  * @retval HAL Status
+  */
+static HAL_StatusTypeDef FLASH_OB_CM4BootAddConfig(uint32_t BootOption, uint32_t BootAddress0, uint32_t BootAddress1)
+{
+  HAL_StatusTypeDef status;
+  
+  /* Check the parameters */
+  assert_param(IS_OB_BOOT_ADD_OPTION(BootOption));
+  
+    /* Wait for last operation to be completed */
+  status = FLASH_WaitForLastOperation((uint32_t)FLASH_TIMEOUT_VALUE, FLASH_BANK_1);
+  status |= FLASH_WaitForLastOperation((uint32_t)FLASH_TIMEOUT_VALUE, FLASH_BANK_2);
+  
+  if(status == HAL_OK)
+  {
+    if((BootOption & OB_BOOT_ADD0) == OB_BOOT_ADD0)
+    {
+      /* Check the parameters */
+      assert_param(IS_BOOT_ADDRESS(BootAddress0));
+    
+      /* Configure CM4 BOOT ADD0 */
+      MODIFY_REG(FLASH->BOOT4_PRG, FLASH_BOOT4_BCM4_ADD0, (BootAddress0 >> 16));
+
+    }
+
+    if((BootOption & OB_BOOT_ADD1) == OB_BOOT_ADD1)
+    {
+      /* Check the parameters */
+      assert_param(IS_BOOT_ADDRESS(BootAddress1));
+    
+      /* Configure CM4 BOOT ADD1 */
+      MODIFY_REG(FLASH->BOOT4_PRG, FLASH_BOOT4_BCM4_ADD1, BootAddress1 );
+    }
+
+    /* Wait for last operation to be completed */
+    status = FLASH_WaitForLastOperation((uint32_t)FLASH_TIMEOUT_VALUE, FLASH_BANK_1);
+    status |= FLASH_WaitForLastOperation((uint32_t)FLASH_TIMEOUT_VALUE, FLASH_BANK_2);
+  }  
+  
+  return status;  
+}
+
+/**
+  * @brief  Get CM4 Boot address
+  * @param  BootAddress0 Specifies the CM4 Boot Address 0.
+  * @param  BootAddress1 Specifies the CM4 Boot Address 1.
+  * @retval HAL Status
+  */
+static void FLASH_OB_GetCM4BootAdd(uint32_t *BootAddress0, uint32_t *BootAddress1)
+{
+  uint32_t regvalue;
+  
+  regvalue = FLASH->BOOT4_CUR;  
+
+  (*BootAddress0) = (regvalue & FLASH_BOOT4_BCM4_ADD0) << 16;
+
+  (*BootAddress1) = (regvalue & FLASH_BOOT4_BCM4_ADD1);
+  
+}
+#endif /*DUAL_CORE*/
 /**
   * @brief  Set secure area configuration
   * @param  SecureAreaConfig specify if the secure area will be deleted or not during next mass-erase,

@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_mmc_ex.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Header file of MMC HAL extended module.
   ******************************************************************************
   * @attention
@@ -36,8 +34,8 @@
   */ 
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_HAL_MMC_EX_H
-#define __STM32H7xx_HAL_MMC_EX_H
+#ifndef STM32H7xx_HAL_MMC_EX_H
+#define STM32H7xx_HAL_MMC_EX_H
 
 #ifdef __cplusplus
  extern "C" {
@@ -93,10 +91,10 @@ HAL_StatusTypeDef HAL_MMCEx_ReadBlocksDMAMultiBuffer(MMC_HandleTypeDef *hmmc, ui
 HAL_StatusTypeDef HAL_MMCEx_WriteBlocksDMAMultiBuffer(MMC_HandleTypeDef *hmmc, uint32_t BlockAdd, uint32_t NumberOfBlocks);
 HAL_StatusTypeDef HAL_MMCEx_ChangeDMABuffer(MMC_HandleTypeDef *hmmc, HAL_MMCEx_DMABuffer_MemoryTypeDef Buffer, uint32_t *pDataBuffer);
 
-void HAL_MMCEx_Read_DMADoubleBuffer0CpltCallback(MMC_HandleTypeDef *hmmc);
-void HAL_MMCEx_Read_DMADoubleBuffer1CpltCallback(MMC_HandleTypeDef *hmmc);
-void HAL_MMCEx_Write_DMADoubleBuffer0CpltCallback(MMC_HandleTypeDef *hmmc);
-void HAL_MMCEx_Write_DMADoubleBuffer1CpltCallback(MMC_HandleTypeDef *hmmc);
+void HAL_MMCEx_Read_DMADoubleBuf0CpltCallback(MMC_HandleTypeDef *hmmc);
+void HAL_MMCEx_Read_DMADoubleBuf1CpltCallback(MMC_HandleTypeDef *hmmc);
+void HAL_MMCEx_Write_DMADoubleBuf0CpltCallback(MMC_HandleTypeDef *hmmc);
+void HAL_MMCEx_Write_DMADoubleBuf1CpltCallback(MMC_HandleTypeDef *hmmc);
 
 /**
   * @}
@@ -126,6 +124,6 @@ void HAL_MMCEx_Write_DMADoubleBuffer1CpltCallback(MMC_HandleTypeDef *hmmc);
 #endif
 
 
-#endif /* __STM32H7xx_HAL_MMCEx_H */ 
+#endif /* STM32H7xx_HAL_MMCEx_H */ 
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

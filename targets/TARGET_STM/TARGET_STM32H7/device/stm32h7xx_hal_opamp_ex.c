@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_opamp_ex.c
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   Extended OPAMP HAL module driver.
   *          This file provides firmware functions to manage the following
   *          functionalities of the operational amplifier(s)(OPAMP1, OPAMP2 etc)
@@ -98,10 +96,10 @@ HAL_StatusTypeDef HAL_OPAMPEx_SelfCalibrateAll(OPAMP_HandleTypeDef *hopamp1, OPA
 {
   HAL_StatusTypeDef status = HAL_OK;
 
-  uint32_t trimmingvaluen1 = 0;
-  uint32_t trimmingvaluep1 = 0;
-  uint32_t trimmingvaluen2 = 0;
-  uint32_t trimmingvaluep2 = 0;
+  uint32_t trimmingvaluen1;
+  uint32_t trimmingvaluep1;
+  uint32_t trimmingvaluen2;
+  uint32_t trimmingvaluep2;
 
 /* Selection of register of trimming depending on power mode: OTR or HSOTR */
   __IO uint32_t* tmp_opamp1_reg_trimming;   
@@ -111,16 +109,21 @@ HAL_StatusTypeDef HAL_OPAMPEx_SelfCalibrateAll(OPAMP_HandleTypeDef *hopamp1, OPA
   uint32_t opampmode1;
   uint32_t opampmode2;
   
-  if((hopamp1 == NULL) || (hopamp1->State == HAL_OPAMP_STATE_BUSYLOCKED) || \
-     (hopamp2 == NULL) || (hopamp2->State == HAL_OPAMP_STATE_BUSYLOCKED)) 
+  if((hopamp1 == NULL) || (hopamp2 == NULL)) 
+  {
+    status = HAL_ERROR;
+  }
+  /* Check if OPAMP in calibration mode and calibration not yet enable */
+  else if(hopamp1->State !=  HAL_OPAMP_STATE_READY)
+  {
+    status = HAL_ERROR;
+  }
+  else if(hopamp2->State != HAL_OPAMP_STATE_READY)
   {
     status = HAL_ERROR;
   }
   else
   {
-    /* Check if OPAMP in calibration mode and calibration not yet enable */
-    if((hopamp1->State ==  HAL_OPAMP_STATE_READY) && (hopamp2->State ==  HAL_OPAMP_STATE_READY))
-    {
       /* Check the parameter */
       assert_param(IS_OPAMP_ALL_INSTANCE(hopamp1->Instance));
       assert_param(IS_OPAMP_ALL_INSTANCE(hopamp2->Instance));
@@ -183,7 +186,7 @@ HAL_StatusTypeDef HAL_OPAMPEx_SelfCalibrateAll(OPAMP_HandleTypeDef *hopamp1, OPA
       trimmingvaluen2 = 16; 
       delta = 8; 
 
-      while (delta != 0)
+      while (delta != 0U)
       {
         /* Set candidate trimming */
         /* OPAMP_POWERMODE_NORMAL */
@@ -195,7 +198,7 @@ HAL_StatusTypeDef HAL_OPAMPEx_SelfCalibrateAll(OPAMP_HandleTypeDef *hopamp1, OPA
         /* two steps to have 1 mV accuracy */
         HAL_Delay(OPAMP_TRIMMING_DELAY);
 
-        if (READ_BIT(hopamp1->Instance->CSR, OPAMP_CSR_CALOUT)!= RESET)
+        if (READ_BIT(hopamp1->Instance->CSR, OPAMP_CSR_CALOUT)!= 0U)
         { 
           /* OPAMP_CSR_CALOUT is Low try higher trimming */
           trimmingvaluen1 += delta;
@@ -206,7 +209,7 @@ HAL_StatusTypeDef HAL_OPAMPEx_SelfCalibrateAll(OPAMP_HandleTypeDef *hopamp1, OPA
           trimmingvaluen1 -= delta;
         }
 
-        if (READ_BIT(hopamp2->Instance->CSR, OPAMP_CSR_CALOUT)!= RESET) 
+        if (READ_BIT(hopamp2->Instance->CSR, OPAMP_CSR_CALOUT)!= 0U) 
         { 
           /* OPAMP_CSR_CALOUT is Low try higher trimming */
           trimmingvaluen2 += delta;
@@ -231,14 +234,14 @@ HAL_StatusTypeDef HAL_OPAMPEx_SelfCalibrateAll(OPAMP_HandleTypeDef *hopamp1, OPA
       /* two steps to have 1 mV accuracy */
       HAL_Delay(OPAMP_TRIMMING_DELAY);
       
-      if ((READ_BIT(hopamp1->Instance->CSR, OPAMP_CSR_CALOUT)) != 0)
+      if ((READ_BIT(hopamp1->Instance->CSR, OPAMP_CSR_CALOUT)) != 0U)
       {
         /* Trimming value is actually one value more */
         trimmingvaluen1++;
         MODIFY_REG(*tmp_opamp1_reg_trimming, OPAMP_OTR_TRIMOFFSETN, trimmingvaluen1);
       }
        
-      if ((READ_BIT(hopamp2->Instance->CSR, OPAMP_CSR_CALOUT)) != 0)
+      if ((READ_BIT(hopamp2->Instance->CSR, OPAMP_CSR_CALOUT)) != 0U)
       {
         /* Trimming value is actually one value more */
         trimmingvaluen2++;
@@ -256,7 +259,7 @@ HAL_StatusTypeDef HAL_OPAMPEx_SelfCalibrateAll(OPAMP_HandleTypeDef *hopamp1, OPA
       trimmingvaluep2 = 16; 
       delta = 8; 
       
-      while (delta != 0)
+      while (delta != 0U)
       {
         /* Set candidate trimming */
         /* OPAMP_POWERMODE_NORMAL */
@@ -268,7 +271,7 @@ HAL_StatusTypeDef HAL_OPAMPEx_SelfCalibrateAll(OPAMP_HandleTypeDef *hopamp1, OPA
         /* two steps to have 1 mV accuracy */
         HAL_Delay(OPAMP_TRIMMING_DELAY);
 
-        if (READ_BIT(hopamp1->Instance->CSR, OPAMP_CSR_CALOUT)!= RESET) 
+        if (READ_BIT(hopamp1->Instance->CSR, OPAMP_CSR_CALOUT)!= 0U) 
         { 
           /* OPAMP_CSR_CALOUT is Low try higher trimming */
           trimmingvaluep1 += delta;
@@ -279,7 +282,7 @@ HAL_StatusTypeDef HAL_OPAMPEx_SelfCalibrateAll(OPAMP_HandleTypeDef *hopamp1, OPA
           trimmingvaluep1 -= delta;
         }
 
-        if (READ_BIT(hopamp2->Instance->CSR, OPAMP_CSR_CALOUT)!= RESET) 
+        if (READ_BIT(hopamp2->Instance->CSR, OPAMP_CSR_CALOUT)!= 0U) 
         { 
           /* OPAMP_CSR_CALOUT is Low try higher trimming */
           trimmingvaluep2 += delta;
@@ -304,14 +307,14 @@ HAL_StatusTypeDef HAL_OPAMPEx_SelfCalibrateAll(OPAMP_HandleTypeDef *hopamp1, OPA
       /* two steps to have 1 mV accuracy */
       HAL_Delay(OPAMP_TRIMMING_DELAY);
       
-      if (READ_BIT(hopamp1->Instance->CSR, OPAMP_CSR_CALOUT)!= RESET)
+      if (READ_BIT(hopamp1->Instance->CSR, OPAMP_CSR_CALOUT)!= 0U)
       {
         /* Trimming value is actually one value more */
         trimmingvaluep1++;
         MODIFY_REG(*tmp_opamp1_reg_trimming, OPAMP_OTR_TRIMOFFSETP, (trimmingvaluep1<<OPAMP_INPUT_NONINVERTING));
       }
       
-      if (READ_BIT(hopamp2->Instance->CSR, OPAMP_CSR_CALOUT)!= RESET)
+      if (READ_BIT(hopamp2->Instance->CSR, OPAMP_CSR_CALOUT)!= 0U)
       {
         /* Trimming value is actually one value more */
         trimmingvaluep2++;
@@ -372,12 +375,7 @@ HAL_StatusTypeDef HAL_OPAMPEx_SelfCalibrateAll(OPAMP_HandleTypeDef *hopamp1, OPA
       MODIFY_REG(hopamp1->Instance->CSR, OPAMP_CSR_VMSEL, opampmode1);
       MODIFY_REG(hopamp2->Instance->CSR, OPAMP_CSR_VMSEL, opampmode2);
   }
-    else
-    {
-      /* At least one OPAMP can not be calibrated */ 
-      status = HAL_ERROR;
-    }   
-  }
+  
   return status;
 }
 
@@ -411,15 +409,12 @@ HAL_StatusTypeDef HAL_OPAMPEx_Unlock(OPAMP_HandleTypeDef* hopamp)
 
   /* Check the OPAMP handle allocation */
   /* Check if OPAMP locked */
-  if((hopamp == NULL) || (hopamp->State == HAL_OPAMP_STATE_RESET)
-                      || (hopamp->State == HAL_OPAMP_STATE_READY)
-                      || (hopamp->State == HAL_OPAMP_STATE_CALIBBUSY)
-                      || (hopamp->State == HAL_OPAMP_STATE_BUSY))
-  
+  if(hopamp == NULL)
   {
     status = HAL_ERROR;
   }
-  else
+      
+  if(hopamp->State == HAL_OPAMP_STATE_BUSYLOCKED)
   {
     /* Check the parameter */
     assert_param(IS_OPAMP_ALL_INSTANCE(hopamp->Instance));
@@ -427,6 +422,11 @@ HAL_StatusTypeDef HAL_OPAMPEx_Unlock(OPAMP_HandleTypeDef* hopamp)
    /* OPAMP state changed to locked */
     hopamp->State = HAL_OPAMP_STATE_BUSY;
   }
+  else
+  {
+    status = HAL_ERROR;
+  }
+      
   return status; 
 }
 

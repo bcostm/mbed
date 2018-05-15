@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    stm32h7xx_hal_pwr.c
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date   29-December-2017
   * @brief   PWR HAL module driver.
   *          This file provides firmware functions to manage the following
   *          functionalities of the Power Controller (PWR) peripheral:
@@ -63,8 +61,10 @@
 /** @defgroup PWR_PVD_Mode_Mask PWR PVD Mode Mask
   * @{
   */
+#if !defined (DUAL_CORE)    
 #define PVD_MODE_IT              ((uint32_t)0x00010000U)
 #define PVD_MODE_EVT             ((uint32_t)0x00020000U)
+#endif /* DUAL_CORE */   
 #define PVD_RISING_EDGE          ((uint32_t)0x00000001U)
 #define PVD_FALLING_EDGE         ((uint32_t)0x00000002U)
 #define PVD_RISING_FALLING_EDGE  ((uint32_t)0x00000003U)
@@ -96,8 +96,6 @@
       registers and backup SRAM) is protected against possible unwanted
       write accesses.
       To enable access to the RTC Domain and RTC registers, proceed as follows:
-        (+) Enable the Power Controller (PWR) APB1 interface clock using the
-            __HAL_RCC_PWR_CLK_ENABLE() macro.
         (+) Enable access to RTC domain using the HAL_PWR_EnableBkUpAccess() function.
 
 @endverbatim
@@ -105,7 +103,7 @@
   */
 
 /**
-  * @brief  Deinitialize the HAL PWR peripheral registers to their default reset values.
+  * @brief  De-initialize the HAL PWR peripheral registers to their default reset values.
   * @note   This functionality is not available in this product.
   *         The prototype is kept just to maintain compatibility with other products.
   * @retval None
@@ -177,7 +175,7 @@ void HAL_PWR_DisableBkUpAccess(void)
     [..]
      The device present 3 principles low-power modes features:
       (+) SLEEP mode: Cortex-M7 core stopped and D1, D2 and D3 peripherals kept running.
-      (+) STOP mode: all clocks are stoppedand the regulator running in main or low power mode.
+      (+) STOP mode: all clocks are stopped and the regulator running in main or low power mode.
       (+) STANDBY mode: D1, D2 and D3 domains enter DSTANDBY mode and the VCORE supply
                         regulator is powered off.
 
@@ -278,11 +276,14 @@ void HAL_PWR_ConfigPVD(PWR_PVDTypeDef *sConfigPVD)
   MODIFY_REG(PWR->CR1, PWR_CR1_PLS, sConfigPVD->PVDLevel);
 
   /* Clear any previous config */
+#if !defined (DUAL_CORE)  
   __HAL_PWR_PVD_EXTI_DISABLE_EVENT();
   __HAL_PWR_PVD_EXTI_DISABLE_IT();
+#endif /* DUAL_CORE */  
   __HAL_PWR_PVD_EXTI_DISABLE_RISING_EDGE();
   __HAL_PWR_PVD_EXTI_DISABLE_FALLING_EDGE();
 
+#if !defined (DUAL_CORE)
   /* Configure interrupt mode */
   if((sConfigPVD->Mode & PVD_MODE_IT) == PVD_MODE_IT)
   {
@@ -294,6 +295,7 @@ void HAL_PWR_ConfigPVD(PWR_PVDTypeDef *sConfigPVD)
   {
     __HAL_PWR_PVD_EXTI_ENABLE_EVENT();
   }
+#endif /* DUAL_CORE */
   
   /* Configure the edge */
   if((sConfigPVD->Mode & PVD_RISING_EDGE) == PVD_RISING_EDGE)
@@ -373,7 +375,7 @@ void HAL_PWR_DisableWakeUpPin(uint32_t WakeUpPinx)
 }
 
 /**
-  * @brief  Enter CM7 core to Sleep mode.
+  * @brief  Enter the CPU to Sleep mode.
   * @param  Regulator: Specifies the regulator state in SLEEP mode.
   *          This parameter can be one of the following values:
   *            @arg PWR_MAINREGULATOR_ON: SLEEP mode with regulator ON
@@ -416,9 +418,9 @@ void HAL_PWR_EnterSLEEPMode(uint32_t Regulator, uint8_t SLEEPEntry)
   * @note   When exiting System Stop mode by issuing an interrupt or a wakeup event,
   *         the HSI RC oscillator is selected as default system wakeup clock.
   * @note   In System STOP mode, when the voltage regulator operates in low power mode,
-  *         an additional startup delay is incurred when the system is waking up.
+  *         an additional start-up delay is incurred when the system is waking up.
   *         By keeping the internal regulator ON during Stop mode, the consumption
-  *         is higher although the startup time is reduced.
+  *         is higher although the start-up time is reduced.
   * @param  Regulator: Specifies the regulator state in Stop mode.
   *          This parameter can be one of the following values:
   *            @arg PWR_MAINREGULATOR_ON: Stop mode with regulator ON
@@ -431,7 +433,7 @@ void HAL_PWR_EnterSLEEPMode(uint32_t Regulator, uint8_t SLEEPEntry)
   */
 void HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry)
 {
-  uint32_t tmpreg = 0;
+  uint32_t tmpreg;
 
   /* Check the parameters */
   assert_param(IS_PWR_REGULATOR(Regulator));
@@ -448,14 +450,20 @@ void HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry)
   /* Store the new value */
   PWR->CR1 = tmpreg;
 
-  /* Keep DSTOP mode when D1 domain enters Deepsleep */
+#if defined(DUAL_CORE)
+  /* Keep DSTOP mode when D1 domain enters Deep sleep */
+  CLEAR_BIT(PWR->CPUCR, PWR_CPUCR_PDDS_D1);
+  CLEAR_BIT(PWR->CPU2CR, PWR_CPU2CR_PDDS_D1);
+#else
+  /* Keep DSTOP mode when D1 domain enters Deep sleep */
   CLEAR_BIT(PWR->CPUCR, PWR_CPUCR_PDDS_D1);
 
-  /* Keep DSTOP mode when D2 domain enters Deepsleep */
+  /* Keep DSTOP mode when D2 domain enters Deep sleep */
   CLEAR_BIT(PWR->CPUCR, PWR_CPUCR_PDDS_D2);
 
-  /* Keep DSTOP mode when D3 domain enters Deepsleep */
+  /* Keep DSTOP mode when D3 domain enters Deep sleep */
   CLEAR_BIT(PWR->CPUCR, PWR_CPUCR_PDDS_D3);
+#endif /*DUAL_CORE*/
 
   /* Set SLEEPDEEP bit of Cortex System Control Register */
   SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
@@ -490,14 +498,20 @@ void HAL_PWR_EnterSTOPMode(uint32_t Regulator, uint8_t STOPEntry)
   */
 void HAL_PWR_EnterSTANDBYMode(void)
 {
-  /* Keep DSTANDBY mode when D1 domain enters Deepsleep */
+#if defined(DUAL_CORE)
+  /* Keep DSTANDBY mode when D1 domain enters Deep sleep */
+  SET_BIT(PWR->CPUCR, PWR_CPUCR_PDDS_D1);
+  SET_BIT(PWR->CPU2CR, PWR_CPU2CR_PDDS_D1);
+#else
+  /* Keep DSTANDBY mode when D1 domain enters Deep sleep */
   SET_BIT(PWR->CPUCR, PWR_CPUCR_PDDS_D1);
 
-  /* Keep DSTANDBY mode when D2 domain enters Deepsleep */
+  /* Keep DSTANDBY mode when D2 domain enters Deep sleep */
   SET_BIT(PWR->CPUCR, PWR_CPUCR_PDDS_D2);
 
-  /* Keep DSTANDBY mode when D3 domain enters Deepsleep */
+  /* Keep DSTANDBY mode when D3 domain enters Deep sleep */
   SET_BIT(PWR->CPUCR, PWR_CPUCR_PDDS_D3);
+#endif /*DUAL_CORE*/
 
   /* Set SLEEPDEEP bit of Cortex System Control Register */
   SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
@@ -540,7 +554,7 @@ void HAL_PWR_DisableSleepOnExit(void)
 /**
   * @brief  Enable CORTEX SEVONPEND bit.
   * @note   Sets SEVONPEND bit of SCR register. When this bit is set, this causes
-  *         WFE to wake up when an interrupt moves from inactive to pended.
+  *         WFE to wake up when an interrupt moves from inactive to pending.
   * @retval None
   */
 void HAL_PWR_EnableSEVOnPend(void)
@@ -552,7 +566,7 @@ void HAL_PWR_EnableSEVOnPend(void)
 /**
   * @brief  Disable CORTEX SEVONPEND bit.
   * @note   Clears SEVONPEND bit of SCR register. When this bit is set, this causes
-  *         WFE to wake up when an interrupt moves from inactive to pended.
+  *         WFE to wake up when an interrupt moves from inactive to pending.
   * @retval None
   */
 void HAL_PWR_DisableSEVOnPend(void)
@@ -568,6 +582,33 @@ void HAL_PWR_DisableSEVOnPend(void)
   */
 void HAL_PWR_PVD_IRQHandler(void)
 {
+#if defined(DUAL_CORE)
+  /* PVD EXTI line interrupt detected */
+  if (HAL_GetCurrentCPUID() == CM7_CPUID)
+  {
+    /* Check PWR EXTI flag */
+    if(__HAL_PWR_PVD_EXTI_GET_FLAG() != RESET)
+    {
+      /* PWR PVD interrupt user callback */
+      HAL_PWR_PVDCallback();
+
+      /* Clear PWR EXTI pending bit */
+      __HAL_PWR_PVD_EXTI_CLEAR_FLAG();
+    }
+  }
+  else
+  {
+    /* Check PWR EXTI D2 flag */
+    if(__HAL_PWR_PVD_EXTID2_GET_FLAG() != RESET)
+    {
+      /* PWR PVD interrupt user callback */
+      HAL_PWR_PVDCallback();
+
+      /* Clear PWR EXTI D2 pending bit */
+      __HAL_PWR_PVD_EXTID2_CLEAR_FLAG();
+    }
+  }
+#else
   /* PVD EXTI line interrupt detected */
   if(__HAL_PWR_PVD_EXTI_GET_FLAG() != RESET)
   {
@@ -577,6 +618,7 @@ void HAL_PWR_PVD_IRQHandler(void)
     /* Clear PWR EXTI pending bit */
     __HAL_PWR_PVD_EXTI_CLEAR_FLAG();
   }
+#endif /*DUAL_CORE*/
 }
 
 /**
