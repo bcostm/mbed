@@ -32,7 +32,7 @@ int mbed_sdk_inited = 0;
 // This function is called after RAM initialization and before main.
 void mbed_sdk_init()
 {
-#if TARGET_STM32F7
+#if TARGET_STM32F7 || TARGET_STM32H7
     // The mbed_sdk_init can be called either during cold boot or during
     // application boot after bootloader has been executed.
     // In case the bootloader has already enabled the cache,

@@ -117,7 +117,7 @@ struct analogin_s {
     uint8_t channel;
 };
 
-//#define GPIO_IP_WITHOUT_BRR
+#define GPIO_IP_WITHOUT_BRR
 #include "gpio_object.h"
 
 struct dac_s {

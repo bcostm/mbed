@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    system_stm32h7xx.c
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date    29-December-2017
   * @brief   CMSIS Cortex-Mx Device Peripheral Access Layer System Source File.
   *
   *   This file provides two functions and one global variable to be called from
@@ -95,15 +93,6 @@
   */
 
 /************************* Miscellaneous Configuration ************************/
-/*!< Uncomment the following line if you need to use external SRAM or SDRAM mounted
-     on EVAL board as data memory  */
-/*#define DATA_IN_ExtSRAM */
-/*#define DATA_IN_ExtSDRAM*/
-
-#if defined(DATA_IN_ExtSRAM) && defined(DATA_IN_ExtSDRAM)
- #error "Please select DATA_IN_ExtSRAM or DATA_IN_ExtSDRAM "
-#endif /* DATA_IN_ExtSRAM && DATA_IN_ExtSDRAM */
-
 /*!< Uncomment the following line if you need to relocate your vector Table in
      Internal SRAM. */
 /* #define VECT_TAB_SRAM */
@@ -145,9 +134,6 @@
 /** @addtogroup STM32H7xx_System_Private_FunctionPrototypes
   * @{
   */
-#if defined (DATA_IN_ExtSRAM) || defined (DATA_IN_ExtSDRAM)
-  static void SystemInit_ExtMemCtl(void);
-#endif /* DATA_IN_ExtSRAM || DATA_IN_ExtSDRAM */
 
 /**
   * @}
@@ -156,10 +142,6 @@
 /** @addtogroup STM32H7xx_System_Private_Functions
   * @{
   */
-
-/*+ MBED */
-#if 0
-/*- MBED */
 
 /**
   * @brief  Setup the microcontroller system
@@ -221,25 +203,33 @@ void SystemInit (void)
   /* Disable all interrupts */
   RCC->CIER = 0x00000000;
 
-  /* Change  the switch matrix read issuing capability to 1 for the AXI SRAM target (Target 7) */
-  *((__IO uint32_t*)0x51008108) = 0x00000001;
-
-#if defined (DATA_IN_ExtSRAM) || defined (DATA_IN_ExtSDRAM)
-  SystemInit_ExtMemCtl();
-#endif /* DATA_IN_ExtSRAM || DATA_IN_ExtSDRAM */
-
-  /* Configure the Vector Table location add offset address ------------------*/
+#if defined(DUAL_CORE) && defined(CORE_CM4)
+  /* Configure the Vector Table location add offset address for cortex-M4 ------------------*/
 #ifdef VECT_TAB_SRAM
-  SCB->VTOR = D1_AXISRAM_BASE  | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal ITCMSRAM */
+  SCB->VTOR = D2_AHBSRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM */
 #else
-  SCB->VTOR = FLASH_BANK1_BASE | VECT_TAB_OFFSET;       /* Vector Table Relocation in Internal FLASH */
+  SCB->VTOR = FLASH_BANK2_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
+#endif /* VECT_TAB_SRAM */
+
+#else
+  /* dual core CM7 or single core line */
+  if((DBGMCU->IDCODE & 0xFFFF0000) < 0x20000000)
+  {
+    /* if stm32h7 revY*/
+    /* Change  the switch matrix read issuing capability to 1 for the AXI SRAM target (Target 7) */
+    *((__IO uint32_t*)0x51008108) = 0x000000001;
+  }
+
+  /* Configure the Vector Table location add offset address for cortex-M7 ------------------*/
+#ifdef VECT_TAB_SRAM
+  SCB->VTOR = D1_AXISRAM_BASE  | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal D1 AXI-RAM */
+#else
+  SCB->VTOR = FLASH_BANK1_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
 #endif
+
+#endif /*DUAL_CORE && CORE_CM4*/
 
 }
-
-/*+ MBED */
-#endif
-/*- MBED */
 
 /**
    * @brief  Update SystemCoreClock variable according to Clock Register Values.
@@ -343,233 +333,6 @@ float fracn1, pllvco = 0 ;
   /* HCLK frequency */
   SystemCoreClock >>= tmp;
 }
-#if defined (DATA_IN_ExtSRAM) || defined (DATA_IN_ExtSDRAM)
-/**
-  * @brief  Setup the external memory controller.
-  *         Called in startup_stm32h7xx.s before jump to main.
-  *         This function configures the external memories (SRAM/SDRAM)
-  *         This SRAM/SDRAM will be used as program data memory (including heap and stack).
-  * @param  None
-  * @retval None
-  */
-void SystemInit_ExtMemCtl(void)
-{
-#if defined (DATA_IN_ExtSDRAM)
-  register uint32_t tmpreg = 0, timeout = 0xFFFF;
-  register __IO uint32_t index;
-
-  /* Enable GPIOD, GPIOE, GPIOF, GPIOG, GPIOH and GPIOI interface
-      clock */
-  RCC->AHB4ENR |= 0x000001F8;
-  /* Connect PDx pins to FMC Alternate function */
-  GPIOD->AFR[0]  = 0x000000CC;
-  GPIOD->AFR[1]  = 0xCC000CCC;
-  /* Configure PDx pins in Alternate function mode */
-  GPIOD->MODER   = 0xAFEAFFFA;
-  /* Configure PDx pins speed to 50 MHz */
-  GPIOD->OSPEEDR = 0xA02A000A;
-  /* Configure PDx pins Output type to push-pull */
-  GPIOD->OTYPER  = 0x00000000;
-  /* No pull-up, pull-down for PDx pins */
-   GPIOD->PUPDR   = 0x55555505;
-  /* Connect PEx pins to FMC Alternate function */
-  GPIOE->AFR[0]  = 0xC00000CC;
-  GPIOE->AFR[1]  = 0xCCCCCCCC;
-  /* Configure PEx pins in Alternate function mode */
-  GPIOE->MODER   = 0xAAAABFFA;
-  /* Configure PEx pins speed to 50 MHz */
-  GPIOE->OSPEEDR = 0xAAAA800A;
-  /* Configure PEx pins Output type to push-pull */
-  GPIOE->OTYPER  = 0x00000000;
-  /* No pull-up, pull-down for PEx pins */
-  GPIOE->PUPDR   = 0x55554005;
-  /* Connect PFx pins to FMC Alternate function */
-  GPIOF->AFR[0]  = 0x00CCCCCC;
-  GPIOF->AFR[1]  = 0xCCCCC000;
-  /* Configure PFx pins in Alternate function mode */
-  GPIOF->MODER   = 0xAABFFAAA;
-  /* Configure PFx pins speed to 50 MHz */
-  GPIOF->OSPEEDR = 0xAA800AAA;
-  /* Configure PFx pins Output type to push-pull */
-  GPIOF->OTYPER  = 0x00000000;
-  /* No pull-up, pull-down for PFx pins */
-  GPIOF->PUPDR   = 0x55400555;
-  /* Connect PGx pins to FMC Alternate function */
-  GPIOG->AFR[0]  = 0x00CCCCCC;
-  GPIOG->AFR[1]  = 0xC000000C;
-  /* Configure PGx pins in Alternate function mode */
-  GPIOG->MODER   = 0xBFFEFAAA;
- /* Configure PGx pins speed to 50 MHz */
-  GPIOG->OSPEEDR = 0x80020AAA;
-  /* Configure PGx pins Output type to push-pull */
-  GPIOG->OTYPER  = 0x00000000;
-  /* No pull-up, pull-down for PGx pins */
-  GPIOG->PUPDR   = 0x40010515;
-  /* Connect PHx pins to FMC Alternate function */
-  GPIOH->AFR[0]  = 0xCCC00000;
-  GPIOH->AFR[1]  = 0xCCCCCCCC;
-  /* Configure PHx pins in Alternate function mode */
-  GPIOH->MODER   = 0xAAAAABFF;
-  /* Configure PHx pins speed to 50 MHz */
-  GPIOH->OSPEEDR = 0xAAAAA800;
-  /* Configure PHx pins Output type to push-pull */
-  GPIOH->OTYPER  = 0x00000000;
-  /* No pull-up, pull-down for PHx pins */
-  GPIOH->PUPDR   = 0x55555400;
-  /* Connect PIx pins to FMC Alternate function */
-  GPIOI->AFR[0]  = 0xCCCCCCCC;
-  GPIOI->AFR[1]  = 0x00000CC0;
-  /* Configure PIx pins in Alternate function mode */
-  GPIOI->MODER   = 0xFFEBAAAA;
-  /* Configure PIx pins speed to 50 MHz */
-  GPIOI->OSPEEDR = 0x0028AAAA;
-  /* Configure PIx pins Output type to push-pull */
-  GPIOI->OTYPER  = 0x00000000;
-  /* No pull-up, pull-down for PIx pins */
-  GPIOI->PUPDR   = 0x00145555;
-/*-- FMC Configuration ------------------------------------------------------*/
-  /* Enable the FMC interface clock */
-  (RCC->AHB3ENR |= (RCC_AHB3ENR_FMCEN));
-  /*SDRAM Timing and access interface configuration*/
-  /*LoadToActiveDelay  = 2
-    ExitSelfRefreshDelay = 6
-    SelfRefreshTime      = 4
-    RowCycleDelay        = 6
-    WriteRecoveryTime    = 2
-    RPDelay              = 2
-    RCDDelay             = 2
-    SDBank             = FMC_SDRAM_BANK2
-    ColumnBitsNumber   = FMC_SDRAM_COLUMN_BITS_NUM_9
-    RowBitsNumber      = FMC_SDRAM_ROW_BITS_NUM_12
-    MemoryDataWidth    = FMC_SDRAM_MEM_BUS_WIDTH_32
-    InternalBankNumber = FMC_SDRAM_INTERN_BANKS_NUM_4
-    CASLatency         = FMC_SDRAM_CAS_LATENCY_2
-    WriteProtection    = FMC_SDRAM_WRITE_PROTECTION_DISABLE
-    SDClockPeriod      = FMC_SDRAM_CLOCK_PERIOD_2
-    ReadBurst          = FMC_SDRAM_RBURST_ENABLE
-    ReadPipeDelay      = FMC_SDRAM_RPIPE_DELAY_0*/
-
-  FMC_Bank5_6->SDCR[0] = 0x00001800;
-  FMC_Bank5_6->SDCR[1] = 0x00000165;
-  FMC_Bank5_6->SDTR[0] = 0x00105000;
-  FMC_Bank5_6->SDTR[1] = 0x01010351;
-
-  /* SDRAM initialization sequence */
-  /* Clock enable command */
-  FMC_Bank5_6->SDCMR = 0x00000009;
-  tmpreg = FMC_Bank5_6->SDSR & 0x00000020;
-  while((tmpreg != 0) && (timeout-- > 0))
-  {
-    tmpreg = FMC_Bank5_6->SDSR & 0x00000020;
-  }
-
-  /* Delay */
-  for (index = 0; index<1000; index++);
-
-  /* PALL command */
-    FMC_Bank5_6->SDCMR = 0x0000000A;
-  timeout = 0xFFFF;
-  while((tmpreg != 0) && (timeout-- > 0))
-  {
-    tmpreg = FMC_Bank5_6->SDSR & 0x00000020;
-  }
-
-  FMC_Bank5_6->SDCMR = 0x000000EB;
-  timeout = 0xFFFF;
-  while((tmpreg != 0) && (timeout-- > 0))
-  {
-    tmpreg = FMC_Bank5_6->SDSR & 0x00000020;
-  }
-
-  FMC_Bank5_6->SDCMR = 0x0004400C;
-  timeout = 0xFFFF;
-  while((tmpreg != 0) && (timeout-- > 0))
-  {
-    tmpreg = FMC_Bank5_6->SDSR & 0x00000020;
-  }
-  /* Set refresh count */
-  tmpreg = FMC_Bank5_6->SDRTR;
-  FMC_Bank5_6->SDRTR = (tmpreg | (0x00000603<<1));
-
-  /* Disable write protection */
-  tmpreg = FMC_Bank5_6->SDCR[1];
-  FMC_Bank5_6->SDCR[1] = (tmpreg & 0xFFFFFDFF);
-
-   /*FMC controller Enable*/
-  FMC_Bank1->BTCR[0]  |= 0x80000000;
-
-
-#endif /* DATA_IN_ExtSDRAM */
-
-#if defined(DATA_IN_ExtSRAM)
-/*-- GPIOs Configuration -----------------------------------------------------*/
-   /* Enable GPIOD, GPIOE, GPIOF and GPIOG interface clock */
-  RCC->AHB4ENR   |= 0x00000078;
-
-  /* Connect PDx pins to FMC Alternate function */
-  GPIOD->AFR[0]  = 0x00CCC0CC;
-  GPIOD->AFR[1]  = 0xCCCCCCCC;
-  /* Configure PDx pins in Alternate function mode */
-  GPIOD->MODER   = 0xAAAA0A8A;
-  /* Configure PDx pins speed to 100 MHz */
-  GPIOD->OSPEEDR = 0xFFFF0FCF;
-  /* Configure PDx pins Output type to push-pull */
-  GPIOD->OTYPER  = 0x00000000;
-  /* No pull-up, pull-down for PDx pins */
-  GPIOD->PUPDR   = 0x55550545;
-
-  /* Connect PEx pins to FMC Alternate function */
-  GPIOE->AFR[0]  = 0xC00CC0CC;
-  GPIOE->AFR[1]  = 0xCCCCCCCC;
-  /* Configure PEx pins in Alternate function mode */
-  GPIOE->MODER   = 0xAAAA828A;
-  /* Configure PEx pins speed to 100 MHz */
-  GPIOE->OSPEEDR = 0xFFFFC3CF;
-  /* Configure PEx pins Output type to push-pull */
-  GPIOE->OTYPER  = 0x00000000;
-  /* No pull-up, pull-down for PEx pins */
-  GPIOE->PUPDR   = 0x55554145;
-
-  /* Connect PFx pins to FMC Alternate function */
-  GPIOF->AFR[0]  = 0x00CCCCCC;
-  GPIOF->AFR[1]  = 0xCCCC0000;
-  /* Configure PFx pins in Alternate function mode */
-  GPIOF->MODER   = 0xAA000AAA;
-  /* Configure PFx pins speed to 100 MHz */
-  GPIOF->OSPEEDR = 0xFF000FFF;
-  /* Configure PFx pins Output type to push-pull */
-  GPIOF->OTYPER  = 0x00000000;
-  /* No pull-up, pull-down for PFx pins */
-  GPIOF->PUPDR   = 0x55000555;
-
-  /* Connect PGx pins to FMC Alternate function */
-  GPIOG->AFR[0]  = 0x00CCCCCC;
-  GPIOG->AFR[1]  = 0x000000C0;
-  /* Configure PGx pins in Alternate function mode */
-  GPIOG->MODER   = 0x00200AAA;
-  /* Configure PGx pins speed to 100 MHz */
-  GPIOG->OSPEEDR = 0x00300FFF;
-  /* Configure PGx pins Output type to push-pull */
-  GPIOG->OTYPER  = 0x00000000;
-  /* No pull-up, pull-down for PGx pins */
-  GPIOG->PUPDR   = 0x00100555;
-
-/*-- FMC/FSMC Configuration --------------------------------------------------*/
-  /* Enable the FMC/FSMC interface clock */
- (RCC->AHB3ENR |= (RCC_AHB3ENR_FMCEN));
-
-  /* Configure and enable Bank1_SRAM2 */
-  FMC_Bank1->BTCR[4]  = 0x00001091;
-  FMC_Bank1->BTCR[5]  = 0x00110212;
-  FMC_Bank1E->BWTR[4] = 0x0FFFFFFF;
-
-  /*FMC controller Enable*/
-  FMC_Bank1->BTCR[0]  |= 0x80000000;
-
-
-#endif /* DATA_IN_ExtSRAM */
-}
-#endif /* DATA_IN_ExtSRAM || DATA_IN_ExtSDRAM */
 
 
 /**

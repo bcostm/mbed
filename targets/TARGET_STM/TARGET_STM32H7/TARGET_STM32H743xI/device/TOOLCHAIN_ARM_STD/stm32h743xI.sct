@@ -27,10 +27,10 @@
 ; OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-; STM32H743ZI: 1024 KB FLASH (0x100000) + 512 KB SRAM (0x80000)
-LR_IROM1 0x08000000 0x100000  {    ; load region size_region
+; STM32H743ZI: 2MB FLASH (0x200000) + 512 KB SRAM (0x80000) @ 0x24000000
+LR_IROM1 0x08000000 0x200000  {    ; load region size_region
 
-  ER_IROM1 0x08000000 0x100000  {  ; load address = execution address
+  ER_IROM1 0x08000000 0x200000  {  ; load address = execution address
    *.o (RESET, +First)
    *(InRoot$$Sections)
    .ANY (+RO)

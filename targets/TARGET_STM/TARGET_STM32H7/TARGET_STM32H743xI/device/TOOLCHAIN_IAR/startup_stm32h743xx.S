@@ -1,8 +1,6 @@
 ;/******************** (C) COPYRIGHT 2017 STMicroelectronics ********************
 ;* File Name          : startup_stm32h743xx.s
 ;* Author             : MCD Application Team
-;* version            : V1.2.0
-;* Date               : 29-December-2017
 ;* Description        : STM32H743xx devices vector table for EWARM toolchain.
 ;*                      This module performs:
 ;*                      - Set the initial SP
@@ -232,7 +230,7 @@ __vector_table
         DCD     LPUART1_IRQHandler                ; LP UART1 interrupt                              
         DCD     0                                 ; Reserved              
         DCD     CRS_IRQHandler                    ; Clock Recovery Global Interrupt                 
-        DCD     0                                 ; Reserved
+        DCD     ECC_IRQHandler                    ; ECC diagnostic Global Interrupt
         DCD     SAI4_IRQHandler                   ; SAI4 global interrupt                           
         DCD     0                                 ; Reserved              
         DCD     0                                 ; Reserved                             
@@ -975,6 +973,11 @@ LPUART1_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1) 
 CRS_IRQHandler 
         B CRS_IRQHandler
+
+        PUBWEAK ECC_IRQHandler
+        SECTION .text:CODE:NOROOT:REORDER(1) 
+ECC_IRQHandler 
+        B ECC_IRQHandler
 
         PUBWEAK SAI4_IRQHandler
         SECTION .text:CODE:NOROOT:REORDER(1) 

@@ -1553,14 +1553,14 @@
             },
             "lowpowertimer_lptim": {
                 "help": "This target supports LPTIM. Set value 1 to use LPTIM for LOWPOWERTIMER, or 0 to use RTC wakeup timer",
-                "value": 1
+                "value": 0
             }
         },
         "supported_form_factors": ["ARDUINO"],
         "macros_add": ["USBHOST_OTHER"],
         "detect_code": ["0813"],
-        "device_has_add": [],
-        "device_has_remove": ["SLEEP","SPI","SPISLAVE","SPI_ASYNCH","RTC"],
+        "device_has_add": ["LOWPOWERTIMER", "TRNG", "FLASH"],
+        "device_has_remove": ["SPI","SPISLAVE","SPI_ASYNCH"],
         "release_versions": ["2", "5"],
         "device_name": "STM32H743ZI"
     },

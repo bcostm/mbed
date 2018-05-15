@@ -71,19 +71,28 @@
 #define STM32H7
 #endif /* STM32H7 */
 
-   
+
 /* Uncomment the line below according to the target STM32H7 device used in your
    application
   */
 
-#if !defined (STM32H743xx) && !defined (STM32H753xx)
-   #define STM32H743xx    /*!< STM32H743VI, STM32H743ZI, STM32H743II, STM32H743BI, STM32H743XI Devices */
-  /* #define STM32H753xx */   /*!< STM32H753VI, STM32H753ZI, STM32H753II, STM32H753BI, STM32H753XI Devices */
+#if !defined (STM32H743xx) && !defined (STM32H753xx) && !defined (STM32H745xx) && !defined (STM32H755xx) && !defined (STM32H747xx) && !defined (STM32H757xx)
+     #define STM32H743xx      /*!< STM32H743VI, STM32H743ZI, STM32H743AI, STM32H743II, STM32H743BI, STM32H743XI Devices */
+  /* #define STM32H753xx */   /*!< STM32H753VI, STM32H753ZI, STM32H753AI, STM32H753II, STM32H753BI, STM32H753XI Devices */
+  /* #define STM32H747xx */   /*!< STM32H747ZI, STM32H747AI, STM32H747II, STM32H747BI, STM32H747XI Devices */
+  /* #define STM32H757xx */   /*!< STM32H757ZI, STM32H757AI, STM32H757II, STM32H757BI, STM32H757XI Devices */
+  /* #define STM32H745xx */   /*!< STM32H745ZI, STM32H745II, STM32H745BI, STM32H745XI Devices  */
+  /* #define STM32H755xx */   /*!< STM32H755ZI, STM32H755II, STM32H755BI, STM32H755XI Devices  */
 #endif
 
 /*  Tip: To avoid modifying this file each time you need to switch between these
         devices, you can define the device in your toolchain compiler preprocessor.
   */
+
+#if defined(DUAL_CORE) && !defined(CORE_CM4) && !defined(CORE_CM7)
+ #error "Dual core device, please select CORE_CM4 or CORE_CM7"
+#endif
+
 #if !defined  (USE_HAL_DRIVER)
 /**
  * @brief Comment the line below if you will not use the peripherals drivers.
@@ -91,15 +100,16 @@
    be based on direct access to peripherals registers
    */
   #define USE_HAL_DRIVER
+  #define USE_FULL_LL_DRIVER // MBED patch
 #endif /* USE_HAL_DRIVER */
 
 /**
-  * @brief CMSIS Device version number V1.2.0
+  * @brief CMSIS Device version number V1.4.0RC2
   */
 #define __STM32H7xx_CMSIS_DEVICE_VERSION_MAIN   (0x01) /*!< [31:24] main version */
-#define __STM32H7xx_CMSIS_DEVICE_VERSION_SUB1   (0x02) /*!< [23:16] sub1 version */
+#define __STM32H7xx_CMSIS_DEVICE_VERSION_SUB1   (0x04) /*!< [23:16] sub1 version */
 #define __STM32H7xx_CMSIS_DEVICE_VERSION_SUB2   (0x00) /*!< [15:8]  sub2 version */
-#define __STM32H7xx_CMSIS_DEVICE_VERSION_RC     (0x00) /*!< [7:0]  release candidate */
+#define __STM32H7xx_CMSIS_DEVICE_VERSION_RC     (0x02) /*!< [7:0]  release candidate */
 #define __STM32H7xx_CMSIS_DEVICE_VERSION        ((__CMSIS_DEVICE_VERSION_MAIN     << 24)\
                                       |(__CMSIS_DEVICE_HAL_VERSION_SUB1 << 16)\
                                       |(__CMSIS_DEVICE_HAL_VERSION_SUB2 << 8 )\
@@ -117,6 +127,14 @@
   #include "stm32h743xx.h"
 #elif defined(STM32H753xx)
   #include "stm32h753xx.h"
+#elif defined(STM32H745xx)
+  #include "stm32h745xx.h"
+#elif defined(STM32H755xx)
+  #include "stm32h755xx.h"
+#elif defined(STM32H747xx)
+  #include "stm32h747xx.h"
+#elif defined(STM32H757xx)
+  #include "stm32h757xx.h"
 #else
  #error "Please select first the target STM32H7xx device used in your application (in stm32h7xx.h file)"
 #endif
