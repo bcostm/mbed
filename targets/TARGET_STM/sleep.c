@@ -57,7 +57,9 @@ static void ForceClockOutofDeepSleep(void)
     uint32_t pFLatency = 0;
 
     /* Enable Power Control clock */
+#ifndef TARGET_STM32H7
     __HAL_RCC_PWR_CLK_ENABLE();
+#endif
 
 #ifdef PWR_FLAG_VOS
     /* Poll VOSF bit of in PWR_CSR. Wait until it is reset to 0 */

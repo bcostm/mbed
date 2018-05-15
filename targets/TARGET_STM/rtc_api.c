@@ -50,7 +50,9 @@ void rtc_init(void)
     RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
     // Enable access to Backup domain
+#ifndef TARGET_STM32H7
     __HAL_RCC_PWR_CLK_ENABLE();
+#endif
     HAL_PWR_EnableBkUpAccess();
 
 #if DEVICE_LOWPOWERTIMER
