@@ -71,8 +71,8 @@ extern "C" {
   */
 #if defined(DUAL_CORE)
 #define __HAL_HSEM_ENABLE_IT(__SEM_MASK__) ((((SCB->CPUID & 0x000000F0) >> 4 )== 0x7) ? \
-                                         (HSEM->C1IER |= (__SEM_MASK__)) : \
-                                         (HSEM->C2IER |= (__SEM_MASK__)))
+                                            (HSEM->C1IER |= (__SEM_MASK__)) : \
+                                            (HSEM->C2IER |= (__SEM_MASK__)))
 #else
 #define __HAL_HSEM_ENABLE_IT(__SEM_MASK__) (HSEM->IER |= (__SEM_MASK__))
 #endif /* DUAL_CORE */
@@ -83,8 +83,8 @@ extern "C" {
   */
 #if defined(DUAL_CORE)
 #define __HAL_HSEM_DISABLE_IT(__SEM_MASK__) ((((SCB->CPUID & 0x000000F0) >> 4 )== 0x7) ? \
-                                          (HSEM->C1IER &= ~(__SEM_MASK__)) :       \
-                                          (HSEM->C2IER &= ~(__SEM_MASK__)))
+                                             (HSEM->C1IER &= ~(__SEM_MASK__)) :       \
+                                             (HSEM->C2IER &= ~(__SEM_MASK__)))
 #else
 #define __HAL_HSEM_DISABLE_IT(__SEM_MASK__) (HSEM->IER &= ~(__SEM_MASK__))
 #endif /* DUAL_CORE */
@@ -92,12 +92,12 @@ extern "C" {
 /**
   * @brief  Checks whether interrupt has occurred or not for semaphores specified by a mask.
   * @param  __SEM_MASK__: semaphores Mask
-* @retval semaphores Mask : Semaphores where an interrupt occurred.
+  * @retval semaphores Mask : Semaphores where an interrupt occurred.
   */
 #if defined(DUAL_CORE)
 #define __HAL_HSEM_GET_IT(__SEM_MASK__) ((((SCB->CPUID & 0x000000F0) >> 4 )== 0x7) ? \
-                                      ((__SEM_MASK__) & HSEM->C1MISR) :        \
-                                      ((__SEM_MASK__) & HSEM->C2MISR1))
+                                         ((__SEM_MASK__) & HSEM->C1MISR) :        \
+                                         ((__SEM_MASK__) & HSEM->C2MISR1))
 #else
 #define __HAL_HSEM_GET_IT(__SEM_MASK__) ((__SEM_MASK__) & HSEM->MISR)
 #endif /* DUAL_CORE */
@@ -109,8 +109,8 @@ extern "C" {
   */
 #if defined(DUAL_CORE)
 #define __HAL_HSEM_GET_FLAG(__SEM_MASK__) ((((SCB->CPUID & 0x000000F0) >> 4 )== 0x7) ? \
-                                        (__SEM_MASK__) & HSEM->C1ISR :           \
-                                        (__SEM_MASK__) & HSEM->C2ISR)
+                                           (__SEM_MASK__) & HSEM->C1ISR :           \
+                                           (__SEM_MASK__) & HSEM->C2ISR)
 #else
 #define __HAL_HSEM_GET_FLAG(__SEM_MASK__) ((__SEM_MASK__) & HSEM->ISR)
 #endif /* DUAL_CORE */
@@ -122,8 +122,8 @@ extern "C" {
   */
 #if defined(DUAL_CORE)
 #define __HAL_HSEM_CLEAR_FLAG(__SEM_MASK__) ((((SCB->CPUID & 0x000000F0) >> 4 )== 0x7) ? \
-                                          (HSEM->C1ICR |= (__SEM_MASK__)) :        \
-                                          (HSEM->C2ICR |= (__SEM_MASK__)))
+                                             (HSEM->C1ICR |= (__SEM_MASK__)) :        \
+                                             (HSEM->C2ICR |= (__SEM_MASK__)))
 #else
 #define __HAL_HSEM_CLEAR_FLAG(__SEM_MASK__) (HSEM->ICR |= (__SEM_MASK__))
 #endif /* DUAL_CORE */
@@ -201,8 +201,12 @@ void HAL_HSEM_IRQHandler(void);
 
 #define IS_HSEM_KEY(__KEY__) ((__KEY__) <= HSEM_CLEAR_KEY_MAX )
 
+#if defined(DUAL_CORE)
 #define IS_HSEM_COREID(__COREID__) (((__COREID__) == HSEM_CPU1_COREID) || \
                                     ((__COREID__) == HSEM_CPU2_COREID))
+#else
+#define IS_HSEM_COREID(__COREID__) ((__COREID__) == HSEM_CPU1_COREID)
+#endif
 
 
 /**

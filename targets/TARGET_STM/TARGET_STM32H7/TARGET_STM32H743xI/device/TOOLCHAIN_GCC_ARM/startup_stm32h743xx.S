@@ -308,7 +308,8 @@ g_pfnVectors:
   .word     LPUART1_IRQHandler                /* LP UART1 interrupt         */     
   .word     0                                 /* Reserved                   */     
   .word     CRS_IRQHandler                    /* Clock Recovery Global Interrupt */ 
-  .word     0                                 /* Reserved                   */     
+  .word     0                                 /* Reserved                   */
+  .word     ECC_IRQHandler                    /* ECC diagnostic Global Interrupt */  
   .word     SAI4_IRQHandler                   /* SAI4 global interrupt      */      
   .word     0                                 /* Reserved                   */      
   .word     0                                 /* Reserved                   */      
@@ -755,6 +756,9 @@ g_pfnVectors:
 
    .weak      CRS_IRQHandler            
    .thumb_set CRS_IRQHandler,Default_Handler 
+
+   .weak      ECC_IRQHandler            
+   .thumb_set ECC_IRQHandler,Default_Handler
 
    .weak      SAI4_IRQHandler            
    .thumb_set SAI4_IRQHandler,Default_Handler 

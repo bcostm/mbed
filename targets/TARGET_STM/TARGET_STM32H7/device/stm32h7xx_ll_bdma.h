@@ -61,7 +61,7 @@ extern "C" {
   * @{
   */
 /* Array used to get the BDMA channel register offset versus channel index LL_BDMA_CHANNEL_x */
-static const uint8_t CHANNEL_OFFSET_TAB[] =
+static const uint8_t LL_BDMA_CH_OFFSET_TAB[] =
 {
   (uint8_t)(BDMA_Channel0_BASE - BDMA_BASE),
   (uint8_t)(BDMA_Channel1_BASE - BDMA_BASE),
@@ -284,6 +284,15 @@ typedef struct
   * @}
   */
 
+/** @defgroup DMA_LL_EC_DOUBLEBUFFER_MODE DOUBLE BUFFER MODE
+  * @{
+  */
+#define LL_BDMA_DOUBLEBUFFER_MODE_DISABLE  0x00000000U               /*!< Disable double buffering mode */
+#define LL_BDMA_DOUBLEBUFFER_MODE_ENABLE   BDMA_CCR_DBM              /*!< Enable double buffering mode  */
+/**
+  * @}
+  */
+  
 /** @defgroup BDMA_LL_EC_PERIPH Peripheral increment mode
   * @{
   */
@@ -333,6 +342,14 @@ typedef struct
   * @}
   */
 
+/** @defgroup DMA_LL_EC_CURRENTTARGETMEM CURRENTTARGETMEM
+  * @{
+  */
+#define LL_BDMA_CURRENTTARGETMEM0          0x00000000U                             /*!< Set CurrentTarget Memory to Memory 0  */
+#define LL_BDMA_CURRENTTARGETMEM1          BDMA_CCR_CT                             /*!< Set CurrentTarget Memory to Memory 1  */
+/**
+  * @}
+  */
 
 /* Exported macro ------------------------------------------------------------*/
 /** @defgroup BDMA_LL_Exported_Macros BDMA Exported Macros
@@ -437,7 +454,7 @@ typedef struct
   */
 __STATIC_INLINE void LL_BDMA_EnableChannel(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  SET_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_EN);
+  SET_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_EN);
 }
 
 /**
@@ -457,7 +474,7 @@ __STATIC_INLINE void LL_BDMA_EnableChannel(BDMA_TypeDef *BDMAx, uint32_t Channel
   */
 __STATIC_INLINE void LL_BDMA_DisableChannel(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  CLEAR_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_EN);
+  CLEAR_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_EN);
 }
 
 /**
@@ -477,8 +494,7 @@ __STATIC_INLINE void LL_BDMA_DisableChannel(BDMA_TypeDef *BDMAx, uint32_t Channe
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsEnabledChannel(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (uint32_t)(READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
-                             BDMA_CCR_EN) == (BDMA_CCR_EN));
+  return ((READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_EN) == (BDMA_CCR_EN)) ? 1UL : 0UL);
 }
 
 /**
@@ -513,7 +529,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsEnabledChannel(BDMA_TypeDef *BDMAx, uint32_t 
   */
 __STATIC_INLINE void LL_BDMA_ConfigTransfer(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t Configuration)
 {
-  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
+  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR,
              BDMA_CCR_DIR | BDMA_CCR_MEM2MEM | BDMA_CCR_CIRC | BDMA_CCR_PINC | BDMA_CCR_MINC | BDMA_CCR_PSIZE | BDMA_CCR_MSIZE | BDMA_CCR_PL,
              Configuration);
 }
@@ -540,7 +556,7 @@ __STATIC_INLINE void LL_BDMA_ConfigTransfer(BDMA_TypeDef *BDMAx, uint32_t Channe
   */
 __STATIC_INLINE void LL_BDMA_SetDataTransferDirection(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t Direction)
 {
-  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
+  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR,
              BDMA_CCR_DIR | BDMA_CCR_MEM2MEM, Direction);
 }
 
@@ -565,7 +581,7 @@ __STATIC_INLINE void LL_BDMA_SetDataTransferDirection(BDMA_TypeDef *BDMAx, uint3
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetDataTransferDirection(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
+  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR,
                    BDMA_CCR_DIR | BDMA_CCR_MEM2MEM));
 }
 
@@ -591,7 +607,7 @@ __STATIC_INLINE uint32_t LL_BDMA_GetDataTransferDirection(BDMA_TypeDef *BDMAx, u
   */
 __STATIC_INLINE void LL_BDMA_SetMode(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t Mode)
 {
-  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_CIRC,
+  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_CIRC,
              Mode);
 }
 
@@ -614,7 +630,7 @@ __STATIC_INLINE void LL_BDMA_SetMode(BDMA_TypeDef *BDMAx, uint32_t Channel, uint
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetMode(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
+  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR,
                    BDMA_CCR_CIRC));
 }
 
@@ -638,7 +654,7 @@ __STATIC_INLINE uint32_t LL_BDMA_GetMode(BDMA_TypeDef *BDMAx, uint32_t Channel)
   */
 __STATIC_INLINE void LL_BDMA_SetPeriphIncMode(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t PeriphOrM2MSrcIncMode)
 {
-  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_PINC,
+  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_PINC,
              PeriphOrM2MSrcIncMode);
 }
 
@@ -661,7 +677,7 @@ __STATIC_INLINE void LL_BDMA_SetPeriphIncMode(BDMA_TypeDef *BDMAx, uint32_t Chan
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetPeriphIncMode(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
+  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR,
                    BDMA_CCR_PINC));
 }
 
@@ -685,7 +701,7 @@ __STATIC_INLINE uint32_t LL_BDMA_GetPeriphIncMode(BDMA_TypeDef *BDMAx, uint32_t 
   */
 __STATIC_INLINE void LL_BDMA_SetMemoryIncMode(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t MemoryOrM2MDstIncMode)
 {
-  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_MINC,
+  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_MINC,
              MemoryOrM2MDstIncMode);
 }
 
@@ -708,7 +724,7 @@ __STATIC_INLINE void LL_BDMA_SetMemoryIncMode(BDMA_TypeDef *BDMAx, uint32_t Chan
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetMemoryIncMode(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
+  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR,
                    BDMA_CCR_MINC));
 }
 
@@ -733,7 +749,7 @@ __STATIC_INLINE uint32_t LL_BDMA_GetMemoryIncMode(BDMA_TypeDef *BDMAx, uint32_t 
   */
 __STATIC_INLINE void LL_BDMA_SetPeriphSize(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t PeriphOrM2MSrcDataSize)
 {
-  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_PSIZE,
+  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_PSIZE,
              PeriphOrM2MSrcDataSize);
 }
 
@@ -757,7 +773,7 @@ __STATIC_INLINE void LL_BDMA_SetPeriphSize(BDMA_TypeDef *BDMAx, uint32_t Channel
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetPeriphSize(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
+  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR,
                    BDMA_CCR_PSIZE));
 }
 
@@ -782,7 +798,7 @@ __STATIC_INLINE uint32_t LL_BDMA_GetPeriphSize(BDMA_TypeDef *BDMAx, uint32_t Cha
   */
 __STATIC_INLINE void LL_BDMA_SetMemorySize(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t MemoryOrM2MDstDataSize)
 {
-  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_MSIZE,
+  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_MSIZE,
              MemoryOrM2MDstDataSize);
 }
 
@@ -806,7 +822,7 @@ __STATIC_INLINE void LL_BDMA_SetMemorySize(BDMA_TypeDef *BDMAx, uint32_t Channel
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetMemorySize(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
+  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR,
                    BDMA_CCR_MSIZE));
 }
 
@@ -832,7 +848,7 @@ __STATIC_INLINE uint32_t LL_BDMA_GetMemorySize(BDMA_TypeDef *BDMAx, uint32_t Cha
   */
 __STATIC_INLINE void LL_BDMA_SetChannelPriorityLevel(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t Priority)
 {
-  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_PL,
+  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_PL,
              Priority);
 }
 
@@ -857,7 +873,7 @@ __STATIC_INLINE void LL_BDMA_SetChannelPriorityLevel(BDMA_TypeDef *BDMAx, uint32
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetChannelPriorityLevel(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
+  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR,
                    BDMA_CCR_PL));
 }
 
@@ -881,7 +897,7 @@ __STATIC_INLINE uint32_t LL_BDMA_GetChannelPriorityLevel(BDMA_TypeDef *BDMAx, ui
   */
 __STATIC_INLINE void LL_BDMA_SetDataLength(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t NbData)
 {
-  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CNDTR,
+  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CNDTR,
              BDMA_CNDTR_NDT, NbData);
 }
 
@@ -904,8 +920,93 @@ __STATIC_INLINE void LL_BDMA_SetDataLength(BDMA_TypeDef *BDMAx, uint32_t Channel
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetDataLength(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CNDTR,
+  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CNDTR,
                    BDMA_CNDTR_NDT));
+}
+
+/**
+  * @brief Set Current target (only in double buffer mode) to Memory 1 or Memory 0.
+  * @rmtoll CR          CT           LL_BDMA_SetCurrentTargetMem
+  * @param  DMAx DMAx Instance
+  * @param  Stream This parameter can be one of the following values:
+  *         @arg @ref LL_BDMA_CHANNEL_0
+  *         @arg @ref LL_BDMA_CHANNEL_1
+  *         @arg @ref LL_BDMA_CHANNEL_2
+  *         @arg @ref LL_BDMA_CHANNEL_3
+  *         @arg @ref LL_BDMA_CHANNEL_4
+  *         @arg @ref LL_BDMA_CHANNEL_5
+  *         @arg @ref LL_BDMA_CHANNEL_6
+  *         @arg @ref LL_BDMA_CHANNEL_7
+  * @param CurrentMemory This parameter can be one of the following values:
+  *         @arg @ref LL_BDMA_CURRENTTARGETMEM0
+  *         @arg @ref LL_BDMA_CURRENTTARGETMEM1
+  * @retval None
+  */
+__STATIC_INLINE void LL_BDMA_SetCurrentTargetMem(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t CurrentMemory)
+{
+  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_CT, CurrentMemory);
+}
+
+/**
+  * @brief Set Current target (only in double buffer mode) to Memory 1 or Memory 0.
+  * @rmtoll CR          CT           LL_BDMA_GetCurrentTargetMem
+  * @param  DMAx DMAx Instance
+  * @param  Stream This parameter can be one of the following values:
+  *         @arg @ref LL_BDMA_CHANNEL_0
+  *         @arg @ref LL_BDMA_CHANNEL_1
+  *         @arg @ref LL_BDMA_CHANNEL_2
+  *         @arg @ref LL_BDMA_CHANNEL_3
+  *         @arg @ref LL_BDMA_CHANNEL_4
+  *         @arg @ref LL_BDMA_CHANNEL_5
+  *         @arg @ref LL_BDMA_CHANNEL_6
+  *         @arg @ref LL_BDMA_CHANNEL_7
+  * @retval Returned value can be one of the following values:
+  *         @arg @ref LL_BDMA_CURRENTTARGETMEM0
+  *         @arg @ref LL_BDMA_CURRENTTARGETMEM1
+  */
+__STATIC_INLINE uint32_t LL_BDMA_GetCurrentTargetMem(BDMA_TypeDef *BDMAx, uint32_t Channel)
+{
+  return (READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_CT));
+}
+
+/**
+  * @brief Enable the double buffer mode.
+  * @rmtoll CR          DBM           LL_BDMA_EnableDoubleBufferMode
+  * @param  DMAx DMAx Instance
+  * @param  Stream This parameter can be one of the following values:
+  *         @arg @ref LL_BDMA_CHANNEL_0
+  *         @arg @ref LL_BDMA_CHANNEL_1
+  *         @arg @ref LL_BDMA_CHANNEL_2
+  *         @arg @ref LL_BDMA_CHANNEL_3
+  *         @arg @ref LL_BDMA_CHANNEL_4
+  *         @arg @ref LL_BDMA_CHANNEL_5
+  *         @arg @ref LL_BDMA_CHANNEL_6
+  *         @arg @ref LL_BDMA_CHANNEL_7
+  * @retval None
+  */
+__STATIC_INLINE void LL_BDMA_EnableDoubleBufferMode(BDMA_TypeDef *BDMAx, uint32_t Channel)
+{
+  SET_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_DBM);
+}
+
+/**
+  * @brief Disable the double buffer mode.
+  * @rmtoll CR          DBM           LL_BDMA_DisableDoubleBufferMode
+  * @param  DMAx DMAx Instance
+  * @param  Stream This parameter can be one of the following values:
+  *         @arg @ref LL_BDMA_CHANNEL_0
+  *         @arg @ref LL_BDMA_CHANNEL_1
+  *         @arg @ref LL_BDMA_CHANNEL_2
+  *         @arg @ref LL_BDMA_CHANNEL_3
+  *         @arg @ref LL_BDMA_CHANNEL_4
+  *         @arg @ref LL_BDMA_CHANNEL_5
+  *         @arg @ref LL_BDMA_CHANNEL_6
+  *         @arg @ref LL_BDMA_CHANNEL_7
+  * @retval None
+  */
+__STATIC_INLINE void LL_BDMA_DisableDoubleBufferMode(BDMA_TypeDef *BDMAx, uint32_t Channel)
+{
+  CLEAR_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_DBM);
 }
 
 /**
@@ -938,14 +1039,14 @@ __STATIC_INLINE void LL_BDMA_ConfigAddresses(BDMA_TypeDef *BDMAx, uint32_t Chann
   /* Direction Memory to Periph */
   if (Direction == LL_BDMA_DIRECTION_MEMORY_TO_PERIPH)
   {
-    WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CMAR, SrcAddress);
-    WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CPAR, DstAddress);
+    WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CM0AR, SrcAddress);
+    WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CPAR, DstAddress);
   }
   /* Direction Periph to Memory and Memory to Memory */
   else
   {
-    WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CPAR, SrcAddress);
-    WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CMAR, DstAddress);
+    WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CPAR, SrcAddress);
+    WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CM0AR, DstAddress);
   }
 }
 
@@ -969,7 +1070,7 @@ __STATIC_INLINE void LL_BDMA_ConfigAddresses(BDMA_TypeDef *BDMAx, uint32_t Chann
   */
 __STATIC_INLINE void LL_BDMA_SetMemoryAddress(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t MemoryAddress)
 {
-  WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CMAR, MemoryAddress);
+  WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CM0AR, MemoryAddress);
 }
 
 /**
@@ -992,7 +1093,7 @@ __STATIC_INLINE void LL_BDMA_SetMemoryAddress(BDMA_TypeDef *BDMAx, uint32_t Chan
   */
 __STATIC_INLINE void LL_BDMA_SetPeriphAddress(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t PeriphAddress)
 {
-  WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CPAR, PeriphAddress);
+  WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CPAR, PeriphAddress);
 }
 
 /**
@@ -1013,7 +1114,7 @@ __STATIC_INLINE void LL_BDMA_SetPeriphAddress(BDMA_TypeDef *BDMAx, uint32_t Chan
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetMemoryAddress(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CMAR));
+  return (READ_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CM0AR));
 }
 
 /**
@@ -1034,7 +1135,7 @@ __STATIC_INLINE uint32_t LL_BDMA_GetMemoryAddress(BDMA_TypeDef *BDMAx, uint32_t 
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetPeriphAddress(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CPAR));
+  return (READ_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CPAR));
 }
 
 /**
@@ -1057,7 +1158,7 @@ __STATIC_INLINE uint32_t LL_BDMA_GetPeriphAddress(BDMA_TypeDef *BDMAx, uint32_t 
   */
 __STATIC_INLINE void LL_BDMA_SetM2MSrcAddress(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t MemoryAddress)
 {
-  WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CPAR, MemoryAddress);
+  WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CPAR, MemoryAddress);
 }
 
 /**
@@ -1080,7 +1181,7 @@ __STATIC_INLINE void LL_BDMA_SetM2MSrcAddress(BDMA_TypeDef *BDMAx, uint32_t Chan
   */
 __STATIC_INLINE void LL_BDMA_SetM2MDstAddress(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t MemoryAddress)
 {
-  WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CMAR, MemoryAddress);
+  WRITE_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CM0AR, MemoryAddress);
 }
 
 /**
@@ -1101,7 +1202,7 @@ __STATIC_INLINE void LL_BDMA_SetM2MDstAddress(BDMA_TypeDef *BDMAx, uint32_t Chan
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetM2MSrcAddress(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CPAR));
+  return (READ_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CPAR));
 }
 
 /**
@@ -1122,7 +1223,48 @@ __STATIC_INLINE uint32_t LL_BDMA_GetM2MSrcAddress(BDMA_TypeDef *BDMAx, uint32_t 
   */
 __STATIC_INLINE uint32_t LL_BDMA_GetM2MDstAddress(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (READ_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CMAR));
+  return (READ_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CM0AR));
+}
+
+/**
+  * @brief Set Memory 1 address (used in case of Double buffer mode).
+  * @rmtoll M1AR        M1A         LL_BDMA_SetMemory1Address
+  * @param  DMAx DMAx Instance
+  * @param  Stream This parameter can be one of the following values:
+  *         @arg @ref LL_BDMA_CHANNEL_0
+  *         @arg @ref LL_BDMA_CHANNEL_1
+  *         @arg @ref LL_BDMA_CHANNEL_2
+  *         @arg @ref LL_BDMA_CHANNEL_3
+  *         @arg @ref LL_BDMA_CHANNEL_4
+  *         @arg @ref LL_BDMA_CHANNEL_5
+  *         @arg @ref LL_BDMA_CHANNEL_6
+  *         @arg @ref LL_BDMA_CHANNEL_7
+  * @param  Address Between 0 to 0xFFFFFFFF
+  * @retval None
+  */
+__STATIC_INLINE void LL_BDMA_SetMemory1Address(BDMA_TypeDef *BDMAx, uint32_t Channel, uint32_t Address)
+{
+  MODIFY_REG(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CM1AR, BDMA_CM1AR_MA, Address);
+}
+
+/**
+  * @brief Get Memory 1 address (used in case of Double buffer mode).
+  * @rmtoll M1AR        M1A         LL_BDMA_GetMemory1Address
+  * @param  DMAx DMAx Instance
+  * @param  Stream This parameter can be one of the following values:
+  *         @arg @ref LL_BDMA_CHANNEL_0
+  *         @arg @ref LL_BDMA_CHANNEL_1
+  *         @arg @ref LL_BDMA_CHANNEL_2
+  *         @arg @ref LL_BDMA_CHANNEL_3
+  *         @arg @ref LL_BDMA_CHANNEL_4
+  *         @arg @ref LL_BDMA_CHANNEL_5
+  *         @arg @ref LL_BDMA_CHANNEL_6
+  *         @arg @ref LL_BDMA_CHANNEL_7
+  * @retval Between 0 to 0xFFFFFFFF
+  */
+__STATIC_INLINE uint32_t LL_BDMA_GetMemory1Address(BDMA_TypeDef *BDMAx, uint32_t Channel)
+{
+  return (((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CM1AR);
 }
 
 /**
@@ -1372,7 +1514,7 @@ __STATIC_INLINE uint32_t LL_BDMA_GetPeriphRequest(BDMA_TypeDef *BDMAx, uint32_t 
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI0(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_GIF0) == (BDMA_ISR_GIF0));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_GIF0) == (BDMA_ISR_GIF0)) ? 1UL : 0UL);
 }
 
 /**
@@ -1383,7 +1525,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI0(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI1(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_GIF1) == (BDMA_ISR_GIF1));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_GIF1) == (BDMA_ISR_GIF1)) ? 1UL : 0UL);
 }
 
 /**
@@ -1394,7 +1536,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI1(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI2(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_GIF2) == (BDMA_ISR_GIF2));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_GIF2) == (BDMA_ISR_GIF2)) ? 1UL : 0UL);
 }
 
 /**
@@ -1405,7 +1547,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI2(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI3(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_GIF3) == (BDMA_ISR_GIF3));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_GIF3) == (BDMA_ISR_GIF3)) ? 1UL : 0UL);
 }
 
 /**
@@ -1416,7 +1558,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI3(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI4(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_GIF4) == (BDMA_ISR_GIF4));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_GIF4) == (BDMA_ISR_GIF4)) ? 1UL : 0UL);
 }
 
 /**
@@ -1427,7 +1569,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI4(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI5(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_GIF5) == (BDMA_ISR_GIF5));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_GIF5) == (BDMA_ISR_GIF5)) ? 1UL : 0UL);
 }
 
 /**
@@ -1438,7 +1580,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI5(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI6(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_GIF6) == (BDMA_ISR_GIF6));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_GIF6) == (BDMA_ISR_GIF6)) ? 1UL : 0UL);
 }
 
 /**
@@ -1449,7 +1591,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI6(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI7(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_GIF7) == (BDMA_ISR_GIF7));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_GIF7) == (BDMA_ISR_GIF7)) ? 1UL : 0UL);
 }
 
 /**
@@ -1460,7 +1602,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_GI7(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC0(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF0) == (BDMA_ISR_TCIF0));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF0) == (BDMA_ISR_TCIF0)) ? 1UL : 0UL);
 }
 /**
   * @brief  Get Channel 1 transfer complete flag.
@@ -1470,7 +1612,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC0(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC1(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF1) == (BDMA_ISR_TCIF1));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF1) == (BDMA_ISR_TCIF1)) ? 1UL : 0UL);
 }
 
 /**
@@ -1481,7 +1623,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC1(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC2(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF2) == (BDMA_ISR_TCIF2));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF2) == (BDMA_ISR_TCIF2)) ? 1UL : 0UL);
 }
 
 /**
@@ -1492,7 +1634,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC2(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC3(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF3) == (BDMA_ISR_TCIF3));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF3) == (BDMA_ISR_TCIF3)) ? 1UL : 0UL);
 }
 
 /**
@@ -1503,7 +1645,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC3(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC4(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF4) == (BDMA_ISR_TCIF4));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF4) == (BDMA_ISR_TCIF4)) ? 1UL : 0UL);
 }
 
 /**
@@ -1514,7 +1656,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC4(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC5(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF5) == (BDMA_ISR_TCIF5));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF5) == (BDMA_ISR_TCIF5)) ? 1UL : 0UL);
 }
 
 /**
@@ -1525,7 +1667,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC5(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC6(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF6) == (BDMA_ISR_TCIF6));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF6) == (BDMA_ISR_TCIF6)) ? 1UL : 0UL);
 }
 
 /**
@@ -1536,7 +1678,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC6(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC7(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF7) == (BDMA_ISR_TCIF7));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TCIF7) == (BDMA_ISR_TCIF7)) ? 1UL : 0UL);
 }
 
 /**
@@ -1547,7 +1689,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TC7(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT0(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF0) == (BDMA_ISR_HTIF0));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF0) == (BDMA_ISR_HTIF0)) ? 1UL : 0UL);
 }
 /**
   * @brief  Get Channel 1 half transfer flag.
@@ -1557,7 +1699,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT0(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT1(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF1) == (BDMA_ISR_HTIF1));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF1) == (BDMA_ISR_HTIF1)) ? 1UL : 0UL);
 }
 
 /**
@@ -1568,7 +1710,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT1(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT2(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF2) == (BDMA_ISR_HTIF2));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF2) == (BDMA_ISR_HTIF2)) ? 1UL : 0UL);
 }
 
 /**
@@ -1579,7 +1721,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT2(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT3(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF3) == (BDMA_ISR_HTIF3));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF3) == (BDMA_ISR_HTIF3)) ? 1UL : 0UL);
 }
 
 /**
@@ -1590,7 +1732,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT3(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT4(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF4) == (BDMA_ISR_HTIF4));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF4) == (BDMA_ISR_HTIF4)) ? 1UL : 0UL);
 }
 
 /**
@@ -1601,7 +1743,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT4(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT5(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF5) == (BDMA_ISR_HTIF5));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF5) == (BDMA_ISR_HTIF5)) ? 1UL : 0UL);
 }
 
 /**
@@ -1612,7 +1754,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT5(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT6(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF6) == (BDMA_ISR_HTIF6));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF6) == (BDMA_ISR_HTIF6)) ? 1UL : 0UL);
 }
 
 /**
@@ -1623,7 +1765,18 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT6(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT7(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF7) == (BDMA_ISR_HTIF7));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_HTIF7) == (BDMA_ISR_HTIF7)) ? 1UL : 0UL);
+}
+
+/**
+  * @brief  Get Channel 0 transfer error flag.
+  * @rmtoll ISR          TEIF0         LL_BDMA_IsActiveFlag_TE0
+  * @param  BDMAx BDMA Instance
+  * @retval State of bit (1 or 0).
+  */
+__STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE0(BDMA_TypeDef *BDMAx)
+{
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF0) == (BDMA_ISR_TEIF0)) ? 1UL : 0UL);
 }
 
 /**
@@ -1634,7 +1787,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_HT7(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE1(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF1) == (BDMA_ISR_TEIF1));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF1) == (BDMA_ISR_TEIF1)) ? 1UL : 0UL);
 }
 
 /**
@@ -1645,7 +1798,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE1(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE2(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF2) == (BDMA_ISR_TEIF2));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF2) == (BDMA_ISR_TEIF2)) ? 1UL : 0UL);
 }
 
 /**
@@ -1656,7 +1809,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE2(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE3(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF3) == (BDMA_ISR_TEIF3));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF3) == (BDMA_ISR_TEIF3)) ? 1UL : 0UL);
 }
 
 /**
@@ -1667,7 +1820,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE3(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE4(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF4) == (BDMA_ISR_TEIF4));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF4) == (BDMA_ISR_TEIF4)) ? 1UL : 0UL);
 }
 
 /**
@@ -1678,7 +1831,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE4(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE5(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF5) == (BDMA_ISR_TEIF5));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF5) == (BDMA_ISR_TEIF5)) ? 1UL : 0UL);
 }
 
 /**
@@ -1689,7 +1842,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE5(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE6(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF6) == (BDMA_ISR_TEIF6));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF6) == (BDMA_ISR_TEIF6)) ? 1UL : 0UL);
 }
 
 /**
@@ -1700,7 +1853,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE6(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsActiveFlag_TE7(BDMA_TypeDef *BDMAx)
 {
-  return (uint32_t)(READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF7) == (BDMA_ISR_TEIF7));
+  return ((READ_BIT(BDMAx->ISR, BDMA_ISR_TEIF7) == (BDMA_ISR_TEIF7)) ? 1UL : 0UL);
 }
 
 /**
@@ -1965,6 +2118,17 @@ __STATIC_INLINE void LL_BDMA_ClearFlag_HT7(BDMA_TypeDef *BDMAx)
 }
 
 /**
+  * @brief  Clear Channel 0 transfer error flag.
+  * @rmtoll IFCR         CTEIF0        LL_BDMA_ClearFlag_TE0
+  * @param  BDMAx BDMA Instance
+  * @retval None
+  */
+__STATIC_INLINE void LL_BDMA_ClearFlag_TE0(BDMA_TypeDef *BDMAx)
+{
+  WRITE_REG(BDMAx->IFCR, BDMA_IFCR_CTEIF0);
+}
+
+/**
   * @brief  Clear Channel 1 transfer error flag.
   * @rmtoll IFCR         CTEIF1        LL_BDMA_ClearFlag_TE1
   * @param  BDMAx BDMA Instance
@@ -2065,7 +2229,7 @@ __STATIC_INLINE void LL_BDMA_ClearFlag_TE7(BDMA_TypeDef *BDMAx)
   */
 __STATIC_INLINE void LL_BDMA_EnableIT_TC(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  SET_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_TCIE);
+  SET_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_TCIE);
 }
 
 /**
@@ -2085,7 +2249,7 @@ __STATIC_INLINE void LL_BDMA_EnableIT_TC(BDMA_TypeDef *BDMAx, uint32_t Channel)
   */
 __STATIC_INLINE void LL_BDMA_EnableIT_HT(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  SET_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_HTIE);
+  SET_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_HTIE);
 }
 
 /**
@@ -2105,7 +2269,7 @@ __STATIC_INLINE void LL_BDMA_EnableIT_HT(BDMA_TypeDef *BDMAx, uint32_t Channel)
   */
 __STATIC_INLINE void LL_BDMA_EnableIT_TE(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  SET_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_TEIE);
+  SET_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_TEIE);
 }
 
 /**
@@ -2125,7 +2289,7 @@ __STATIC_INLINE void LL_BDMA_EnableIT_TE(BDMA_TypeDef *BDMAx, uint32_t Channel)
   */
 __STATIC_INLINE void LL_BDMA_DisableIT_TC(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  CLEAR_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_TCIE);
+  CLEAR_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_TCIE);
 }
 
 /**
@@ -2145,7 +2309,7 @@ __STATIC_INLINE void LL_BDMA_DisableIT_TC(BDMA_TypeDef *BDMAx, uint32_t Channel)
   */
 __STATIC_INLINE void LL_BDMA_DisableIT_HT(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  CLEAR_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_HTIE);
+  CLEAR_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_HTIE);
 }
 
 /**
@@ -2165,7 +2329,7 @@ __STATIC_INLINE void LL_BDMA_DisableIT_HT(BDMA_TypeDef *BDMAx, uint32_t Channel)
   */
 __STATIC_INLINE void LL_BDMA_DisableIT_TE(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  CLEAR_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_TEIE);
+  CLEAR_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_TEIE);
 }
 
 /**
@@ -2185,8 +2349,7 @@ __STATIC_INLINE void LL_BDMA_DisableIT_TE(BDMA_TypeDef *BDMAx, uint32_t Channel)
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsEnabledIT_TC(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (uint32_t)(READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
-                             BDMA_CCR_TCIE) == (BDMA_CCR_TCIE));
+  return ((READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_TCIE) == BDMA_CCR_TCIE) ? 1UL : 0UL);
 }
 
 /**
@@ -2206,8 +2369,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsEnabledIT_TC(BDMA_TypeDef *BDMAx, uint32_t Ch
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsEnabledIT_HT(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (uint32_t)(READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
-                             BDMA_CCR_HTIE) == (BDMA_CCR_HTIE));
+  return ((READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_HTIE) == BDMA_CCR_HTIE) ? 1UL : 0UL);
 }
 
 /**
@@ -2227,8 +2389,7 @@ __STATIC_INLINE uint32_t LL_BDMA_IsEnabledIT_HT(BDMA_TypeDef *BDMAx, uint32_t Ch
   */
 __STATIC_INLINE uint32_t LL_BDMA_IsEnabledIT_TE(BDMA_TypeDef *BDMAx, uint32_t Channel)
 {
-  return (uint32_t)(READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + CHANNEL_OFFSET_TAB[Channel])))->CCR,
-                             BDMA_CCR_TEIE) == (BDMA_CCR_TEIE));
+  return ((READ_BIT(((BDMA_Channel_TypeDef *)((uint32_t)((uint32_t)BDMAx + LL_BDMA_CH_OFFSET_TAB[Channel])))->CCR, BDMA_CCR_TEIE) == BDMA_CCR_TEIE) ? 1UL : 0UL);
 }
 
 /**

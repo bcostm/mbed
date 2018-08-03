@@ -93,7 +93,7 @@ HAL_StatusTypeDef HAL_SPIEx_FlushRxFifo(SPI_HandleTypeDef *hspi)
 {
   __IO uint32_t tmpreg;
   uint8_t  count = 0;
-  while ( ((hspi->Instance->SR & SPI_FLAG_FRLVL) !=  SPI_FRLVL_EMPTY) || ((hspi->Instance->SR & SPI_FLAG_RXWNE) ==  SPI_FLAG_RXWNE))
+  while ( ((hspi->Instance->SR & SPI_FLAG_FRLVL) !=  SPI_RX_FIFO_0PACKET) || ((hspi->Instance->SR & SPI_FLAG_RXWNE) ==  SPI_FLAG_RXWNE))
   {
     count+=4;
     tmpreg = hspi->Instance->RXDR;

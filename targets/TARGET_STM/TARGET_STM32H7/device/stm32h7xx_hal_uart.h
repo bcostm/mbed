@@ -64,6 +64,10 @@ typedef struct
 {
   uint32_t BaudRate;                  /*!< This member configures the UART communication baud rate.
                                            The baud rate register is computed using the following formula:
+                                           LPUART:
+                                           =======
+                                              Baud Rate Register = ((256 * lpuart_ker_ckpres) / ((huart->Init.BaudRate)))
+                                           where lpuart_ker_ck_pres is the UART input clock divided by a prescaler
                                            UART:
                                            =====
                                            - If oversampling is 16 or in LIN mode,
@@ -72,11 +76,7 @@ typedef struct
                                               Baud Rate Register[15:4] = ((2 * uart_ker_ckpres) / ((huart->Init.BaudRate)))[15:4]
                                               Baud Rate Register[3] =  0
                                               Baud Rate Register[2:0] =  (((2 * uart_ker_ckpres) / ((huart->Init.BaudRate)))[3:0]) >> 1
-                                           LPUART:
-                                           =======
-                                              Baud Rate Register = ((256 * lpuart_ker_ckpres) / ((huart->Init.BaudRate)))
-
-                                           where (uart/lpuart)_ker_ck_pres is the UART input clock divided by a prescaler */
+                                           where uart_ker_ck_pres is the UART input clock divided by a prescaler */
 
   uint32_t WordLength;                /*!< Specifies the number of data bits transmitted or received in a frame.
                                            This parameter can be a value of @ref UARTEx_Word_Length. */
@@ -220,10 +220,10 @@ typedef enum
   UART_CLOCKSOURCE_D2PCLK2    = 0x01U,    /*!< Domain2 PCLK2 clock source */
   UART_CLOCKSOURCE_D3PCLK1    = 0x02U,    /*!< Domain3 PCLK1 clock source */
   UART_CLOCKSOURCE_PLL2       = 0x04U,    /*!< PLL2Q clock source         */
-  UART_CLOCKSOURCE_HSI        = 0x08U,    /*!< HSI clock source           */
-  UART_CLOCKSOURCE_CSI        = 0x10U,    /*!< CSI clock source           */
-  UART_CLOCKSOURCE_LSE        = 0x20U,    /*!< LSE clock source           */
-  UART_CLOCKSOURCE_PLL3       = 0x40U,    /*!< PLL3Q clock source         */
+  UART_CLOCKSOURCE_PLL3       = 0x08U,    /*!< PLL3Q clock source         */
+  UART_CLOCKSOURCE_HSI        = 0x10U,    /*!< HSI clock source           */
+  UART_CLOCKSOURCE_CSI        = 0x20U,    /*!< CSI clock source           */
+  UART_CLOCKSOURCE_LSE        = 0x40U,    /*!< LSE clock source           */
   UART_CLOCKSOURCE_UNDEFINED  = 0x80U     /*!< Undefined clock source     */
 } UART_ClockSourceTypeDef;
 
@@ -355,10 +355,10 @@ typedef  void (*pUART_CallbackTypeDef)(UART_HandleTypeDef *huart);  /*!< pointer
 /** @defgroup UART_Stop_Bits   UART Number of Stop Bits
   * @{
   */
-#define UART_STOPBITS_0_5                   USART_CR2_STOP_0                      /*!< UART frame with 0.5 stop bit  */
+#define UART_STOPBITS_0_5                    USART_CR2_STOP_0                     /*!< UART frame with 0.5 stop bit  */
 #define UART_STOPBITS_1                     0x00000000U                           /*!< UART frame with 1 stop bit    */
 #define UART_STOPBITS_1_5                   (USART_CR2_STOP_0 | USART_CR2_STOP_1) /*!< UART frame with 1.5 stop bits */
-#define UART_STOPBITS_2                     USART_CR2_STOP_1                      /*!< UART frame with 2 stop bits   */
+#define UART_STOPBITS_2                      USART_CR2_STOP_1                     /*!< UART frame with 2 stop bits   */
 /**
   * @}
   */
@@ -1207,7 +1207,7 @@ typedef  void (*pUART_CallbackTypeDef)(UART_HandleTypeDef *huart);  /*!< pointer
   *         divided by the smallest oversampling used on the USART (i.e. 8)
   * @retval SET (__BAUDRATE__ is valid) or RESET (__BAUDRATE__ is invalid)
   */
-#define IS_UART_BAUDRATE(__BAUDRATE__) ((__BAUDRATE__) < 33000001U)
+#define IS_UART_BAUDRATE(__BAUDRATE__) ((__BAUDRATE__) < 12500001U)
 
 /** @brief  Check UART assertion time.
   * @param  __TIME__ 5-bit value assertion time.
@@ -1580,7 +1580,6 @@ HAL_StatusTypeDef HAL_MultiProcessor_DisableMuteMode(UART_HandleTypeDef *huart);
 void HAL_MultiProcessor_EnterMuteMode(UART_HandleTypeDef *huart);
 HAL_StatusTypeDef HAL_HalfDuplex_EnableTransmitter(UART_HandleTypeDef *huart);
 HAL_StatusTypeDef HAL_HalfDuplex_EnableReceiver(UART_HandleTypeDef *huart);
-
 /**
   * @}
   */

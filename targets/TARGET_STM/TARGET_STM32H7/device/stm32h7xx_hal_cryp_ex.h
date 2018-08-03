@@ -38,7 +38,7 @@
 #define STM32H7xx_HAL_CRYP_EX_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
 
 /* Includes ------------------------------------------------------------------*/
@@ -55,7 +55,7 @@
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
- /* Private types -------------------------------------------------------------*/
+/* Private types -------------------------------------------------------------*/
 /** @defgroup CRYPEx_Private_Types CRYPEx Private Types
   * @{
   */
@@ -87,9 +87,9 @@
   * @{
   */
 
- /**
+/**
   * @}
-  */
+ */
 
 /* Private functions ---------------------------------------------------------*/
 /** @defgroup CRYPEx_Private_Functions CRYPEx Private Functions

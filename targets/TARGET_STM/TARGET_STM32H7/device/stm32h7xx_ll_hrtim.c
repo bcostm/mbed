@@ -76,10 +76,13 @@ ErrorStatus LL_HRTIM_DeInit(HRTIM_TypeDef* HRTIMx)
 
   /* Check the parameters */
   assert_param(IS_HRTIM_ALL_INSTANCE(HRTIMx));
-
+#if defined (STM32H743xx) || defined (STM32H757xx)
   LL_APB2_GRP1_ForceReset(LL_APB2_GRP1_PERIPH_HRTIM);
   LL_APB2_GRP1_ReleaseReset(LL_APB2_GRP1_PERIPH_HRTIM);
-
+#else
+  LL_APB2_GRP1_ForceReset(LL_APB2_GRP1_PERIPH_HRTIM1);
+  LL_APB2_GRP1_ReleaseReset(LL_APB2_GRP1_PERIPH_HRTIM1);
+#endif /*  STM32H743xx */
   return result;
 }
 /**

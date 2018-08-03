@@ -152,8 +152,7 @@ typedef struct
 #define D2_TO_D3_DMA_PDATA_SIZE(__D2_PDATA_SIZE__) ((__D2_PDATA_SIZE__) >> 3U)
 #define D2_TO_D3_DMA_MDATA_SIZE(__D2_MDATA_SIZE__) ((__D2_MDATA_SIZE__) >> 3U)
 
-/*BDMA doesn't support Peripheral flow control mode , force to normal in this case  */
-#define D2_TO_D3_DMA_MODE(__D2_MODE__) (((__D2_MODE__) >> 3U) & BDMA_CCR_CIRC)
+#define D2_TO_D3_DMA_MODE(__D2_MODE__) ((__D2_MODE__) >> 3U) 
 
 #define D2_TO_D3_DMA_PRIORITY(__D2_PRIORITY__) ((__D2_PRIORITY__) >> 4U)
 
@@ -348,10 +347,11 @@ HAL_StatusTypeDef HAL_DMA_Init(DMA_HandleTypeDef *hdma)
     /* Get the CR register value */
     registerValue = ((BDMA_Channel_TypeDef *)hdma->Instance)->CCR;
 
-    /* Clear PL, MSIZE, PSIZE, MINC, PINC, CIRC, DIR and MEM2MEM bits */
-    registerValue &= ((uint32_t)~(BDMA_CCR_PL    | BDMA_CCR_MSIZE  | BDMA_CCR_PSIZE  | \
-                                  BDMA_CCR_MINC  | BDMA_CCR_PINC   | BDMA_CCR_CIRC   | \
-                                  BDMA_CCR_DIR   | BDMA_CCR_MEM2MEM));
+    /* Clear PL, MSIZE, PSIZE, MINC, PINC, CIRC, DIR, MEM2MEM, DBM and CT bits */
+    registerValue &= ((uint32_t)~(BDMA_CCR_PL    | BDMA_CCR_MSIZE   | BDMA_CCR_PSIZE  | \
+                                  BDMA_CCR_MINC  | BDMA_CCR_PINC    | BDMA_CCR_CIRC   | \
+                                  BDMA_CCR_DIR   | BDMA_CCR_MEM2MEM | BDMA_CCR_DBM    | \
+                                  BDMA_CCR_CT));
 
     /* Prepare the DMA Channel configuration */
     registerValue |=  D2_TO_D3_DMA_DIRECTION(hdma->Init.Direction)            |
@@ -495,8 +495,11 @@ HAL_StatusTypeDef HAL_DMA_DeInit(DMA_HandleTypeDef *hdma)
     /* Reset DMA Channel peripheral address register */
     ((BDMA_Channel_TypeDef *)hdma->Instance)->CPAR  = 0U;
 
-    /* Reset DMA Channel memory address register */
-    ((BDMA_Channel_TypeDef *)hdma->Instance)->CMAR = 0U;
+    /* Reset DMA Channel memory 0 address register */
+    ((BDMA_Channel_TypeDef *)hdma->Instance)->CM0AR = 0U;
+    
+    /* Reset DMA Channel memory 1 address register */
+    ((BDMA_Channel_TypeDef *)hdma->Instance)->CM1AR = 0U;
 
     /* Clear all flags */
     BDMA->IFCR = ((BDMA_IFCR_CGIF0) << (hdma->StreamIndex & 0x1FU));
@@ -1374,15 +1377,38 @@ void HAL_DMA_IRQHandler(DMA_HandleTypeDef *hdma)
     /* Half Transfer Complete Interrupt management ******************************/
     if (((BDMA->ISR & (BDMA_FLAG_HT0 << (hdma->StreamIndex & 0x1FU))) != 0U) && ((ccr_reg & BDMA_CCR_HTIE) != 0U))
     {
-        /* Disable the half transfer interrupt if the DMA mode is not CIRCULAR */
+      /* Clear the half transfer complete flag */
+      BDMA->IFCR  |= (BDMA_ISR_HTIF0 << (hdma->StreamIndex & 0x1FU));
+      
+      /* Disable the transfer complete interrupt if the DMA mode is Double Buffering */
+      if((ccr_reg & BDMA_CCR_DBM) != 0U)  
+      {
+        /* Current memory buffer used is Memory 0 */
+        if((ccr_reg & BDMA_CCR_CT) == 0U)
+        {
+          if(hdma->XferM1HalfCpltCallback != NULL)
+          {
+            /* Half transfer Callback for Memory 1 */
+            hdma->XferM1HalfCpltCallback(hdma);
+          }
+        }
+        /* Current memory buffer used is Memory 1 */
+        else
+        {
+          if(hdma->XferHalfCpltCallback != NULL)
+          {
+            /* Half transfer Callback for Memory 0 */
+            hdma->XferHalfCpltCallback(hdma);
+          }
+        }
+      }
+      else
+      {
         if((ccr_reg & BDMA_CCR_CIRC) == 0U)
         {
           /* Disable the half transfer interrupt */
           __HAL_DMA_DISABLE_IT(hdma, DMA_IT_HT);
         }
-
-        /* Clear the half transfer complete flag */
-        BDMA->IFCR  |= (BDMA_ISR_HTIF0 << (hdma->StreamIndex & 0x1FU));
 
         /* DMA peripheral state is not updated in Half Transfer */
         /* but in Transfer Complete case */
@@ -1392,32 +1418,58 @@ void HAL_DMA_IRQHandler(DMA_HandleTypeDef *hdma)
           /* Half transfer callback */
           hdma->XferHalfCpltCallback(hdma);
         }
+      }
     }
 
     /* Transfer Complete Interrupt management ***********************************/
     else if (((BDMA->ISR & (BDMA_FLAG_TC0 << (hdma->StreamIndex & 0x1FU))) != 0U) && ((ccr_reg & BDMA_CCR_TCIE) != 0U))
     {
-      if((ccr_reg & BDMA_CCR_CIRC) == 0U)
-      {
-        /* Disable the transfer complete and error interrupt */
-        __HAL_DMA_DISABLE_IT(hdma, DMA_IT_TE | DMA_IT_TC);
-
-      /* Process Unlocked */
-      __HAL_UNLOCK(hdma);
-
-        /* Change the DMA state */
-        hdma->State = HAL_DMA_STATE_READY;
-      }
       /* Clear the transfer complete flag */
       BDMA->IFCR |= (BDMA_ISR_TCIF0) << (hdma->StreamIndex & 0x1FU);
-
-      if(hdma->XferCpltCallback != NULL)
+        
+      /* Disable the transfer complete interrupt if the DMA mode is Double Buffering */
+      if((ccr_reg & BDMA_CCR_DBM) != 0U)  
       {
-        /* Transfer complete callback */
-        hdma->XferCpltCallback(hdma);
+        /* Current memory buffer used is Memory 0 */
+        if((ccr_reg & BDMA_CCR_CT) == 0U)
+        {
+          if(hdma->XferM1CpltCallback != NULL)
+          {
+            /* Transfer complete Callback for Memory 1 */
+            hdma->XferM1CpltCallback(hdma);
+          }
+        }
+        /* Current memory buffer used is Memory 1 */
+        else
+        {
+          if(hdma->XferCpltCallback != NULL)
+          {
+            /* Transfer complete Callback for Memory 0 */
+            hdma->XferCpltCallback(hdma);
+          }
+        }
+      }
+      else
+      {
+        if((ccr_reg & BDMA_CCR_CIRC) == 0U)
+        {
+          /* Disable the transfer complete and error interrupt, if the DMA mode is not CIRCULAR */
+          __HAL_DMA_DISABLE_IT(hdma, DMA_IT_TE | DMA_IT_TC);
+          
+          /* Process Unlocked */
+          __HAL_UNLOCK(hdma);
+        
+          /* Change the DMA state */
+          hdma->State = HAL_DMA_STATE_READY;
+        }
+
+        if(hdma->XferCpltCallback != NULL)
+        {
+          /* Transfer complete callback */
+          hdma->XferCpltCallback(hdma);
+        }
       }
     }
-
     /* Transfer Error Interrupt management **************************************/
     else if (((BDMA->ISR & (BDMA_FLAG_TE0 << (hdma->StreamIndex & 0x1FU))) != 0U) && ((ccr_reg & BDMA_CCR_TEIE) != 0U))
     {
@@ -1718,7 +1770,7 @@ static void DMA_SetConfig(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t
       ((BDMA_Channel_TypeDef *)hdma->Instance)->CPAR = DstAddress;
 
       /* Configure DMA Channel source address */
-      ((BDMA_Channel_TypeDef *)hdma->Instance)->CMAR = SrcAddress;
+      ((BDMA_Channel_TypeDef *)hdma->Instance)->CM0AR = SrcAddress;
     }
     /* Memory to Peripheral */
     else
@@ -1727,7 +1779,7 @@ static void DMA_SetConfig(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t
       ((BDMA_Channel_TypeDef *)hdma->Instance)->CPAR = SrcAddress;
 
       /* Configure DMA Channel destination address */
-      ((BDMA_Channel_TypeDef *)hdma->Instance)->CMAR = DstAddress;
+      ((BDMA_Channel_TypeDef *)hdma->Instance)->CM0AR = DstAddress;
     }
   }
   else

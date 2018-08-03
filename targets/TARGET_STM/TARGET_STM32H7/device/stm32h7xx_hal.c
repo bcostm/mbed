@@ -68,7 +68,7 @@
 #define __STM32H7xx_HAL_VERSION_MAIN   (0x01) /*!< [31:24] main version */
 #define __STM32H7xx_HAL_VERSION_SUB1   (0x04) /*!< [23:16] sub1 version */
 #define __STM32H7xx_HAL_VERSION_SUB2   (0x00) /*!< [15:8]  sub2 version */
-#define __STM32H7xx_HAL_VERSION_RC     (0x02) /*!< [7:0]  release candidate */
+#define __STM32H7xx_HAL_VERSION_RC     (0x03) /*!< [7:0]  release candidate */
 #define __STM32H7xx_HAL_VERSION         ((__STM32H7xx_HAL_VERSION_MAIN << 24)\
                                         |(__STM32H7xx_HAL_VERSION_SUB1 << 16)\
                                         |(__STM32H7xx_HAL_VERSION_SUB2 << 8 )\
@@ -936,7 +936,7 @@ void HAL_SetFMCMemorySwappingConfig(uint32_t BankMapConfig)
 {
   /* Check the parameter */
   assert_param(IS_FMC_SWAPBMAP_MODE(BankMapConfig));
-  MODIFY_REG(FMC_Bank1->BTCR[0], FMC_BCR1_BMAP, BankMapConfig);
+  MODIFY_REG(FMC_Bank1_R->BTCR[0], FMC_BCR1_BMAP, BankMapConfig);
 }
 
 /**
@@ -946,7 +946,7 @@ void HAL_SetFMCMemorySwappingConfig(uint32_t BankMapConfig)
 */
 uint32_t HAL_GetFMCMemorySwappingConfig(void)
 {
-  return READ_BIT(FMC_Bank1->BTCR[0], FMC_BCR1_BMAP);
+  return READ_BIT(FMC_Bank1_R->BTCR[0], FMC_BCR1_BMAP);
 }
 
 /**

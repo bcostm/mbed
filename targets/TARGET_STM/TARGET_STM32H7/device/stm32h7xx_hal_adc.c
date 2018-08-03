@@ -3699,7 +3699,6 @@ void ADC_ConfigureBoostMode(ADC_HandleTypeDef* hadc)
     freq = HAL_RCCEx_GetPeriphCLKFreq(RCC_PERIPHCLK_ADC);
     switch(hadc->Init.ClockPrescaler)
     {
-      case ADC_CLOCK_ASYNC_DIV1:
       case ADC_CLOCK_ASYNC_DIV2:
       case ADC_CLOCK_ASYNC_DIV4:
       case ADC_CLOCK_ASYNC_DIV6:

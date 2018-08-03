@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2018 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -134,7 +134,7 @@ extern "C" {
   * @param  __VALUE__ Value to be written in the register
   * @retval None
   */
-#define LL_CRC_WriteReg(__INSTANCE__, __REG__, __VALUE__) WRITE_REG(__INSTANCE__->__REG__, (__VALUE__))
+#define LL_CRC_WriteReg(__INSTANCE__, __REG__, __VALUE__) WRITE_REG(__INSTANCE__->__REG__, __VALUE__)
 
 /**
   * @brief  Read a value in CRC register
@@ -352,7 +352,10 @@ __STATIC_INLINE void LL_CRC_FeedData32(CRC_TypeDef *CRCx, uint32_t InData)
   */
 __STATIC_INLINE void LL_CRC_FeedData16(CRC_TypeDef *CRCx, uint16_t InData)
 {
-  *(uint16_t __IO *)(&CRCx->DR) = (uint16_t) InData;
+  __IO uint16_t *pReg;
+
+  pReg = (__IO uint16_t *)(__IO void *)(&CRCx->DR);
+  *pReg = InData;
 }
 
 /**
@@ -416,27 +419,27 @@ __STATIC_INLINE uint8_t LL_CRC_ReadData7(CRC_TypeDef *CRCx)
 
 /**
   * @brief  Return data stored in the Independent Data(IDR) register.
-  * @note   This register can be used as a temporary storage location for one byte.
+  * @note   This register can be used as a temporary storage location for one 32-bit long data.
   * @rmtoll IDR          IDR           LL_CRC_Read_IDR
   * @param  CRCx CRC Instance
   * @retval Value stored in CRC_IDR register (General-purpose 32-bit data register).
   */
 __STATIC_INLINE uint32_t LL_CRC_Read_IDR(CRC_TypeDef *CRCx)
 {
-  return (uint32_t) READ_REG(CRCx->IDR);
+  return (uint32_t)(READ_REG(CRCx->IDR));
 }
 
 /**
   * @brief  Store data in the Independent Data(IDR) register.
-  * @note   This register can be used as a temporary storage location for one byte.
+  * @note   This register can be used as a temporary storage location for one 32-bit long data.
   * @rmtoll IDR          IDR           LL_CRC_Write_IDR
   * @param  CRCx CRC Instance
-  * @param  InData value to be stored in CRC_IDR register (32-bit)
+  * @param  InData value to be stored in CRC_IDR register (32-bit) between Min_Data=0 and Max_Data=0xFFFFFFFF
   * @retval None
   */
 __STATIC_INLINE void LL_CRC_Write_IDR(CRC_TypeDef *CRCx, uint32_t InData)
 {
-  WRITE_REG(CRCx->IDR, InData);
+  *((uint32_t __IO *)(&CRCx->IDR)) = (uint32_t) InData;
 }
 /**
   * @}

@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2018 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -67,7 +67,6 @@
 /**
   * @}
   */
-
 /* Private function prototypes -----------------------------------------------*/
 
 /* Exported functions --------------------------------------------------------*/
@@ -90,16 +89,13 @@ ErrorStatus LL_RNG_DeInit(RNG_TypeDef *RNGx)
 {
   /* Check the parameters */
   assert_param(IS_RNG_ALL_INSTANCE(RNGx));
-
   /* Enable RNG reset state */
   LL_AHB2_GRP1_ForceReset(LL_AHB2_GRP1_PERIPH_RNG);
 
   /* Release RNG from reset state */
   LL_AHB2_GRP1_ReleaseReset(LL_AHB2_GRP1_PERIPH_RNG);
-
   return (SUCCESS);
 }
-
 /**
   * @brief  Initialize RNG registers according to the specified parameters in RNG_InitStruct.
   * @param  RNGx RNG Instance
@@ -133,7 +129,6 @@ void LL_RNG_StructInit(LL_RNG_InitTypeDef *RNG_InitStruct)
   RNG_InitStruct->ClockErrorDetection = LL_RNG_CED_ENABLE;
 
 }
-
 /**
   * @}
   */
@@ -146,7 +141,7 @@ void LL_RNG_StructInit(LL_RNG_InitTypeDef *RNG_InitStruct)
   * @}
   */
 
-#endif /* defined (RNG) */
+#endif /* RNG */
 
 /**
   * @}

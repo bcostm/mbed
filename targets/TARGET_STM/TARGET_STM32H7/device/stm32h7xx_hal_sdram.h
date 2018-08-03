@@ -34,16 +34,16 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef STM32H7xx_HAL_SDRAM_H
-#define STM32H7xx_HAL_SDRAM_H
+#ifndef __STM32H7xx_HAL_SDRAM_H
+#define __STM32H7xx_HAL_SDRAM_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
+
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_ll_fmc.h"
-#include "stm32h7xx_hal_mdma.h"
 
 /** @addtogroup STM32H7xx_HAL_Driver
   * @{
@@ -71,7 +71,7 @@ typedef enum
   HAL_SDRAM_STATE_WRITE_PROTECTED   = 0x04U,  /*!< SDRAM device write protected          */
   HAL_SDRAM_STATE_PRECHARGED        = 0x05U   /*!< SDRAM device precharged               */
 
-}HAL_SDRAM_StateTypeDef;
+} HAL_SDRAM_StateTypeDef;
 
 /**
   * @brief  SDRAM handle Structure definition
@@ -86,13 +86,16 @@ typedef struct __SDRAM_HandleTypeDef
 
   HAL_LockTypeDef               Lock;       /*!< SDRAM locking object                  */
 
-  MDMA_HandleTypeDef           *hmdma;      /*!< Pointer MDMA handler                   */
+  MDMA_HandleTypeDef             *hmdma;      /*!< Pointer DMA handler                   */
 
 #if (USE_HAL_SDRAM_REGISTER_CALLBACKS == 1)
   void  (* MspInitCallback)        ( struct __SDRAM_HandleTypeDef * hsdram);    /*!< SDRAM Msp Init callback              */
   void  (* MspDeInitCallback)      ( struct __SDRAM_HandleTypeDef * hsdram);    /*!< SDRAM Msp DeInit callback            */
+  void  (* RefreshErrorCallback)   ( struct __SDRAM_HandleTypeDef * hsdram);    /*!< SDRAM Refresh Error callback         */
+  void  (* DmaXferCpltCallback)    ( MDMA_HandleTypeDef * hmdma);                 /*!< SDRAM DMA Xfer Complete callback     */
+  void  (* DmaXferErrorCallback)   ( MDMA_HandleTypeDef * hmdma);                 /*!< SDRAM DMA Xfer Error callback        */
 #endif
-}SDRAM_HandleTypeDef;
+} SDRAM_HandleTypeDef;
 
 #if (USE_HAL_SDRAM_REGISTER_CALLBACKS == 1)
 /**
@@ -100,14 +103,18 @@ typedef struct __SDRAM_HandleTypeDef
   */
 typedef enum
 {
-  HAL_SDRAM_MSP_INIT_CB_ID       = 0x00U,  /*!< SDRAM MspInit Callback ID          */
-  HAL_SDRAM_MSP_DEINIT_CB_ID     = 0x01U   /*!< SDRAM MspDeInit Callback ID        */
+  HAL_SDRAM_MSP_INIT_CB_ID       = 0x00U,  /*!< SDRAM MspInit Callback ID           */
+  HAL_SDRAM_MSP_DEINIT_CB_ID     = 0x01U,  /*!< SDRAM MspDeInit Callback ID         */
+  HAL_SDRAM_REFRESH_ERR_CB_ID    = 0x02U,  /*!< SDRAM Refresh Error Callback ID     */
+  HAL_SDRAM_DMA_XFER_CPLT_CB_ID  = 0x03U,  /*!< SDRAM DMA Xfer Complete Callback ID */
+  HAL_SDRAM_DMA_XFER_ERR_CB_ID   = 0x04U   /*!< SDRAM DMA Xfer Error Callback ID    */
 }HAL_SDRAM_CallbackIDTypeDef;
 
 /**
   * @brief  HAL SDRAM Callback pointer definition
   */
 typedef void (*pSDRAM_CallbackTypeDef)(SDRAM_HandleTypeDef *hsdram);
+typedef void (*pSDRAM_DmaCallbackTypeDef)(MDMA_HandleTypeDef *hmdma);
 #endif
 /**
   * @}
@@ -121,11 +128,18 @@ typedef void (*pSDRAM_CallbackTypeDef)(SDRAM_HandleTypeDef *hsdram);
   */
 
 /** @brief Reset SDRAM handle state
-  * @param  __HANDLE__: specifies the SDRAM handle.
+  * @param  __HANDLE__ specifies the SDRAM handle.
   * @retval None
   */
+#if (USE_HAL_SDRAM_REGISTER_CALLBACKS == 1)
+#define __HAL_SDRAM_RESET_HANDLE_STATE(__HANDLE__)        do {                                               \
+                                                               (__HANDLE__)->State = HAL_SDRAM_STATE_RESET;  \
+                                                               (__HANDLE__)->MspInitCallback = NULL;         \
+                                                               (__HANDLE__)->MspDeInitCallback = NULL;       \
+                                                             } while(0)
+#else
 #define __HAL_SDRAM_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_SDRAM_STATE_RESET)
-
+#endif
 /**
   * @}
   */
@@ -165,8 +179,16 @@ HAL_StatusTypeDef HAL_SDRAM_Read_16b(SDRAM_HandleTypeDef *hsdram, uint32_t *pAdd
 HAL_StatusTypeDef HAL_SDRAM_Write_16b(SDRAM_HandleTypeDef *hsdram, uint32_t *pAddress, uint16_t *pSrcBuffer, uint32_t BufferSize);
 HAL_StatusTypeDef HAL_SDRAM_Read_32b(SDRAM_HandleTypeDef *hsdram, uint32_t *pAddress, uint32_t *pDstBuffer, uint32_t BufferSize);
 HAL_StatusTypeDef HAL_SDRAM_Write_32b(SDRAM_HandleTypeDef *hsdram, uint32_t *pAddress, uint32_t *pSrcBuffer, uint32_t BufferSize);
-HAL_StatusTypeDef HAL_SDRAM_Read_DMA(SDRAM_HandleTypeDef *hsdram, uint32_t * pAddress, uint32_t *pDstBuffer, uint32_t BufferSize);
+
+HAL_StatusTypeDef HAL_SDRAM_Read_DMA(SDRAM_HandleTypeDef *hsdram, uint32_t *pAddress, uint32_t *pDstBuffer, uint32_t BufferSize);
 HAL_StatusTypeDef HAL_SDRAM_Write_DMA(SDRAM_HandleTypeDef *hsdram, uint32_t *pAddress, uint32_t *pSrcBuffer, uint32_t BufferSize);
+
+#if (USE_HAL_SDRAM_REGISTER_CALLBACKS == 1)
+/* SDRAM callback registering/unregistering */
+HAL_StatusTypeDef HAL_SDRAM_RegisterCallback(SDRAM_HandleTypeDef *hsdram, HAL_SDRAM_CallbackIDTypeDef CallbackId, pSDRAM_CallbackTypeDef pCallback);
+HAL_StatusTypeDef HAL_SDRAM_UnRegisterCallback(SDRAM_HandleTypeDef *hsdram, HAL_SDRAM_CallbackIDTypeDef CallbackId);
+HAL_StatusTypeDef HAL_SDRAM_RegisterDmaCallback(SDRAM_HandleTypeDef *hsdram, HAL_SDRAM_CallbackIDTypeDef CallbackId, pSDRAM_DmaCallbackTypeDef pCallback);
+#endif
 
 /**
   * @}
@@ -192,12 +214,6 @@ uint32_t          HAL_SDRAM_GetModeStatus(SDRAM_HandleTypeDef *hsdram);
   */
 /* SDRAM State functions ********************************************************/
 HAL_SDRAM_StateTypeDef  HAL_SDRAM_GetState(SDRAM_HandleTypeDef *hsdram);
-
-#if (USE_HAL_SDRAM_REGISTER_CALLBACKS == 1)
-/* SDRAM callback registering/unregistering */
-HAL_StatusTypeDef     HAL_SDRAM_RegisterCallback     (SDRAM_HandleTypeDef *hsdram, HAL_SDRAM_CallbackIDTypeDef CallbackId, pSDRAM_CallbackTypeDef pCallback);
-HAL_StatusTypeDef     HAL_SDRAM_UnRegisterCallback   (SDRAM_HandleTypeDef *hsdram, HAL_SDRAM_CallbackIDTypeDef CallbackId);
-#endif
 /**
   * @}
   */
@@ -213,11 +229,12 @@ HAL_StatusTypeDef     HAL_SDRAM_UnRegisterCallback   (SDRAM_HandleTypeDef *hsdra
 /**
   * @}
   */
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* STM32H7xx_HAL_SDRAM_H */
+#endif /* __STM32H7xx_HAL_SDRAM_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

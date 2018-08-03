@@ -34,12 +34,13 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef STM32H7xx_HAL_NOR_H
-#define STM32H7xx_HAL_NOR_H
+#ifndef __STM32H7xx_HAL_NOR_H
+#define __STM32H7xx_HAL_NOR_H
 
 #ifdef __cplusplus
- extern "C" {
+extern "C" {
 #endif
+
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_ll_fmc.h"
@@ -68,7 +69,7 @@ typedef enum
   HAL_NOR_STATE_BUSY              = 0x02U,  /*!< NOR internal processing is ongoing   */
   HAL_NOR_STATE_ERROR             = 0x03U,  /*!< NOR error state                      */
   HAL_NOR_STATE_PROTECTED         = 0x04U   /*!< NOR NORSRAM device write protected   */
-}HAL_NOR_StateTypeDef;
+} HAL_NOR_StateTypeDef;
 
 /**
   * @brief  FMC NOR Status typedef
@@ -79,14 +80,14 @@ typedef enum
   HAL_NOR_STATUS_ONGOING,
   HAL_NOR_STATUS_ERROR,
   HAL_NOR_STATUS_TIMEOUT
-}HAL_NOR_StatusTypeDef;
+} HAL_NOR_StatusTypeDef;
 
 /**
   * @brief  FMC NOR ID typedef
   */
 typedef struct
 {
-  uint16_t Manufacturer_Code;  /*!< Defines the device's manufacturer code used to identify the memory.       */
+  uint16_t Manufacturer_Code;  /*!< Defines the device's manufacturer code used to identify the memory       */
 
   uint16_t Device_Code1;
 
@@ -95,8 +96,8 @@ typedef struct
   uint16_t Device_Code3;       /*!< Defines the device's codes used to identify the memory.
                                     These codes can be accessed by performing read operations with specific
                                     control signals and addresses set.They can also be accessed by issuing
-                                    an Auto Select command.                                                   */
-}NOR_IDTypeDef;
+                                    an Auto Select command                                                   */
+} NOR_IDTypeDef;
 
 /**
   * @brief  FMC NOR CFI typedef
@@ -114,7 +115,7 @@ typedef struct
   uint16_t CFI_3;
 
   uint16_t CFI_4;
-}NOR_CFITypeDef;
+} NOR_CFITypeDef;
 
 /**
   * @brief  NOR handle Structure definition
@@ -135,7 +136,7 @@ typedef struct __NOR_HandleTypeDef
   void  (* MspInitCallback)        ( struct __NOR_HandleTypeDef * hnor);    /*!< NOR Msp Init callback              */
   void  (* MspDeInitCallback)      ( struct __NOR_HandleTypeDef * hnor);    /*!< NOR Msp DeInit callback            */
 #endif
-}NOR_HandleTypeDef;
+} NOR_HandleTypeDef;
 
 #if (USE_HAL_NOR_REGISTER_CALLBACKS == 1)
 /**
@@ -162,10 +163,18 @@ typedef void (*pNOR_CallbackTypeDef)(NOR_HandleTypeDef *hnor);
   * @{
   */
 /** @brief Reset NOR handle state
-  * @param  __HANDLE__: specifies the NOR handle.
+  * @param  __HANDLE__ specifies the NOR handle.
   * @retval None
   */
+#if (USE_HAL_NOR_REGISTER_CALLBACKS == 1)
+#define __HAL_NOR_RESET_HANDLE_STATE(__HANDLE__)          do {                                             \
+                                                               (__HANDLE__)->State = HAL_NOR_STATE_RESET;  \
+                                                               (__HANDLE__)->MspInitCallback = NULL;       \
+                                                               (__HANDLE__)->MspDeInitCallback = NULL;     \
+                                                             } while(0)
+#else
 #define __HAL_NOR_RESET_HANDLE_STATE(__HANDLE__) ((__HANDLE__)->State = HAL_NOR_STATE_RESET)
+#endif
 /**
   * @}
   */
@@ -205,6 +214,12 @@ HAL_StatusTypeDef HAL_NOR_ProgramBuffer(NOR_HandleTypeDef *hnor, uint32_t uwAddr
 HAL_StatusTypeDef HAL_NOR_Erase_Block(NOR_HandleTypeDef *hnor, uint32_t BlockAddress, uint32_t Address);
 HAL_StatusTypeDef HAL_NOR_Erase_Chip(NOR_HandleTypeDef *hnor, uint32_t Address);
 HAL_StatusTypeDef HAL_NOR_Read_CFI(NOR_HandleTypeDef *hnor, NOR_CFITypeDef *pNOR_CFI);
+
+#if (USE_HAL_NOR_REGISTER_CALLBACKS == 1)
+/* NOR callback registering/unregistering */
+HAL_StatusTypeDef HAL_NOR_RegisterCallback(NOR_HandleTypeDef *hnor, HAL_NOR_CallbackIDTypeDef CallbackId, pNOR_CallbackTypeDef pCallback);
+HAL_StatusTypeDef HAL_NOR_UnRegisterCallback(NOR_HandleTypeDef *hnor, HAL_NOR_CallbackIDTypeDef CallbackId);
+#endif
 /**
   * @}
   */
@@ -227,12 +242,6 @@ HAL_StatusTypeDef HAL_NOR_WriteOperation_Disable(NOR_HandleTypeDef *hnor);
 /* NOR State functions ********************************************************/
 HAL_NOR_StateTypeDef  HAL_NOR_GetState(NOR_HandleTypeDef *hnor);
 HAL_NOR_StatusTypeDef HAL_NOR_GetStatus(NOR_HandleTypeDef *hnor, uint32_t Address, uint32_t Timeout);
-
-#if (USE_HAL_NOR_REGISTER_CALLBACKS == 1)
-/* NOR callback registering/unregistering */
-HAL_StatusTypeDef     HAL_NOR_RegisterCallback     (NOR_HandleTypeDef *hnor, HAL_NOR_CallbackIDTypeDef CallbackId, pNOR_CallbackTypeDef pCallback);
-HAL_StatusTypeDef     HAL_NOR_UnRegisterCallback   (NOR_HandleTypeDef *hnor, HAL_NOR_CallbackIDTypeDef CallbackId);
-#endif
 /**
   * @}
   */
@@ -281,26 +290,26 @@ HAL_StatusTypeDef     HAL_NOR_UnRegisterCallback   (NOR_HandleTypeDef *hnor, HAL
   */
 /**
   * @brief  NOR memory address shifting.
-  * @param  __NOR_ADDRESS: NOR base address
-  * @param  __NOR_MEMORY_WIDTH_: NOR memory width
-  * @param  __ADDRESS__: NOR memory address
+  * @param  __NOR_ADDRESS NOR base address
+  * @param  __NOR_MEMORY_WIDTH_ NOR memory width
+  * @param  __ADDRESS__ NOR memory address
   * @retval NOR shifted address value
   */
-#define NOR_ADDR_SHIFT(__NOR_ADDRESS, __NOR_MEMORY_WIDTH_, __ADDRESS__)       \
-            ((uint32_t)(((__NOR_MEMORY_WIDTH_) == NOR_MEMORY_16B)?              \
-              ((uint32_t)((__NOR_ADDRESS) + (2 * (__ADDRESS__)))):              \
+#define NOR_ADDR_SHIFT(__NOR_ADDRESS, __NOR_MEMORY_WIDTH_, __ADDRESS__)         \
+              ((uint32_t)(((__NOR_MEMORY_WIDTH_) == NOR_MEMORY_16B)?            \
+              ((uint32_t)((__NOR_ADDRESS) + (2U * (__ADDRESS__)))):              \
               ((uint32_t)((__NOR_ADDRESS) + (__ADDRESS__)))))
 
 /**
   * @brief  NOR memory write data to specified address.
-  * @param  __ADDRESS__: NOR memory address
-  * @param  __DATA__: Data to write
+  * @param  __ADDRESS__ NOR memory address
+  * @param  __DATA__ Data to write
   * @retval None
   */
 #define NOR_WRITE(__ADDRESS__, __DATA__)   do{                                                             \
-                                                 (*(__IO uint16_t *)((uint32_t)(__ADDRESS__)) = (__DATA__)); \
-                                                 __DSB();                                                    \
-                                               } while(0)
+                                               (*(__IO uint16_t *)((uint32_t)(__ADDRESS__)) = (__DATA__)); \
+                                               __DSB();                                                    \
+                                             } while(0)
 
 /**
   * @}
@@ -313,11 +322,12 @@ HAL_StatusTypeDef     HAL_NOR_UnRegisterCallback   (NOR_HandleTypeDef *hnor, HAL
 /**
   * @}
   */
+
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* STM32H7xx_HAL_NOR_H */
+#endif /* __STM32H7xx_HAL_NOR_H */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

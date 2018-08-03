@@ -122,13 +122,12 @@ typedef enum
 {
   USART_CLOCKSOURCE_D2PCLK1    = 0x00U,    /*!< Domain2 PCLK1 clock source */
   USART_CLOCKSOURCE_D2PCLK2    = 0x01U,    /*!< Domain2 PCLK2 clock source */
-  USART_CLOCKSOURCE_D3PCLK1    = 0x02U,    /*!< Domain3 PCLK1 clock source */
-  USART_CLOCKSOURCE_PLL2       = 0x04U,    /*!< PLL2Q clock source         */
+  USART_CLOCKSOURCE_PLL2       = 0x02U,    /*!< PLL2Q clock source         */
+  USART_CLOCKSOURCE_PLL3       = 0x04U,    /*!< PLL3Q clock source         */
   USART_CLOCKSOURCE_HSI        = 0x08U,    /*!< HSI clock source           */
   USART_CLOCKSOURCE_CSI        = 0x10U,    /*!< CSI clock source           */
   USART_CLOCKSOURCE_LSE        = 0x20U,    /*!< LSE clock source           */
-  USART_CLOCKSOURCE_PLL3       = 0x40U,    /*!< PLL3Q clock source         */
-  USART_CLOCKSOURCE_UNDEFINED  = 0x80U     /*!< Undefined clock source     */
+  USART_CLOCKSOURCE_UNDEFINED  = 0x40U     /*!< Undefined clock source     */
 } USART_ClockSourceTypeDef;
 
 /**
@@ -729,8 +728,8 @@ typedef  void (*pUSART_CallbackTypeDef)(USART_HandleTypeDef *husart);  /*!< poin
   do {                                                         \
     if((__HANDLE__)->Instance == USART1)                       \
     {                                                          \
-       switch(__HAL_RCC_GET_USART1_SOURCE())                   \
-       {                                                       \
+      switch(__HAL_RCC_GET_USART1_SOURCE())                    \
+      {                                                        \
         case RCC_USART1CLKSOURCE_D2PCLK2:                      \
           (__CLOCKSOURCE__) = USART_CLOCKSOURCE_D2PCLK2;       \
           break;                                               \
@@ -749,12 +748,12 @@ typedef  void (*pUSART_CallbackTypeDef)(USART_HandleTypeDef *husart);  /*!< poin
         case RCC_USART1CLKSOURCE_LSE:                          \
           (__CLOCKSOURCE__) = USART_CLOCKSOURCE_LSE;           \
           break;                                               \
-       }                                                       \
+      }                                                        \
     }                                                          \
     else if((__HANDLE__)->Instance == USART2)                  \
     {                                                          \
-       switch(__HAL_RCC_GET_USART2_SOURCE())                   \
-       {                                                       \
+      switch(__HAL_RCC_GET_USART2_SOURCE())                    \
+      {                                                        \
         case RCC_USART2CLKSOURCE_D2PCLK1:                      \
           (__CLOCKSOURCE__) = USART_CLOCKSOURCE_D2PCLK1;       \
           break;                                               \
@@ -773,12 +772,12 @@ typedef  void (*pUSART_CallbackTypeDef)(USART_HandleTypeDef *husart);  /*!< poin
         case RCC_USART2CLKSOURCE_LSE:                          \
           (__CLOCKSOURCE__) = USART_CLOCKSOURCE_LSE;           \
           break;                                               \
-       }                                                       \
+      }                                                        \
     }                                                          \
     else if((__HANDLE__)->Instance == USART3)                  \
     {                                                          \
-       switch(__HAL_RCC_GET_USART3_SOURCE())                   \
-       {                                                       \
+      switch(__HAL_RCC_GET_USART3_SOURCE())                    \
+      {                                                        \
         case RCC_USART3CLKSOURCE_D2PCLK1:                      \
           (__CLOCKSOURCE__) = USART_CLOCKSOURCE_D2PCLK1;       \
           break;                                               \
@@ -797,12 +796,12 @@ typedef  void (*pUSART_CallbackTypeDef)(USART_HandleTypeDef *husart);  /*!< poin
         case RCC_USART3CLKSOURCE_LSE:                          \
           (__CLOCKSOURCE__) = USART_CLOCKSOURCE_LSE;           \
           break;                                               \
-       }                                                       \
+      }                                                        \
     }                                                          \
     else if((__HANDLE__)->Instance == USART6)                  \
     {                                                          \
-       switch(__HAL_RCC_GET_USART6_SOURCE())                   \
-       {                                                       \
+      switch(__HAL_RCC_GET_USART6_SOURCE())                    \
+      {                                                        \
         case RCC_USART6CLKSOURCE_D2PCLK2:                      \
           (__CLOCKSOURCE__) = USART_CLOCKSOURCE_D2PCLK2;       \
           break;                                               \
@@ -821,9 +820,9 @@ typedef  void (*pUSART_CallbackTypeDef)(USART_HandleTypeDef *husart);  /*!< poin
         case RCC_USART6CLKSOURCE_LSE:                          \
           (__CLOCKSOURCE__) = USART_CLOCKSOURCE_LSE;           \
           break;                                               \
-       }                                                       \
+      }                                                        \
     }                                                          \
-  } while(0)
+  } while(0U)
 
 /** @brief  Check USART Baud rate.
   * @param  __BAUDRATE__ Baudrate specified by the user.

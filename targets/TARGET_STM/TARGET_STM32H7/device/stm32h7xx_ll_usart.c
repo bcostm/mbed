@@ -203,10 +203,10 @@ ErrorStatus LL_USART_DeInit(USART_TypeDef *USARTx)
   }
   else if (USARTx == USART6)
   {
-    /* Force reset of UART clock */
+    /* Force reset of USART clock */
     LL_APB2_GRP1_ForceReset(LL_APB2_GRP1_PERIPH_USART6);
 
-    /* Release reset of UART clock */
+    /* Release reset of USART clock */
     LL_APB2_GRP1_ReleaseReset(LL_APB2_GRP1_PERIPH_USART6);
   }
   else if (USARTx == UART7)

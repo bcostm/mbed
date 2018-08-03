@@ -146,8 +146,7 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart(DMA_HandleTypeDef *hdma, uint32_t S
   assert_param(IS_DMA_BUFFER_SIZE(DataLength));
 
   /* Memory-to-memory transfer not supported in double buffering mode */
-  /* double buffering mode not supported for BDMA (D3 DMA)            */
-  if ( (IS_D2_DMA_INSTANCE(hdma) == 0U) || (hdma->Init.Direction == DMA_MEMORY_TO_MEMORY))
+  if (hdma->Init.Direction == DMA_MEMORY_TO_MEMORY)
   {
     hdma->ErrorCode = HAL_DMA_ERROR_NOT_SUPPORTED;
     status = HAL_ERROR;
@@ -165,20 +164,34 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart(DMA_HandleTypeDef *hdma, uint32_t S
       /* Initialize the error code */
       hdma->ErrorCode = HAL_DMA_ERROR_NONE;
 
-      /* Enable the double buffer mode */
-      ((DMA_Stream_TypeDef   *)hdma->Instance)->CR |= (uint32_t)DMA_SxCR_DBM;
+      if(IS_D2_DMA_INSTANCE(hdma)) /* D2 Domain DMA: DMA1 or DMA2 */
+      {
+        /* Enable the Double buffer mode */
+        ((DMA_Stream_TypeDef   *)hdma->Instance)->CR |= DMA_SxCR_DBM;
 
-      /* Configure DMA Stream destination address */
-      ((DMA_Stream_TypeDef   *)hdma->Instance)->M1AR = SecondMemAddress;
+        /* Configure DMA Stream destination address */
+        ((DMA_Stream_TypeDef   *)hdma->Instance)->M1AR = SecondMemAddress;
+        
+        /* Calculate the interrupt clear flag register (IFCR) base address  */
+        ifcRegister_Base = (uint32_t *)((uint32_t)(hdma->StreamBaseAddress + 8U));
+
+        /* Clear all flags */
+        *ifcRegister_Base = 0x3FUL << hdma->StreamIndex;    
+      }
+      else if(IS_D3_DMA_INSTANCE(hdma)) /* D3 Domain: BDMA */
+      {
+        /* Enable the Double buffer mode */
+        ((BDMA_Channel_TypeDef   *)hdma->Instance)->CCR |= (BDMA_CCR_DBM | BDMA_CCR_CIRC);
+
+        /* Configure DMA Stream destination address */
+        ((BDMA_Channel_TypeDef   *)hdma->Instance)->CM1AR = SecondMemAddress;
+        
+        /* Clear all flags */
+        BDMA->IFCR  |= (BDMA_ISR_GIF0) << (hdma->StreamIndex & 0x1FU);
+      }
 
       /* Configure the source, destination address and the data length */
       DMA_MultiBufferSetConfig(hdma, SrcAddress, DstAddress, DataLength);
-
-      /* Calculate the interrupt clear flag register (IFCR) base address  */
-      ifcRegister_Base = (uint32_t *)((uint32_t)(hdma->StreamBaseAddress + 8U));
-
-      /* Clear all flags */
-      *ifcRegister_Base = 0x3FUL << hdma->StreamIndex;
 
       /* Clear the DMAMUX synchro overrun flag */
       hdma->DMAmuxChannelStatus->CFR = hdma->DMAmuxChannelStatusMask;
@@ -223,8 +236,7 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart_IT(DMA_HandleTypeDef *hdma, uint32_
   assert_param(IS_DMA_BUFFER_SIZE(DataLength));
 
   /* Memory-to-memory transfer not supported in double buffering mode */
-  /* double buffering mode not supported for BDMA (D3 DMA)            */
-  if( (IS_D2_DMA_INSTANCE(hdma) == 0U) || (hdma->Init.Direction == DMA_MEMORY_TO_MEMORY))
+  if(hdma->Init.Direction == DMA_MEMORY_TO_MEMORY)
   {
     hdma->ErrorCode = HAL_DMA_ERROR_NOT_SUPPORTED;
     return HAL_ERROR;
@@ -241,20 +253,34 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart_IT(DMA_HandleTypeDef *hdma, uint32_
     /* Initialize the error code */
     hdma->ErrorCode = HAL_DMA_ERROR_NONE;
 
-    /* Enable the Double buffer mode */
-    ((DMA_Stream_TypeDef   *)hdma->Instance)->CR |= (uint32_t)DMA_SxCR_DBM;
+    if(IS_D2_DMA_INSTANCE(hdma)) /* D2 Domain DMA: DMA1 or DMA2 */
+    {
+      /* Enable the Double buffer mode */
+      ((DMA_Stream_TypeDef   *)hdma->Instance)->CR |= DMA_SxCR_DBM;
 
-    /* Configure DMA Stream destination address */
-    ((DMA_Stream_TypeDef   *)hdma->Instance)->M1AR = SecondMemAddress;
+      /* Configure DMA Stream destination address */
+      ((DMA_Stream_TypeDef   *)hdma->Instance)->M1AR = SecondMemAddress;   
+      
+      /* Calculate the interrupt clear flag register (IFCR) base address  */
+      ifcRegister_Base = (uint32_t *)((uint32_t)(hdma->StreamBaseAddress + 8U));
 
+      /* Clear all flags */
+      *ifcRegister_Base = 0x3FUL << hdma->StreamIndex;
+    }
+    else if(IS_D3_DMA_INSTANCE(hdma)) /* D3 Domain: BDMA */
+    {
+      /* Enable the Double buffer mode */
+      ((BDMA_Channel_TypeDef   *)hdma->Instance)->CCR |= (BDMA_CCR_DBM | BDMA_CCR_CIRC);
+
+      /* Configure DMA Stream destination address */
+      ((BDMA_Channel_TypeDef   *)hdma->Instance)->CM1AR = SecondMemAddress;
+      
+      /* Clear all flags */
+      BDMA->IFCR  |= (BDMA_ISR_GIF0) << (hdma->StreamIndex & 0x1FU);
+    }
+ 
     /* Configure the source, destination address and the data length */
     DMA_MultiBufferSetConfig(hdma, SrcAddress, DstAddress, DataLength);
-
-    /* Calculate the interrupt clear flag register (IFCR) base address  */
-    ifcRegister_Base = (uint32_t *)((uint32_t)(hdma->StreamBaseAddress + 8U));
-
-    /* Clear all flags */
-    *ifcRegister_Base = 0x3FUL << hdma->StreamIndex;
 
     /* Clear the DMAMUX synchro overrun flag */
     hdma->DMAmuxChannelStatus->CFR = hdma->DMAmuxChannelStatusMask;
@@ -265,14 +291,28 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart_IT(DMA_HandleTypeDef *hdma, uint32_
       hdma->DMAmuxRequestGenStatus->RGCFR = hdma->DMAmuxRequestGenStatusMask;
     }
 
-    /* Enable Common interrupts*/
-    MODIFY_REG(((DMA_Stream_TypeDef   *)hdma->Instance)->CR, (DMA_IT_TC | DMA_IT_TE | DMA_IT_DME | DMA_IT_HT), (DMA_IT_TC | DMA_IT_TE | DMA_IT_DME));
-    ((DMA_Stream_TypeDef   *)hdma->Instance)->FCR |= DMA_IT_FE;
-
-    if(hdma->XferHalfCpltCallback != NULL)
+    if(IS_D2_DMA_INSTANCE(hdma) != RESET) /* D2 Domain DMA: DMA1 or DMA2 */
     {
-      /*Enable Half Transfer IT if corresponding Callback is set*/
-      ((DMA_Stream_TypeDef   *)hdma->Instance)->CR  |= DMA_IT_HT;
+      /* Enable Common interrupts*/
+      MODIFY_REG(((DMA_Stream_TypeDef   *)hdma->Instance)->CR, (DMA_IT_TC | DMA_IT_TE | DMA_IT_DME | DMA_IT_HT), (DMA_IT_TC | DMA_IT_TE | DMA_IT_DME));
+      ((DMA_Stream_TypeDef   *)hdma->Instance)->FCR |= DMA_IT_FE;
+
+      if((hdma->XferHalfCpltCallback != NULL) || (hdma->XferM1HalfCpltCallback != NULL))
+      {
+        /*Enable Half Transfer IT if corresponding Callback is set*/
+        ((DMA_Stream_TypeDef   *)hdma->Instance)->CR  |= DMA_IT_HT;
+      }
+    }
+    else /* D3 Domain: BDMA */
+    {
+      /* Enable Common interrupts*/
+      MODIFY_REG(((BDMA_Channel_TypeDef   *)hdma->Instance)->CCR, (BDMA_CCR_TCIE | BDMA_CCR_HTIE | BDMA_CCR_TEIE), (BDMA_CCR_TCIE | BDMA_CCR_TEIE));
+
+      if((hdma->XferHalfCpltCallback != NULL) || (hdma->XferM1HalfCpltCallback != NULL))
+      {
+        /*Enable Half Transfer IT if corresponding Callback is set*/
+        ((BDMA_Channel_TypeDef   *)hdma->Instance)->CCR  |= BDMA_CCR_HTIE;
+      }
     }
 
     /* Check if DMAMUX Synchronization is enabled*/
@@ -319,17 +359,33 @@ HAL_StatusTypeDef HAL_DMAEx_MultiBufferStart_IT(DMA_HandleTypeDef *hdma, uint32_
   */
 HAL_StatusTypeDef HAL_DMAEx_ChangeMemory(DMA_HandleTypeDef *hdma, uint32_t Address, HAL_DMA_MemoryTypeDef memory)
 {
-  if(memory == MEMORY0)
+  if(IS_D2_DMA_INSTANCE(hdma) != RESET) /* D2 Domain DMA: DMA1 or DMA2 */
   {
-    /* change the memory0 address */
-    ((DMA_Stream_TypeDef   *)hdma->Instance)->M0AR = Address;
+    if(memory == MEMORY0)
+    {
+      /* change the memory0 address */
+      ((DMA_Stream_TypeDef   *)hdma->Instance)->M0AR = Address;
+    }
+    else
+    {
+      /* change the memory1 address */
+      ((DMA_Stream_TypeDef   *)hdma->Instance)->M1AR = Address;
+    }
   }
-  else
+  else /* D3 Domain: BDMA */
   {
-    /* change the memory1 address */
-    ((DMA_Stream_TypeDef   *)hdma->Instance)->M1AR = Address;
+    if(memory == MEMORY0)
+    {
+      /* change the memory0 address */
+      ((BDMA_Channel_TypeDef   *)hdma->Instance)->CM0AR = Address;
+    }
+    else
+    {
+      /* change the memory1 address */
+      ((BDMA_Channel_TypeDef   *)hdma->Instance)->CM1AR = Address;
+    }
   }
-
+  
   return HAL_OK;
 }
 
@@ -597,26 +653,54 @@ void HAL_DMAEx_MUX_IRQHandler(DMA_HandleTypeDef *hdma)
   */
 static void DMA_MultiBufferSetConfig(DMA_HandleTypeDef *hdma, uint32_t SrcAddress, uint32_t DstAddress, uint32_t DataLength)
 {
-  /* Configure DMA Stream data length */
-  ((DMA_Stream_TypeDef   *)hdma->Instance)->NDTR = DataLength;
-
-  /* Peripheral to Memory */
-  if((hdma->Init.Direction) == DMA_MEMORY_TO_PERIPH)
+  if(IS_D2_DMA_INSTANCE(hdma) != RESET) /* D2 Domain DMA: DMA1 or DMA2 */
   {
-    /* Configure DMA Stream destination address */
-    ((DMA_Stream_TypeDef   *)hdma->Instance)->PAR = DstAddress;
+    /* Configure DMA Stream data length */
+    ((DMA_Stream_TypeDef   *)hdma->Instance)->NDTR = DataLength;
 
-    /* Configure DMA Stream source address */
-    ((DMA_Stream_TypeDef   *)hdma->Instance)->M0AR = SrcAddress;
+    /* Peripheral to Memory */
+    if((hdma->Init.Direction) == DMA_MEMORY_TO_PERIPH)
+    {
+      /* Configure DMA Stream destination address */
+      ((DMA_Stream_TypeDef   *)hdma->Instance)->PAR = DstAddress;
+
+      /* Configure DMA Stream source address */
+      ((DMA_Stream_TypeDef   *)hdma->Instance)->M0AR = SrcAddress;
+    }
+    /* Memory to Peripheral */
+    else
+    {
+      /* Configure DMA Stream source address */
+      ((DMA_Stream_TypeDef   *)hdma->Instance)->PAR = SrcAddress;
+
+      /* Configure DMA Stream destination address */
+      ((DMA_Stream_TypeDef   *)hdma->Instance)->M0AR = DstAddress;
+    }
   }
-  /* Memory to Peripheral */
-  else
+  
+  else if(IS_D3_DMA_INSTANCE(hdma)) /* D3 Domain: BDMA */
   {
-    /* Configure DMA Stream source address */
-    ((DMA_Stream_TypeDef   *)hdma->Instance)->PAR = SrcAddress;
+    /* Configure DMA Stream data length */
+    ((BDMA_Channel_TypeDef   *)hdma->Instance)->CNDTR = DataLength;
 
-    /* Configure DMA Stream destination address */
-    ((DMA_Stream_TypeDef   *)hdma->Instance)->M0AR = DstAddress;
+    /* Peripheral to Memory */
+    if((hdma->Init.Direction) == DMA_MEMORY_TO_PERIPH)
+    {
+      /* Configure DMA Stream destination address */
+      ((BDMA_Channel_TypeDef   *)hdma->Instance)->CPAR = DstAddress;
+
+      /* Configure DMA Stream source address */
+      ((BDMA_Channel_TypeDef   *)hdma->Instance)->CM0AR = SrcAddress;
+    }
+    /* Memory to Peripheral */
+    else
+    {
+      /* Configure DMA Stream source address */
+      ((BDMA_Channel_TypeDef   *)hdma->Instance)->CPAR = SrcAddress;
+
+      /* Configure DMA Stream destination address */
+      ((BDMA_Channel_TypeDef   *)hdma->Instance)->CM0AR = DstAddress;
+    }
   }
 }
 

@@ -334,8 +334,6 @@ __weak void HAL_UARTEx_TxFifoEmptyCallback(UART_HandleTypeDef *huart)
                       ##### Peripheral Control functions #####
  ===============================================================================
     [..] This section provides the following functions:
-     (+) HAL_UARTEx_EnableClockStopMode() API enables the UART clock (HSI or LSE only) during stop mode
-     (+) HAL_UARTEx_DisableClockStopMode() API disables the above functionality
      (+) HAL_MultiProcessorEx_AddressLength_Set() API optionally sets the UART node address
          detection length to more than 4 bits for multiprocessor address mark wake up.
      (+) HAL_UARTEx_StopModeWakeUpSourceConfig() API defines the wake-up from stop mode
@@ -468,12 +466,8 @@ HAL_StatusTypeDef HAL_UARTEx_EnableStopMode(UART_HandleTypeDef *huart)
   /* Process Locked */
   __HAL_LOCK(huart);
 
-  huart->gState = HAL_UART_STATE_BUSY;
-
   /* Set UESM bit */
   SET_BIT(huart->Instance->CR1, USART_CR1_UESM);
-
-  huart->gState = HAL_UART_STATE_READY;
 
   /* Process Unlocked */
   __HAL_UNLOCK(huart);
@@ -491,12 +485,8 @@ HAL_StatusTypeDef HAL_UARTEx_DisableStopMode(UART_HandleTypeDef *huart)
   /* Process Locked */
   __HAL_LOCK(huart);
 
-  huart->gState = HAL_UART_STATE_BUSY;
-
   /* Clear UESM bit */
   CLEAR_BIT(huart->Instance->CR1, USART_CR1_UESM);
-
-  huart->gState = HAL_UART_STATE_READY;
 
   /* Process Unlocked */
   __HAL_UNLOCK(huart);

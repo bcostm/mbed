@@ -34,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_LL_HSEM_H
-#define __STM32H7xx_LL_HSEM_H
+#ifndef STM32H7xx_LL_HSEM_H
+#define STM32H7xx_LL_HSEM_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -71,7 +71,9 @@ extern "C" {
   */
 #define LL_HSEM_COREID_NONE             0U
 #define LL_HSEM_COREID_CPU1             HSEM_CR_COREID_CPU1
+#if defined(DUAL_CORE)
 #define LL_HSEM_COREID_CPU2             HSEM_CR_COREID_CPU2
+#endif /* DUAL_CORE */
 #define LL_HSEM_COREID                  HSEM_CR_COREID_CURRENT
 /**
   * @}
@@ -167,15 +169,15 @@ extern "C" {
 
 
 /**
-* @brief  Return 1 if the semaphore is locked, else return 0.
-* @rmtoll R            LOCK          LL_HSEM_IsSemaphoreLocked
-* @param  HSEMx HSEM Instance.
-* @param  Semaphore Semaphore number. Value between Min_Data=0 and Max_Data=31
-* @retval State of bit (1 or 0).
-*/
+  * @brief  Return 1 if the semaphore is locked, else return 0.
+  * @rmtoll R            LOCK          LL_HSEM_IsSemaphoreLocked
+  * @param  HSEMx HSEM Instance.
+  * @param  Semaphore Semaphore number. Value between Min_Data=0 and Max_Data=31
+  * @retval State of bit (1 or 0).
+  */
 __STATIC_INLINE uint32_t LL_HSEM_IsSemaphoreLocked(HSEM_TypeDef *HSEMx, uint32_t Semaphore)
 {
-  return (uint32_t)(READ_BIT(HSEMx->R[Semaphore], HSEM_R_LOCK) == (HSEM_R_LOCK_Msk));
+  return ((READ_BIT(HSEMx->R[Semaphore], HSEM_R_LOCK) == (HSEM_R_LOCK_Msk)) ? 1UL : 0UL);
 }
 
 /**
@@ -229,12 +231,12 @@ __STATIC_INLINE void LL_HSEM_SetLock(HSEM_TypeDef *HSEMx, uint32_t Semaphore, ui
   * @param  HSEMx HSEM Instance.
   * @param  Semaphore Semaphore number. Value between Min_Data=0 and Max_Data=31
   * @param  process Process id. Value between Min_Data=0 and Max_Data=255
-  * @retval 1 lock fail, 0 lock successfull or already locked by same process and core
+  * @retval 1 lock fail, 0 lock successful or already locked by same process and core
   */
 __STATIC_INLINE uint32_t LL_HSEM_2StepLock(HSEM_TypeDef *HSEMx, uint32_t Semaphore, uint32_t process)
 {
   WRITE_REG(HSEMx->R[Semaphore], (HSEM_R_LOCK | LL_HSEM_COREID | process));
-  return (uint32_t)(HSEMx->R[Semaphore] != (HSEM_R_LOCK | LL_HSEM_COREID | process));
+  return ((HSEMx->R[Semaphore] != (HSEM_R_LOCK | LL_HSEM_COREID | process)) ? 1UL : 0UL);
 }
 
 /**
@@ -244,11 +246,11 @@ __STATIC_INLINE uint32_t LL_HSEM_2StepLock(HSEM_TypeDef *HSEMx, uint32_t Semapho
   * @rmtoll RLR          PROCID        LL_HSEM_1StepLock
   * @param  HSEMx HSEM Instance.
   * @param  Semaphore Semaphore number. Value between Min_Data=0 and Max_Data=31
-  * @retval 1 lock fail, 0 lock successfull or already locked by same core
+  * @retval 1 lock fail, 0 lock successful or already locked by same core
   */
 __STATIC_INLINE uint32_t LL_HSEM_1StepLock(HSEM_TypeDef *HSEMx, uint32_t Semaphore)
 {
-  return (uint32_t)(HSEMx->RLR[Semaphore] != (HSEM_R_LOCK | LL_HSEM_COREID));
+  return ((HSEMx->RLR[Semaphore] != (HSEM_R_LOCK | LL_HSEM_COREID)) ? 1UL : 0UL);
 }
 
 /**
@@ -273,7 +275,7 @@ __STATIC_INLINE void LL_HSEM_ReleaseLock(HSEM_TypeDef *HSEMx, uint32_t Semaphore
   * @retval 0 semaphore is free, 1 semaphore is locked  */
 __STATIC_INLINE uint32_t LL_HSEM_GetStatus(HSEM_TypeDef *HSEMx, uint32_t Semaphore)
 {
-  return (uint32_t)(HSEMx->R[Semaphore] != 0U);
+  return ((HSEMx->R[Semaphore] != 0U) ? 1UL : 0UL);
 }
 
 /**
@@ -368,51 +370,6 @@ __STATIC_INLINE void LL_HSEM_EnableIT_C1IER(HSEM_TypeDef *HSEMx, uint32_t Semaph
 }
 
 /**
-  * @brief  Enable interrupt.
-  * @rmtoll C2IER         ISEM          LL_HSEM_EnableIT_C2IER
-  * @param  HSEMx HSEM Instance.
-  * @param  SemaphoreMask This parameter can be a combination of the following values:
-  *         @arg @ref LL_HSEM_SEMAPHORE_0
-  *         @arg @ref LL_HSEM_SEMAPHORE_1
-  *         @arg @ref LL_HSEM_SEMAPHORE_2
-  *         @arg @ref LL_HSEM_SEMAPHORE_3
-  *         @arg @ref LL_HSEM_SEMAPHORE_4
-  *         @arg @ref LL_HSEM_SEMAPHORE_5
-  *         @arg @ref LL_HSEM_SEMAPHORE_6
-  *         @arg @ref LL_HSEM_SEMAPHORE_7
-  *         @arg @ref LL_HSEM_SEMAPHORE_8
-  *         @arg @ref LL_HSEM_SEMAPHORE_9
-  *         @arg @ref LL_HSEM_SEMAPHORE_10
-  *         @arg @ref LL_HSEM_SEMAPHORE_11
-  *         @arg @ref LL_HSEM_SEMAPHORE_12
-  *         @arg @ref LL_HSEM_SEMAPHORE_13
-  *         @arg @ref LL_HSEM_SEMAPHORE_14
-  *         @arg @ref LL_HSEM_SEMAPHORE_15
-  *         @arg @ref LL_HSEM_SEMAPHORE_16
-  *         @arg @ref LL_HSEM_SEMAPHORE_17
-  *         @arg @ref LL_HSEM_SEMAPHORE_18
-  *         @arg @ref LL_HSEM_SEMAPHORE_19
-  *         @arg @ref LL_HSEM_SEMAPHORE_20
-  *         @arg @ref LL_HSEM_SEMAPHORE_21
-  *         @arg @ref LL_HSEM_SEMAPHORE_22
-  *         @arg @ref LL_HSEM_SEMAPHORE_23
-  *         @arg @ref LL_HSEM_SEMAPHORE_24
-  *         @arg @ref LL_HSEM_SEMAPHORE_25
-  *         @arg @ref LL_HSEM_SEMAPHORE_26
-  *         @arg @ref LL_HSEM_SEMAPHORE_27
-  *         @arg @ref LL_HSEM_SEMAPHORE_28
-  *         @arg @ref LL_HSEM_SEMAPHORE_29
-  *         @arg @ref LL_HSEM_SEMAPHORE_30
-  *         @arg @ref LL_HSEM_SEMAPHORE_31
-  *         @arg @ref LL_HSEM_SEMAPHORE_ALL
-  * @retval None
-  */
-__STATIC_INLINE void LL_HSEM_EnableIT_C2IER(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
-{
-  SET_BIT(HSEMx->C2IER, SemaphoreMask);
-}
-
-/**
   * @brief  Disable interrupt.
   * @rmtoll C1IER          ISEM          LL_HSEM_DisableIT_C1IER
   * @param  HSEMx HSEM Instance.
@@ -455,6 +412,97 @@ __STATIC_INLINE void LL_HSEM_EnableIT_C2IER(HSEM_TypeDef *HSEMx, uint32_t Semaph
 __STATIC_INLINE void LL_HSEM_DisableIT_C1IER(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
 {
   CLEAR_BIT(HSEMx->C1IER, SemaphoreMask);
+}
+
+/**
+  * @brief  Check if interrupt is enabled.
+  * @rmtoll C1IER          ISEM          LL_HSEM_IsEnabledIT_C1IER
+  * @param  HSEMx HSEM Instance.
+  * @param  SemaphoreMask This parameter can be a combination of the following values:
+  *         @arg @ref LL_HSEM_SEMAPHORE_0
+  *         @arg @ref LL_HSEM_SEMAPHORE_1
+  *         @arg @ref LL_HSEM_SEMAPHORE_2
+  *         @arg @ref LL_HSEM_SEMAPHORE_3
+  *         @arg @ref LL_HSEM_SEMAPHORE_4
+  *         @arg @ref LL_HSEM_SEMAPHORE_5
+  *         @arg @ref LL_HSEM_SEMAPHORE_6
+  *         @arg @ref LL_HSEM_SEMAPHORE_7
+  *         @arg @ref LL_HSEM_SEMAPHORE_8
+  *         @arg @ref LL_HSEM_SEMAPHORE_9
+  *         @arg @ref LL_HSEM_SEMAPHORE_10
+  *         @arg @ref LL_HSEM_SEMAPHORE_11
+  *         @arg @ref LL_HSEM_SEMAPHORE_12
+  *         @arg @ref LL_HSEM_SEMAPHORE_13
+  *         @arg @ref LL_HSEM_SEMAPHORE_14
+  *         @arg @ref LL_HSEM_SEMAPHORE_15
+  *         @arg @ref LL_HSEM_SEMAPHORE_16
+  *         @arg @ref LL_HSEM_SEMAPHORE_17
+  *         @arg @ref LL_HSEM_SEMAPHORE_18
+  *         @arg @ref LL_HSEM_SEMAPHORE_19
+  *         @arg @ref LL_HSEM_SEMAPHORE_20
+  *         @arg @ref LL_HSEM_SEMAPHORE_21
+  *         @arg @ref LL_HSEM_SEMAPHORE_22
+  *         @arg @ref LL_HSEM_SEMAPHORE_23
+  *         @arg @ref LL_HSEM_SEMAPHORE_24
+  *         @arg @ref LL_HSEM_SEMAPHORE_25
+  *         @arg @ref LL_HSEM_SEMAPHORE_26
+  *         @arg @ref LL_HSEM_SEMAPHORE_27
+  *         @arg @ref LL_HSEM_SEMAPHORE_28
+  *         @arg @ref LL_HSEM_SEMAPHORE_29
+  *         @arg @ref LL_HSEM_SEMAPHORE_30
+  *         @arg @ref LL_HSEM_SEMAPHORE_31
+  *         @arg @ref LL_HSEM_SEMAPHORE_ALL
+  * @retval State of bit (1 or 0).
+  */
+__STATIC_INLINE uint32_t LL_HSEM_IsEnabledIT_C1IER(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
+{
+  return ((READ_BIT(HSEMx->C1IER, SemaphoreMask) == (SemaphoreMask)) ? 1UL : 0UL);
+}
+
+#if defined(DUAL_CORE)
+/**
+  * @brief  Enable interrupt.
+  * @rmtoll C2IER         ISEM          LL_HSEM_EnableIT_C2IER
+  * @param  HSEMx HSEM Instance.
+  * @param  SemaphoreMask This parameter can be a combination of the following values:
+  *         @arg @ref LL_HSEM_SEMAPHORE_0
+  *         @arg @ref LL_HSEM_SEMAPHORE_1
+  *         @arg @ref LL_HSEM_SEMAPHORE_2
+  *         @arg @ref LL_HSEM_SEMAPHORE_3
+  *         @arg @ref LL_HSEM_SEMAPHORE_4
+  *         @arg @ref LL_HSEM_SEMAPHORE_5
+  *         @arg @ref LL_HSEM_SEMAPHORE_6
+  *         @arg @ref LL_HSEM_SEMAPHORE_7
+  *         @arg @ref LL_HSEM_SEMAPHORE_8
+  *         @arg @ref LL_HSEM_SEMAPHORE_9
+  *         @arg @ref LL_HSEM_SEMAPHORE_10
+  *         @arg @ref LL_HSEM_SEMAPHORE_11
+  *         @arg @ref LL_HSEM_SEMAPHORE_12
+  *         @arg @ref LL_HSEM_SEMAPHORE_13
+  *         @arg @ref LL_HSEM_SEMAPHORE_14
+  *         @arg @ref LL_HSEM_SEMAPHORE_15
+  *         @arg @ref LL_HSEM_SEMAPHORE_16
+  *         @arg @ref LL_HSEM_SEMAPHORE_17
+  *         @arg @ref LL_HSEM_SEMAPHORE_18
+  *         @arg @ref LL_HSEM_SEMAPHORE_19
+  *         @arg @ref LL_HSEM_SEMAPHORE_20
+  *         @arg @ref LL_HSEM_SEMAPHORE_21
+  *         @arg @ref LL_HSEM_SEMAPHORE_22
+  *         @arg @ref LL_HSEM_SEMAPHORE_23
+  *         @arg @ref LL_HSEM_SEMAPHORE_24
+  *         @arg @ref LL_HSEM_SEMAPHORE_25
+  *         @arg @ref LL_HSEM_SEMAPHORE_26
+  *         @arg @ref LL_HSEM_SEMAPHORE_27
+  *         @arg @ref LL_HSEM_SEMAPHORE_28
+  *         @arg @ref LL_HSEM_SEMAPHORE_29
+  *         @arg @ref LL_HSEM_SEMAPHORE_30
+  *         @arg @ref LL_HSEM_SEMAPHORE_31
+  *         @arg @ref LL_HSEM_SEMAPHORE_ALL
+  * @retval None
+  */
+__STATIC_INLINE void LL_HSEM_EnableIT_C2IER(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
+{
+  SET_BIT(HSEMx->C2IER, SemaphoreMask);
 }
 
 /**
@@ -504,51 +552,6 @@ __STATIC_INLINE void LL_HSEM_DisableIT_C2IER(HSEM_TypeDef *HSEMx, uint32_t Semap
 
 /**
   * @brief  Check if interrupt is enabled.
-  * @rmtoll C1IER          ISEM          LL_HSEM_IsEnabledIT_C1IER
-  * @param  HSEMx HSEM Instance.
-  * @param  SemaphoreMask This parameter can be a combination of the following values:
-  *         @arg @ref LL_HSEM_SEMAPHORE_0
-  *         @arg @ref LL_HSEM_SEMAPHORE_1
-  *         @arg @ref LL_HSEM_SEMAPHORE_2
-  *         @arg @ref LL_HSEM_SEMAPHORE_3
-  *         @arg @ref LL_HSEM_SEMAPHORE_4
-  *         @arg @ref LL_HSEM_SEMAPHORE_5
-  *         @arg @ref LL_HSEM_SEMAPHORE_6
-  *         @arg @ref LL_HSEM_SEMAPHORE_7
-  *         @arg @ref LL_HSEM_SEMAPHORE_8
-  *         @arg @ref LL_HSEM_SEMAPHORE_9
-  *         @arg @ref LL_HSEM_SEMAPHORE_10
-  *         @arg @ref LL_HSEM_SEMAPHORE_11
-  *         @arg @ref LL_HSEM_SEMAPHORE_12
-  *         @arg @ref LL_HSEM_SEMAPHORE_13
-  *         @arg @ref LL_HSEM_SEMAPHORE_14
-  *         @arg @ref LL_HSEM_SEMAPHORE_15
-  *         @arg @ref LL_HSEM_SEMAPHORE_16
-  *         @arg @ref LL_HSEM_SEMAPHORE_17
-  *         @arg @ref LL_HSEM_SEMAPHORE_18
-  *         @arg @ref LL_HSEM_SEMAPHORE_19
-  *         @arg @ref LL_HSEM_SEMAPHORE_20
-  *         @arg @ref LL_HSEM_SEMAPHORE_21
-  *         @arg @ref LL_HSEM_SEMAPHORE_22
-  *         @arg @ref LL_HSEM_SEMAPHORE_23
-  *         @arg @ref LL_HSEM_SEMAPHORE_24
-  *         @arg @ref LL_HSEM_SEMAPHORE_25
-  *         @arg @ref LL_HSEM_SEMAPHORE_26
-  *         @arg @ref LL_HSEM_SEMAPHORE_27
-  *         @arg @ref LL_HSEM_SEMAPHORE_28
-  *         @arg @ref LL_HSEM_SEMAPHORE_29
-  *         @arg @ref LL_HSEM_SEMAPHORE_30
-  *         @arg @ref LL_HSEM_SEMAPHORE_31
-  *         @arg @ref LL_HSEM_SEMAPHORE_ALL
-  * @retval State of bit (1 or 0).
-  */
-__STATIC_INLINE uint32_t LL_HSEM_IsEnabledIT_C1IER(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
-{
-  return (uint32_t)(READ_BIT(HSEMx->C1IER, SemaphoreMask) == (SemaphoreMask));
-}
-
-/**
-  * @brief  Check if interrupt is enabled.
   * @rmtoll C2IER          ISEM          LL_HSEM_IsEnabledIT_C2IER
   * @param  HSEMx HSEM Instance.
   * @param  SemaphoreMask This parameter can be a combination of the following values:
@@ -589,9 +592,9 @@ __STATIC_INLINE uint32_t LL_HSEM_IsEnabledIT_C1IER(HSEM_TypeDef *HSEMx, uint32_t
   */
 __STATIC_INLINE uint32_t LL_HSEM_IsEnabledIT_C2IER(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
 {
-  return (uint32_t)(READ_BIT(HSEMx->C2IER, SemaphoreMask) == (SemaphoreMask));
+  return ((READ_BIT(HSEMx->C2IER, SemaphoreMask) == (SemaphoreMask)) ? 1UL : 0UL);
 }
-
+#endif /* DUAL_CORE */
 /**
   * @}
   */
@@ -646,6 +649,97 @@ __STATIC_INLINE void LL_HSEM_ClearFlag_C1ICR(HSEM_TypeDef *HSEMx, uint32_t Semap
 }
 
 /**
+  * @brief  Get interrupt status from ISR register.
+  * @rmtoll C1ISR         ISEM          LL_HSEM_IsActiveFlag_C1ISR
+  * @param  HSEMx HSEM Instance.
+  * @param  SemaphoreMask This parameter can be a combination of the following values:
+  *         @arg @ref LL_HSEM_SEMAPHORE_0
+  *         @arg @ref LL_HSEM_SEMAPHORE_1
+  *         @arg @ref LL_HSEM_SEMAPHORE_2
+  *         @arg @ref LL_HSEM_SEMAPHORE_3
+  *         @arg @ref LL_HSEM_SEMAPHORE_4
+  *         @arg @ref LL_HSEM_SEMAPHORE_5
+  *         @arg @ref LL_HSEM_SEMAPHORE_6
+  *         @arg @ref LL_HSEM_SEMAPHORE_7
+  *         @arg @ref LL_HSEM_SEMAPHORE_8
+  *         @arg @ref LL_HSEM_SEMAPHORE_9
+  *         @arg @ref LL_HSEM_SEMAPHORE_10
+  *         @arg @ref LL_HSEM_SEMAPHORE_11
+  *         @arg @ref LL_HSEM_SEMAPHORE_12
+  *         @arg @ref LL_HSEM_SEMAPHORE_13
+  *         @arg @ref LL_HSEM_SEMAPHORE_14
+  *         @arg @ref LL_HSEM_SEMAPHORE_15
+  *         @arg @ref LL_HSEM_SEMAPHORE_16
+  *         @arg @ref LL_HSEM_SEMAPHORE_17
+  *         @arg @ref LL_HSEM_SEMAPHORE_18
+  *         @arg @ref LL_HSEM_SEMAPHORE_19
+  *         @arg @ref LL_HSEM_SEMAPHORE_20
+  *         @arg @ref LL_HSEM_SEMAPHORE_21
+  *         @arg @ref LL_HSEM_SEMAPHORE_22
+  *         @arg @ref LL_HSEM_SEMAPHORE_23
+  *         @arg @ref LL_HSEM_SEMAPHORE_24
+  *         @arg @ref LL_HSEM_SEMAPHORE_25
+  *         @arg @ref LL_HSEM_SEMAPHORE_26
+  *         @arg @ref LL_HSEM_SEMAPHORE_27
+  *         @arg @ref LL_HSEM_SEMAPHORE_28
+  *         @arg @ref LL_HSEM_SEMAPHORE_29
+  *         @arg @ref LL_HSEM_SEMAPHORE_30
+  *         @arg @ref LL_HSEM_SEMAPHORE_31
+  *         @arg @ref LL_HSEM_SEMAPHORE_ALL
+  * @retval State of bit (1 or 0).
+  */
+__STATIC_INLINE uint32_t LL_HSEM_IsActiveFlag_C1ISR(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
+{
+  return ((READ_BIT(HSEMx->C1ISR, SemaphoreMask) == (SemaphoreMask)) ? 1UL : 0UL);
+}
+
+/**
+  * @brief  Get interrupt status from MISR register.
+  * @rmtoll C1MISR        ISEM          LL_HSEM_IsActiveFlag_C1MISR
+  * @param  HSEMx HSEM Instance.
+  * @param  SemaphoreMask This parameter can be a combination of the following values:
+  *         @arg @ref LL_HSEM_SEMAPHORE_0
+  *         @arg @ref LL_HSEM_SEMAPHORE_1
+  *         @arg @ref LL_HSEM_SEMAPHORE_2
+  *         @arg @ref LL_HSEM_SEMAPHORE_3
+  *         @arg @ref LL_HSEM_SEMAPHORE_4
+  *         @arg @ref LL_HSEM_SEMAPHORE_5
+  *         @arg @ref LL_HSEM_SEMAPHORE_6
+  *         @arg @ref LL_HSEM_SEMAPHORE_7
+  *         @arg @ref LL_HSEM_SEMAPHORE_8
+  *         @arg @ref LL_HSEM_SEMAPHORE_9
+  *         @arg @ref LL_HSEM_SEMAPHORE_10
+  *         @arg @ref LL_HSEM_SEMAPHORE_11
+  *         @arg @ref LL_HSEM_SEMAPHORE_12
+  *         @arg @ref LL_HSEM_SEMAPHORE_13
+  *         @arg @ref LL_HSEM_SEMAPHORE_14
+  *         @arg @ref LL_HSEM_SEMAPHORE_15
+  *         @arg @ref LL_HSEM_SEMAPHORE_16
+  *         @arg @ref LL_HSEM_SEMAPHORE_17
+  *         @arg @ref LL_HSEM_SEMAPHORE_18
+  *         @arg @ref LL_HSEM_SEMAPHORE_19
+  *         @arg @ref LL_HSEM_SEMAPHORE_20
+  *         @arg @ref LL_HSEM_SEMAPHORE_21
+  *         @arg @ref LL_HSEM_SEMAPHORE_22
+  *         @arg @ref LL_HSEM_SEMAPHORE_23
+  *         @arg @ref LL_HSEM_SEMAPHORE_24
+  *         @arg @ref LL_HSEM_SEMAPHORE_25
+  *         @arg @ref LL_HSEM_SEMAPHORE_26
+  *         @arg @ref LL_HSEM_SEMAPHORE_27
+  *         @arg @ref LL_HSEM_SEMAPHORE_28
+  *         @arg @ref LL_HSEM_SEMAPHORE_29
+  *         @arg @ref LL_HSEM_SEMAPHORE_30
+  *         @arg @ref LL_HSEM_SEMAPHORE_31
+  *         @arg @ref LL_HSEM_SEMAPHORE_ALL
+  * @retval State of bit (1 or 0).
+  */
+__STATIC_INLINE uint32_t LL_HSEM_IsActiveFlag_C1MISR(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
+{
+  return ((READ_BIT(HSEMx->C1MISR, SemaphoreMask) == (SemaphoreMask)) ? 1UL : 0UL);
+}
+
+#if defined(DUAL_CORE)
+/**
   * @brief  Clear interrupt status.
   * @rmtoll C2ICR         ISEM          LL_HSEM_ClearFlag_C2ICR
   * @param  HSEMx HSEM Instance.
@@ -692,51 +786,6 @@ __STATIC_INLINE void LL_HSEM_ClearFlag_C2ICR(HSEM_TypeDef *HSEMx, uint32_t Semap
 
 /**
   * @brief  Get interrupt status from ISR register.
-  * @rmtoll C1ISR         ISEM          LL_HSEM_IsActiveFlag_C1ISR
-  * @param  HSEMx HSEM Instance.
-  * @param  SemaphoreMask This parameter can be a combination of the following values:
-  *         @arg @ref LL_HSEM_SEMAPHORE_0
-  *         @arg @ref LL_HSEM_SEMAPHORE_1
-  *         @arg @ref LL_HSEM_SEMAPHORE_2
-  *         @arg @ref LL_HSEM_SEMAPHORE_3
-  *         @arg @ref LL_HSEM_SEMAPHORE_4
-  *         @arg @ref LL_HSEM_SEMAPHORE_5
-  *         @arg @ref LL_HSEM_SEMAPHORE_6
-  *         @arg @ref LL_HSEM_SEMAPHORE_7
-  *         @arg @ref LL_HSEM_SEMAPHORE_8
-  *         @arg @ref LL_HSEM_SEMAPHORE_9
-  *         @arg @ref LL_HSEM_SEMAPHORE_10
-  *         @arg @ref LL_HSEM_SEMAPHORE_11
-  *         @arg @ref LL_HSEM_SEMAPHORE_12
-  *         @arg @ref LL_HSEM_SEMAPHORE_13
-  *         @arg @ref LL_HSEM_SEMAPHORE_14
-  *         @arg @ref LL_HSEM_SEMAPHORE_15
-  *         @arg @ref LL_HSEM_SEMAPHORE_16
-  *         @arg @ref LL_HSEM_SEMAPHORE_17
-  *         @arg @ref LL_HSEM_SEMAPHORE_18
-  *         @arg @ref LL_HSEM_SEMAPHORE_19
-  *         @arg @ref LL_HSEM_SEMAPHORE_20
-  *         @arg @ref LL_HSEM_SEMAPHORE_21
-  *         @arg @ref LL_HSEM_SEMAPHORE_22
-  *         @arg @ref LL_HSEM_SEMAPHORE_23
-  *         @arg @ref LL_HSEM_SEMAPHORE_24
-  *         @arg @ref LL_HSEM_SEMAPHORE_25
-  *         @arg @ref LL_HSEM_SEMAPHORE_26
-  *         @arg @ref LL_HSEM_SEMAPHORE_27
-  *         @arg @ref LL_HSEM_SEMAPHORE_28
-  *         @arg @ref LL_HSEM_SEMAPHORE_29
-  *         @arg @ref LL_HSEM_SEMAPHORE_30
-  *         @arg @ref LL_HSEM_SEMAPHORE_31
-  *         @arg @ref LL_HSEM_SEMAPHORE_ALL
-  * @retval State of bit (1 or 0).
-  */
-__STATIC_INLINE uint32_t LL_HSEM_IsActiveFlag_C1ISR(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
-{
-  return (uint32_t)(READ_BIT(HSEMx->C1ISR, SemaphoreMask) == (SemaphoreMask));
-}
-
-/**
-  * @brief  Get interrupt status from ISR register.
   * @rmtoll C2ISR         ISEM          LL_HSEM_IsActiveFlag_C2ISR
   * @param  HSEMx HSEM Instance.
   * @param  SemaphoreMask This parameter can be a combination of the following values:
@@ -777,52 +826,7 @@ __STATIC_INLINE uint32_t LL_HSEM_IsActiveFlag_C1ISR(HSEM_TypeDef *HSEMx, uint32_
   */
 __STATIC_INLINE uint32_t LL_HSEM_IsActiveFlag_C2ISR(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
 {
-  return (uint32_t)(READ_BIT(HSEMx->C2ISR, SemaphoreMask) == (SemaphoreMask));
-}
-
-/**
-  * @brief  Get interrupt status from MISR register.
-  * @rmtoll C1MISR        ISEM          LL_HSEM_IsActiveFlag_C1MISR
-  * @param  HSEMx HSEM Instance.
-  * @param  SemaphoreMask This parameter can be a combination of the following values:
-  *         @arg @ref LL_HSEM_SEMAPHORE_0
-  *         @arg @ref LL_HSEM_SEMAPHORE_1
-  *         @arg @ref LL_HSEM_SEMAPHORE_2
-  *         @arg @ref LL_HSEM_SEMAPHORE_3
-  *         @arg @ref LL_HSEM_SEMAPHORE_4
-  *         @arg @ref LL_HSEM_SEMAPHORE_5
-  *         @arg @ref LL_HSEM_SEMAPHORE_6
-  *         @arg @ref LL_HSEM_SEMAPHORE_7
-  *         @arg @ref LL_HSEM_SEMAPHORE_8
-  *         @arg @ref LL_HSEM_SEMAPHORE_9
-  *         @arg @ref LL_HSEM_SEMAPHORE_10
-  *         @arg @ref LL_HSEM_SEMAPHORE_11
-  *         @arg @ref LL_HSEM_SEMAPHORE_12
-  *         @arg @ref LL_HSEM_SEMAPHORE_13
-  *         @arg @ref LL_HSEM_SEMAPHORE_14
-  *         @arg @ref LL_HSEM_SEMAPHORE_15
-  *         @arg @ref LL_HSEM_SEMAPHORE_16
-  *         @arg @ref LL_HSEM_SEMAPHORE_17
-  *         @arg @ref LL_HSEM_SEMAPHORE_18
-  *         @arg @ref LL_HSEM_SEMAPHORE_19
-  *         @arg @ref LL_HSEM_SEMAPHORE_20
-  *         @arg @ref LL_HSEM_SEMAPHORE_21
-  *         @arg @ref LL_HSEM_SEMAPHORE_22
-  *         @arg @ref LL_HSEM_SEMAPHORE_23
-  *         @arg @ref LL_HSEM_SEMAPHORE_24
-  *         @arg @ref LL_HSEM_SEMAPHORE_25
-  *         @arg @ref LL_HSEM_SEMAPHORE_26
-  *         @arg @ref LL_HSEM_SEMAPHORE_27
-  *         @arg @ref LL_HSEM_SEMAPHORE_28
-  *         @arg @ref LL_HSEM_SEMAPHORE_29
-  *         @arg @ref LL_HSEM_SEMAPHORE_30
-  *         @arg @ref LL_HSEM_SEMAPHORE_31
-  *         @arg @ref LL_HSEM_SEMAPHORE_ALL
-  * @retval State of bit (1 or 0).
-  */
-__STATIC_INLINE uint32_t LL_HSEM_IsActiveFlag_C1MISR(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
-{
-  return (uint32_t)(READ_BIT(HSEMx->C1MISR, SemaphoreMask) == (SemaphoreMask));
+  return ((READ_BIT(HSEMx->C2ISR, SemaphoreMask) == (SemaphoreMask)) ? 1UL : 0UL);
 }
 
 /**
@@ -867,9 +871,9 @@ __STATIC_INLINE uint32_t LL_HSEM_IsActiveFlag_C1MISR(HSEM_TypeDef *HSEMx, uint32
   */
 __STATIC_INLINE uint32_t LL_HSEM_IsActiveFlag_C2MISR(HSEM_TypeDef *HSEMx, uint32_t SemaphoreMask)
 {
-  return (uint32_t)(READ_BIT(HSEMx->C2MISR, SemaphoreMask) == (SemaphoreMask));
+  return ((READ_BIT(HSEMx->C2MISR, SemaphoreMask) == (SemaphoreMask)) ? 1UL : 0UL);
 }
-
+#endif /* DUAL_CORE */
 /**
   * @}
   */
@@ -882,7 +886,7 @@ __STATIC_INLINE uint32_t LL_HSEM_IsActiveFlag_C2MISR(HSEM_TypeDef *HSEMx, uint32
   * @}
   */
 
-#endif /* defined(HSEM1) */
+#endif /* defined(HSEM) */
 
 /**
   * @}

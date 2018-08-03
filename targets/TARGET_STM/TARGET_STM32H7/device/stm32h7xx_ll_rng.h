@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2018 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -34,8 +34,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __STM32H7xx_LL_RNG_H
-#define __STM32H7xx_LL_RNG_H
+#ifndef STM32H7xx_LL_RNG_H
+#define STM32H7xx_LL_RNG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,7 +48,7 @@ extern "C" {
   * @{
   */
 
-#if defined(RNG)
+#if defined (RNG)
 
 /** @defgroup RNG_LL RNG
   * @{
@@ -81,7 +81,6 @@ typedef struct
   * @}
   */
 #endif /* USE_FULL_LL_DRIVER */
-
 /* Exported constants --------------------------------------------------------*/
 /** @defgroup RNG_LL_Exported_Constants RNG Exported Constants
   * @{
@@ -194,7 +193,7 @@ __STATIC_INLINE void LL_RNG_Disable(RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE uint32_t LL_RNG_IsEnabled(RNG_TypeDef *RNGx)
 {
-  return (READ_BIT(RNGx->CR, RNG_CR_RNGEN) == (RNG_CR_RNGEN));
+  return ((READ_BIT(RNGx->CR, RNG_CR_RNGEN) == (RNG_CR_RNGEN)) ? 1UL : 0UL);
 }
 
 /**
@@ -227,7 +226,7 @@ __STATIC_INLINE void LL_RNG_DisableClkErrorDetect(RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE uint32_t LL_RNG_IsEnabledClkErrorDetect(RNG_TypeDef *RNGx)
 {
-  return (!(READ_BIT(RNGx->CR, RNG_CR_CED) == (RNG_CR_CED)));
+  return ((READ_BIT(RNGx->CR, RNG_CR_CED) != (RNG_CR_CED)) ? 1UL : 0UL);
 }
 
 /**
@@ -246,7 +245,7 @@ __STATIC_INLINE uint32_t LL_RNG_IsEnabledClkErrorDetect(RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE uint32_t LL_RNG_IsActiveFlag_DRDY(RNG_TypeDef *RNGx)
 {
-  return (READ_BIT(RNGx->SR, RNG_SR_DRDY) == (RNG_SR_DRDY));
+  return ((READ_BIT(RNGx->SR, RNG_SR_DRDY) == (RNG_SR_DRDY)) ? 1UL : 0UL);
 }
 
 /**
@@ -257,7 +256,7 @@ __STATIC_INLINE uint32_t LL_RNG_IsActiveFlag_DRDY(RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE uint32_t LL_RNG_IsActiveFlag_CECS(RNG_TypeDef *RNGx)
 {
-  return (READ_BIT(RNGx->SR, RNG_SR_CECS) == (RNG_SR_CECS));
+  return ((READ_BIT(RNGx->SR, RNG_SR_CECS) == (RNG_SR_CECS)) ? 1UL : 0UL);
 }
 
 /**
@@ -268,7 +267,7 @@ __STATIC_INLINE uint32_t LL_RNG_IsActiveFlag_CECS(RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE uint32_t LL_RNG_IsActiveFlag_SECS(RNG_TypeDef *RNGx)
 {
-  return (READ_BIT(RNGx->SR, RNG_SR_SECS) == (RNG_SR_SECS));
+  return ((READ_BIT(RNGx->SR, RNG_SR_SECS) == (RNG_SR_SECS)) ? 1UL : 0UL);
 }
 
 /**
@@ -279,7 +278,7 @@ __STATIC_INLINE uint32_t LL_RNG_IsActiveFlag_SECS(RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE uint32_t LL_RNG_IsActiveFlag_CEIS(RNG_TypeDef *RNGx)
 {
-  return (READ_BIT(RNGx->SR, RNG_SR_CEIS) == (RNG_SR_CEIS));
+  return ((READ_BIT(RNGx->SR, RNG_SR_CEIS) == (RNG_SR_CEIS)) ? 1UL : 0UL);
 }
 
 /**
@@ -290,7 +289,7 @@ __STATIC_INLINE uint32_t LL_RNG_IsActiveFlag_CEIS(RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE uint32_t LL_RNG_IsActiveFlag_SEIS(RNG_TypeDef *RNGx)
 {
-  return (READ_BIT(RNGx->SR, RNG_SR_SEIS) == (RNG_SR_SEIS));
+  return ((READ_BIT(RNGx->SR, RNG_SR_SEIS) == (RNG_SR_SEIS)) ? 1UL : 0UL);
 }
 
 /**
@@ -356,7 +355,7 @@ __STATIC_INLINE void LL_RNG_DisableIT(RNG_TypeDef *RNGx)
   */
 __STATIC_INLINE uint32_t LL_RNG_IsEnabledIT(RNG_TypeDef *RNGx)
 {
-  return (READ_BIT(RNGx->CR, RNG_CR_IE) == (RNG_CR_IE));
+  return ((READ_BIT(RNGx->CR, RNG_CR_IE) == (RNG_CR_IE)) ? 1UL : 0UL);
 }
 
 /**
@@ -403,7 +402,7 @@ ErrorStatus LL_RNG_DeInit(RNG_TypeDef *RNGx);
   * @}
   */
 
-#endif /* defined(RNG) */
+#endif /* RNG */
 
 /**
   * @}
