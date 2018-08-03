@@ -209,8 +209,8 @@ HAL_StatusTypeDef HAL_UARTEx_SetRxFifoThreshold(UART_HandleTypeDef *huart, uint3
   do {                                                        \
     if((__HANDLE__)->Instance == USART1)                      \
     {                                                         \
-       switch(__HAL_RCC_GET_USART1_SOURCE())                  \
-       {                                                      \
+      switch(__HAL_RCC_GET_USART1_SOURCE())                   \
+      {                                                       \
         case RCC_USART1CLKSOURCE_D2PCLK2:                     \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_D2PCLK2;       \
           break;                                              \
@@ -229,12 +229,12 @@ HAL_StatusTypeDef HAL_UARTEx_SetRxFifoThreshold(UART_HandleTypeDef *huart, uint3
         case RCC_USART1CLKSOURCE_LSE:                         \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_LSE;           \
           break;                                              \
-       }                                                      \
+      }                                                       \
     }                                                         \
     else if((__HANDLE__)->Instance == USART2)                 \
     {                                                         \
-       switch(__HAL_RCC_GET_USART2_SOURCE())                  \
-       {                                                      \
+      switch(__HAL_RCC_GET_USART2_SOURCE())                   \
+      {                                                       \
         case RCC_USART2CLKSOURCE_D2PCLK1:                     \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
@@ -253,12 +253,12 @@ HAL_StatusTypeDef HAL_UARTEx_SetRxFifoThreshold(UART_HandleTypeDef *huart, uint3
         case RCC_USART2CLKSOURCE_LSE:                         \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_LSE;           \
           break;                                              \
-       }                                                      \
+      }                                                       \
     }                                                         \
     else if((__HANDLE__)->Instance == USART3)                 \
     {                                                         \
-       switch(__HAL_RCC_GET_USART3_SOURCE())                  \
-       {                                                      \
+      switch(__HAL_RCC_GET_USART3_SOURCE())                   \
+      {                                                       \
         case RCC_USART3CLKSOURCE_D2PCLK1:                     \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
@@ -277,12 +277,12 @@ HAL_StatusTypeDef HAL_UARTEx_SetRxFifoThreshold(UART_HandleTypeDef *huart, uint3
         case RCC_USART3CLKSOURCE_LSE:                         \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_LSE;           \
           break;                                              \
-       }                                                      \
+      }                                                       \
     }                                                         \
     else if((__HANDLE__)->Instance == UART4)                  \
     {                                                         \
-       switch(__HAL_RCC_GET_UART4_SOURCE())                   \
-       {                                                      \
+      switch(__HAL_RCC_GET_UART4_SOURCE())                    \
+      {                                                       \
         case RCC_UART4CLKSOURCE_D2PCLK1:                      \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
@@ -301,12 +301,12 @@ HAL_StatusTypeDef HAL_UARTEx_SetRxFifoThreshold(UART_HandleTypeDef *huart, uint3
         case RCC_UART4CLKSOURCE_LSE:                          \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_LSE;           \
           break;                                              \
-       }                                                      \
+      }                                                       \
     }                                                         \
     else if ((__HANDLE__)->Instance == UART5)                 \
     {                                                         \
-       switch(__HAL_RCC_GET_UART5_SOURCE())                   \
-       {                                                      \
+      switch(__HAL_RCC_GET_UART5_SOURCE())                    \
+      {                                                       \
         case RCC_UART5CLKSOURCE_D2PCLK1:                      \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
@@ -325,12 +325,12 @@ HAL_StatusTypeDef HAL_UARTEx_SetRxFifoThreshold(UART_HandleTypeDef *huart, uint3
         case RCC_UART5CLKSOURCE_LSE:                          \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_LSE;           \
           break;                                              \
-       }                                                      \
+      }                                                       \
     }                                                         \
     else if((__HANDLE__)->Instance == USART6)                 \
     {                                                         \
-       switch(__HAL_RCC_GET_USART6_SOURCE())                  \
-       {                                                      \
+      switch(__HAL_RCC_GET_USART6_SOURCE())                   \
+      {                                                       \
         case RCC_USART6CLKSOURCE_D2PCLK2:                     \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_D2PCLK2;       \
           break;                                              \
@@ -349,12 +349,12 @@ HAL_StatusTypeDef HAL_UARTEx_SetRxFifoThreshold(UART_HandleTypeDef *huart, uint3
         case RCC_USART6CLKSOURCE_LSE:                         \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_LSE;           \
           break;                                              \
-       }                                                      \
+      }                                                       \
     }                                                         \
     else if((__HANDLE__)->Instance == UART7)                  \
     {                                                         \
-       switch(__HAL_RCC_GET_UART7_SOURCE())                   \
-       {                                                      \
+      switch(__HAL_RCC_GET_UART7_SOURCE())                    \
+      {                                                       \
         case RCC_UART7CLKSOURCE_D2PCLK1:                      \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
@@ -373,12 +373,12 @@ HAL_StatusTypeDef HAL_UARTEx_SetRxFifoThreshold(UART_HandleTypeDef *huart, uint3
         case RCC_UART7CLKSOURCE_LSE:                          \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_LSE;           \
           break;                                              \
-       }                                                      \
+      }                                                       \
     }                                                         \
     else if((__HANDLE__)->Instance == UART8)                  \
     {                                                         \
-       switch(__HAL_RCC_GET_UART8_SOURCE())                   \
-       {                                                      \
+      switch(__HAL_RCC_GET_UART8_SOURCE())                    \
+      {                                                       \
         case RCC_UART8CLKSOURCE_D2PCLK1:                      \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_D2PCLK1;       \
           break;                                              \
@@ -397,12 +397,12 @@ HAL_StatusTypeDef HAL_UARTEx_SetRxFifoThreshold(UART_HandleTypeDef *huart, uint3
         case RCC_UART8CLKSOURCE_LSE:                          \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_LSE;           \
           break;                                              \
-       }                                                      \
+      }                                                       \
     }                                                         \
     else if((__HANDLE__)->Instance == LPUART1)                \
     {                                                         \
-       switch(__HAL_RCC_GET_LPUART1_SOURCE())                 \
-       {                                                      \
+      switch(__HAL_RCC_GET_LPUART1_SOURCE())                  \
+      {                                                       \
         case RCC_LPUART1CLKSOURCE_D3PCLK1:                    \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_D3PCLK1;       \
           break;                                              \
@@ -421,9 +421,9 @@ HAL_StatusTypeDef HAL_UARTEx_SetRxFifoThreshold(UART_HandleTypeDef *huart, uint3
         case RCC_LPUART1CLKSOURCE_LSE:                        \
           (__CLOCKSOURCE__) = UART_CLOCKSOURCE_LSE;           \
           break;                                              \
-       }                                                      \
+      }                                                       \
     }                                                         \
-  } while(0)
+  } while(0U)
 
 /** @brief  Report the UART mask to apply to retrieve the received data
   *         according to the word length and to the parity bits activation.

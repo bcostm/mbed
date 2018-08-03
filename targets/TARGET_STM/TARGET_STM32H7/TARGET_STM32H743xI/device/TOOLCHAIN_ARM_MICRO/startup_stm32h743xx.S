@@ -229,7 +229,7 @@ __Vectors       DCD     __initial_sp                      ; Top of Stack
                 DCD     LPUART1_IRQHandler                ; LP UART1 interrupt                                                
                 DCD     0                                 ; Reserved                                                                              
                 DCD     CRS_IRQHandler                    ; Clock Recovery Global Interrupt                                   
-                DCD     0                                 ; Reserved                                              
+                DCD     ECC_IRQHandler                    ; ECC diagnostic Global Interrupt                                              
                 DCD     SAI4_IRQHandler                   ; SAI4 global interrupt                                                
                 DCD     0                                 ; Reserved                                 
                 DCD     0                                 ; Reserved                                    
@@ -436,7 +436,8 @@ Default_Handler PROC
                 EXPORT  LPTIM4_IRQHandler                 [WEAK]                                            
                 EXPORT  LPTIM5_IRQHandler                 [WEAK]                                            
                 EXPORT  LPUART1_IRQHandler                [WEAK]                                                  
-                EXPORT  CRS_IRQHandler                    [WEAK]                                   
+                EXPORT  CRS_IRQHandler                    [WEAK]
+                EXPORT  ECC_IRQHandler                    [WEAK] 				
                 EXPORT  SAI4_IRQHandler                   [WEAK]                                                                                     
                 EXPORT  WAKEUP_PIN_IRQHandler             [WEAK] 
 
@@ -576,7 +577,8 @@ LPTIM3_IRQHandler
 LPTIM4_IRQHandler                                                                 
 LPTIM5_IRQHandler                                                                 
 LPUART1_IRQHandler                                                                                                                         
-CRS_IRQHandler                                                            
+CRS_IRQHandler
+ECC_IRQHandler                                                            
 SAI4_IRQHandler      
 WAKEUP_PIN_IRQHandler
 

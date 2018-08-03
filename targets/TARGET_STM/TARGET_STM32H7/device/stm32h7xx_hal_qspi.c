@@ -506,7 +506,7 @@ void HAL_QSPI_IRQHandler(QSPI_HandleTypeDef *hqspi)
     if(hqspi->State == HAL_QSPI_STATE_BUSY_INDIRECT_TX)
     {
       /* Transmission process */
-      while(__HAL_QSPI_GET_FLAG(hqspi, QSPI_FLAG_FT) != 0)
+      while(__HAL_QSPI_GET_FLAG(hqspi, QSPI_FLAG_FT) != 0U)
       {
         if (hqspi->TxXferCount > 0U)
         {
@@ -526,7 +526,7 @@ void HAL_QSPI_IRQHandler(QSPI_HandleTypeDef *hqspi)
     else if(hqspi->State == HAL_QSPI_STATE_BUSY_INDIRECT_RX)
     {
       /* Receiving Process */
-      while(__HAL_QSPI_GET_FLAG(hqspi, QSPI_FLAG_FT) != 0)
+      while(__HAL_QSPI_GET_FLAG(hqspi, QSPI_FLAG_FT) != 0U)
       {
         if (hqspi->RxXferCount > 0U)
         {
@@ -639,6 +639,9 @@ void HAL_QSPI_IRQHandler(QSPI_HandleTypeDef *hqspi)
     }
     else if(hqspi->State == HAL_QSPI_STATE_ABORT)
     {
+      /* Reset functional mode configuration to indirect write mode by default */
+      CLEAR_BIT(hqspi->Instance->CCR, QUADSPI_CCR_FMODE);
+
       /* Change state of QSPI */
       hqspi->State = HAL_QSPI_STATE_READY;
 
@@ -718,6 +721,16 @@ void HAL_QSPI_IRQHandler(QSPI_HandleTypeDef *hqspi)
       {
         /* Set error code to DMA */
         hqspi->ErrorCode |= HAL_QSPI_ERROR_DMA;
+
+        /* Change state of QSPI */
+        hqspi->State = HAL_QSPI_STATE_READY;
+        
+        /* Error callback */
+#if (USE_HAL_QSPI_REGISTER_CALLBACKS == 1)
+        hqspi->ErrorCallback(hqspi);
+#else
+        HAL_QSPI_ErrorCallback(hqspi);
+#endif
       }
     }
     else
@@ -1137,11 +1150,11 @@ HAL_StatusTypeDef HAL_QSPI_Transmit_IT(QSPI_HandleTypeDef *hqspi, uint8_t *pData
       hqspi->TxXferSize = READ_REG(hqspi->Instance->DLR) + 1U;
       hqspi->pTxBuffPtr = pData;
 
-      /* Configure QSPI: CCR register with functional as indirect write */
-      MODIFY_REG(hqspi->Instance->CCR, QUADSPI_CCR_FMODE, QSPI_FUNCTIONAL_MODE_INDIRECT_WRITE);
-
       /* Clear interrupt */
       __HAL_QSPI_CLEAR_FLAG(hqspi, QSPI_FLAG_TE | QSPI_FLAG_TC);
+
+      /* Configure QSPI: CCR register with functional as indirect write */
+      MODIFY_REG(hqspi->Instance->CCR, QUADSPI_CCR_FMODE, QSPI_FUNCTIONAL_MODE_INDIRECT_WRITE);
 
       /* Process unlocked */
       __HAL_UNLOCK(hqspi);
@@ -1198,14 +1211,14 @@ HAL_StatusTypeDef HAL_QSPI_Receive_IT(QSPI_HandleTypeDef *hqspi, uint8_t *pData)
       hqspi->RxXferSize = READ_REG(hqspi->Instance->DLR) + 1U;
       hqspi->pRxBuffPtr = pData;
 
+      /* Clear interrupt */
+      __HAL_QSPI_CLEAR_FLAG(hqspi, QSPI_FLAG_TE | QSPI_FLAG_TC);
+
       /* Configure QSPI: CCR register with functional as indirect read */
       MODIFY_REG(hqspi->Instance->CCR, QUADSPI_CCR_FMODE, QSPI_FUNCTIONAL_MODE_INDIRECT_READ);
 
       /* Start the transfer by re-writing the address in AR register */
       WRITE_REG(hqspi->Instance->AR, addr_reg);
-
-      /* Clear interrupt */
-      __HAL_QSPI_CLEAR_FLAG(hqspi, QSPI_FLAG_TE | QSPI_FLAG_TC);
 
       /* Process unlocked */
       __HAL_UNLOCK(hqspi);
@@ -2256,6 +2269,43 @@ uint32_t HAL_QSPI_GetFifoThreshold(QSPI_HandleTypeDef *hqspi)
   return ((READ_BIT(hqspi->Instance->CR, QUADSPI_CR_FTHRES) >> POSITION_VAL(QUADSPI_CR_FTHRES)) + 1U);
 }
 
+/** @brief  Set FlashID.
+  * @param  hqspi : QSPI handle.
+  * @param  FlashID : Index of the flash memory to be accessed.
+  *                   This parameter can be a value of @ref QSPI_Flash_Select.
+  * @note   The FlashID is ignored when dual flash mode is enabled.
+  * @retval HAL status
+  */
+HAL_StatusTypeDef HAL_QSPI_SetFlashID(QSPI_HandleTypeDef *hqspi, uint32_t FlashID)
+{
+  HAL_StatusTypeDef status = HAL_OK;
+
+  /* Check the parameter */
+  assert_param(IS_QSPI_FLASH_ID(FlashID));
+
+  /* Process locked */
+  __HAL_LOCK(hqspi);
+
+  if(hqspi->State == HAL_QSPI_STATE_READY)
+  {
+    /* Synchronize init structure with new FlashID value */
+    hqspi->Init.FlashID = FlashID;
+
+    /* Configure QSPI FlashID */
+    MODIFY_REG(hqspi->Instance->CR, QUADSPI_CR_FSEL, FlashID);
+  }
+  else
+  {
+    status = HAL_BUSY;
+  }
+
+  /* Process unlocked */
+  __HAL_UNLOCK(hqspi);
+
+  /* Return function status */
+  return status;
+}
+
 /**
   * @}
   */
@@ -2268,7 +2318,7 @@ uint32_t HAL_QSPI_GetFifoThreshold(QSPI_HandleTypeDef *hqspi)
 static void QSPI_DMARxCplt(MDMA_HandleTypeDef *hmdma)
 {
   QSPI_HandleTypeDef* hqspi = ( QSPI_HandleTypeDef* )((MDMA_HandleTypeDef* )hmdma)->Parent;
-  hqspi->RxXferCount = 0;
+  hqspi->RxXferCount = 0U;
 
   /* Enable the QSPI transfer complete Interrupt */
   __HAL_QSPI_ENABLE_IT(hqspi, QSPI_IT_TC);
@@ -2282,7 +2332,7 @@ static void QSPI_DMARxCplt(MDMA_HandleTypeDef *hmdma)
 static void QSPI_DMATxCplt(MDMA_HandleTypeDef *hmdma)
 {
   QSPI_HandleTypeDef* hqspi = ( QSPI_HandleTypeDef* )((MDMA_HandleTypeDef* )hmdma)->Parent;
-  hqspi->TxXferCount = 0;
+  hqspi->TxXferCount = 0U;
 
   /* Enable the QSPI transfer complete Interrupt */
   __HAL_QSPI_ENABLE_IT(hqspi, QSPI_IT_TC);
@@ -2297,8 +2347,8 @@ static void QSPI_DMAError(MDMA_HandleTypeDef *hmdma)
 {
   QSPI_HandleTypeDef* hqspi = ( QSPI_HandleTypeDef* )((MDMA_HandleTypeDef* )hmdma)->Parent;
 
-  hqspi->RxXferCount = 0;
-  hqspi->TxXferCount = 0;
+  hqspi->RxXferCount = 0U;
+  hqspi->TxXferCount = 0U;
   hqspi->ErrorCode   |= HAL_QSPI_ERROR_DMA;
 
   /* Disable the MDMA transfer by clearing the DMAEN bit in the QSPI CR register */
@@ -2325,8 +2375,8 @@ static void QSPI_DMAAbortCplt(MDMA_HandleTypeDef *hmdma)
 {
   QSPI_HandleTypeDef* hqspi = ( QSPI_HandleTypeDef* )((MDMA_HandleTypeDef* )hmdma)->Parent;
 
-  hqspi->RxXferCount = 0;
-  hqspi->TxXferCount = 0;
+  hqspi->RxXferCount = 0U;
+  hqspi->TxXferCount = 0U;
 
   if(hqspi->State == HAL_QSPI_STATE_ABORT)
   {
@@ -2533,6 +2583,10 @@ static void QSPI_Config(QSPI_HandleTypeDef *hqspi, QSPI_CommandTypeDef *cmd, uin
     }
   }
 }
+
+/**
+  * @}
+  */
 
 /**
   * @}

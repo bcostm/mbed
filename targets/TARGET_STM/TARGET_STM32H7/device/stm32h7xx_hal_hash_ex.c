@@ -112,10 +112,10 @@
 /* Private define ------------------------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
 
+
 /** @defgroup HASHEx_Exported_Functions HASH Extended Exported Functions
   * @{
   */
-
 
 /** @defgroup HASHEx_Exported_Functions_Group1 HASH extended processing functions in polling mode
  *  @brief   HASH extended processing functions using polling mode.
@@ -599,6 +599,7 @@ HAL_StatusTypeDef HAL_HMACEx_SHA256_Start_DMA(HASH_HandleTypeDef *hhash, uint8_t
          (++) HAL_HMACEx_SHA1_Step1_2_DMA()
          (++) HAL_HMACEx_SHA1_Step2_DMA()
          (++) HAL_HMACEx_SHA1_Step2_3_DMA()
+
       (+) SHA256
          (++) HAL_HMACEx_SHA224_Step1_2_DMA()
          (++) HAL_HMACEx_SHA224_Step2_DMA()
@@ -921,7 +922,7 @@ HAL_StatusTypeDef HAL_HMACEx_SHA256_Step2_3_DMA(HASH_HandleTypeDef *hhash, uint8
 /**
   * @}
   */
-#endif /* HASH */
+#endif /*  HASH*/
 /**
   * @}
   */

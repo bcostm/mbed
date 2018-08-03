@@ -247,7 +247,7 @@ extern "C" {
   * @{
   */
 
-/** @addtogroup USARTEx_Exported_Functions_Group2
+/** @addtogroup USARTEx_Exported_Functions_Group1
   * @{
   */
 
@@ -259,7 +259,7 @@ void HAL_USARTEx_TxFifoEmptyCallback(USART_HandleTypeDef *husart);
   * @}
   */
 
-/** @addtogroup USARTEx_Exported_Functions_Group3
+/** @addtogroup USARTEx_Exported_Functions_Group2
   * @{
   */
 

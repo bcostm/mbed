@@ -56,6 +56,7 @@ extern "C" {
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx.h"
 #include "stm32h7xx_ll_system.h"
+#include "stm32h7xx_ll_bus.h"
 
 /** @addtogroup STM32H7xx_LL_Driver
   * @{
@@ -284,6 +285,9 @@ __STATIC_INLINE uint32_t LL_GetFlashSize(void)
   */
 __STATIC_INLINE uint32_t LL_GetPackageType(void)
 {
+
+  LL_APB4_GRP1_EnableClock(LL_APB4_GRP1_PERIPH_SYSCFG);
+
   return LL_SYSCFG_GetPackage();
 }
 

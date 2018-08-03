@@ -171,9 +171,12 @@ uint32_t LL_BDMA_DeInit(BDMA_TypeDef *BDMAx, uint32_t Channel)
     /* Reset DMAx_Channely peripheral address register */
     LL_BDMA_WriteReg(tmp, CPAR, 0U);
 
-    /* Reset DMAx_Channely memory address register */
-    LL_BDMA_WriteReg(tmp, CMAR, 0U);
+    /* Reset DMAx_Channely memory 0 address register */
+    LL_BDMA_WriteReg(tmp, CM0AR, 0U);
 
+    /* Reset DMAx_Channely memory 1 address register */
+    LL_BDMA_WriteReg(tmp, CM1AR, 0U);
+    
     /* Reset Request register field for BDMAx Channel */
     LL_BDMA_SetPeriphRequest(BDMAx, Channel, LL_DMAMUX2_REQ_MEM2MEM);
 

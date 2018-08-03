@@ -2,8 +2,6 @@
   ******************************************************************************
   * @file    system_stm32h7xx.h
   * @author  MCD Application Team
-  * @version V1.2.0
-  * @date    29-December-2017
   * @brief   CMSIS Cortex-Mx Device System Source File for STM32H7xx devices.
   ******************************************************************************
   * @attention
@@ -103,7 +101,7 @@ extern const  uint8_t D1CorePrescTable[16] ; /*!< D1CorePrescTable prescalers ta
 
 extern void SystemInit(void);
 extern void SystemCoreClockUpdate(void);
-extern void SetSysClock(void);
+extern void SetSysClock(void); // MBED patch
 /**
   * @}
   */

@@ -682,32 +682,34 @@ HAL_StatusTypeDef HAL_USART_UnRegisterCallback(USART_HandleTypeDef *husart, HAL_
     [..] The USART supports master mode only: it cannot receive or send data related to an input
          clock (SCLK is always an output).
 
+    [..]
+
     (#) There are two modes of transfer:
-       (++) Blocking mode: The communication is performed in polling mode.
-            The HAL status of all data processing is returned by the same function
-            after finishing transfer.
-       (++) No-Blocking mode: The communication is performed using Interrupts
-           or DMA, These API's return the HAL status.
-           The end of the data processing will be indicated through the
-           dedicated USART IRQ when using Interrupt mode or the DMA IRQ when
-           using DMA mode.
-           The HAL_USART_TxCpltCallback(), HAL_USART_RxCpltCallback() and HAL_USART_TxRxCpltCallback() user callbacks
-           will be executed respectively at the end of the transmit or Receive process
-           The HAL_USART_ErrorCallback()user callback will be executed when a communication error is detected
+        (++) Blocking mode: The communication is performed in polling mode.
+             The HAL status of all data processing is returned by the same function
+             after finishing transfer.
+        (++) No-Blocking mode: The communication is performed using Interrupts
+             or DMA, These API's return the HAL status.
+             The end of the data processing will be indicated through the
+             dedicated USART IRQ when using Interrupt mode or the DMA IRQ when
+             using DMA mode.
+             The HAL_USART_TxCpltCallback(), HAL_USART_RxCpltCallback() and HAL_USART_TxRxCpltCallback() user callbacks
+             will be executed respectively at the end of the transmit or Receive process
+             The HAL_USART_ErrorCallback()user callback will be executed when a communication error is detected
 
     (#) Blocking mode API's are :
-        (++) HAL_USART_Transmit()in simplex mode
+        (++) HAL_USART_Transmit() in simplex mode
         (++) HAL_USART_Receive() in full duplex receive only
         (++) HAL_USART_TransmitReceive() in full duplex mode
 
     (#) Non-Blocking mode API's with Interrupt are :
-        (++) HAL_USART_Transmit_IT()in simplex mode
+        (++) HAL_USART_Transmit_IT() in simplex mode
         (++) HAL_USART_Receive_IT() in full duplex receive only
-        (++) HAL_USART_TransmitReceive_IT()in full duplex mode
+        (++) HAL_USART_TransmitReceive_IT() in full duplex mode
         (++) HAL_USART_IRQHandler()
 
     (#) No-Blocking mode API's  with DMA are :
-        (++) HAL_USART_Transmit_DMA()in simplex mode
+        (++) HAL_USART_Transmit_DMA() in simplex mode
         (++) HAL_USART_Receive_DMA() in full duplex receive only
         (++) HAL_USART_TransmitReceive_DMA() in full duplex mode
         (++) HAL_USART_DMAPause()
@@ -723,22 +725,22 @@ HAL_StatusTypeDef HAL_USART_UnRegisterCallback(USART_HandleTypeDef *husart, HAL_
         (++) HAL_USART_TxRxCpltCallback()
 
     (#) Non-Blocking mode transfers could be aborted using Abort API's :
-        (+) HAL_USART_Abort()
-        (+) HAL_USART_Abort_IT()
+        (++) HAL_USART_Abort()
+        (++) HAL_USART_Abort_IT()
 
     (#) For Abort services based on interrupts (HAL_USART_Abort_IT), a Abort Complete Callbacks is provided:
-        (+) HAL_USART_AbortCpltCallback()
+        (++) HAL_USART_AbortCpltCallback()
 
     (#) In Non-Blocking mode transfers, possible errors are split into 2 categories.
         Errors are handled as follows :
-       (+) Error is considered as Recoverable and non blocking : Transfer could go till end, but error severity is
-           to be evaluated by user : this concerns Frame Error, Parity Error or Noise Error in Interrupt mode reception .
-           Received character is then retrieved and stored in Rx buffer, Error code is set to allow user to identify error type,
-           and HAL_USART_ErrorCallback() user callback is executed. Transfer is kept ongoing on USART side.
-           If user wants to abort it, Abort services should be called by user.
-       (+) Error is considered as Blocking : Transfer could not be completed properly and is aborted.
-           This concerns Overrun Error In Interrupt mode reception and all errors in DMA mode.
-           Error code is set to allow user to identify error type, and HAL_USART_ErrorCallback() user callback is executed.
+        (++) Error is considered as Recoverable and non blocking : Transfer could go till end, but error severity is
+             to be evaluated by user : this concerns Frame Error, Parity Error or Noise Error in Interrupt mode reception .
+             Received character is then retrieved and stored in Rx buffer, Error code is set to allow user to identify error type,
+             and HAL_USART_ErrorCallback() user callback is executed. Transfer is kept ongoing on USART side.
+             If user wants to abort it, Abort services should be called by user.
+        (++) Error is considered as Blocking : Transfer could not be completed properly and is aborted.
+             This concerns Overrun Error In Interrupt mode reception and all errors in DMA mode.
+             Error code is set to allow user to identify error type, and HAL_USART_ErrorCallback() user callback is executed.
 
 @endverbatim
   * @{
@@ -1345,18 +1347,21 @@ HAL_StatusTypeDef HAL_USART_Transmit_DMA(USART_HandleTypeDef *husart, uint8_t *p
     husart->ErrorCode = HAL_USART_ERROR_NONE;
     husart->State = HAL_USART_STATE_BUSY_TX;
 
-    /* Set the USART DMA transfer complete callback */
-    husart->hdmatx->XferCpltCallback = USART_DMATransmitCplt;
+    if (husart->hdmatx != NULL)
+    {
+      /* Set the USART DMA transfer complete callback */
+      husart->hdmatx->XferCpltCallback = USART_DMATransmitCplt;
 
-    /* Set the USART DMA Half transfer complete callback */
-    husart->hdmatx->XferHalfCpltCallback = USART_DMATxHalfCplt;
+      /* Set the USART DMA Half transfer complete callback */
+      husart->hdmatx->XferHalfCpltCallback = USART_DMATxHalfCplt;
 
-    /* Set the DMA error callback */
-    husart->hdmatx->XferErrorCallback = USART_DMAError;
+      /* Set the DMA error callback */
+      husart->hdmatx->XferErrorCallback = USART_DMAError;
 
-    /* Enable the USART transmit DMA channel */
-    tmp = (uint32_t *)&pTxData;
-    HAL_DMA_Start_IT(husart->hdmatx, *(uint32_t *)tmp, (uint32_t)&husart->Instance->TDR, Size);
+      /* Enable the USART transmit DMA channel */
+      tmp = (uint32_t *)&pTxData;
+      HAL_DMA_Start_IT(husart->hdmatx, *(uint32_t *)tmp, (uint32_t)&husart->Instance->TDR, Size);
+    }
 
     /* Clear the TC flag in the ICR register */
     __HAL_USART_CLEAR_FLAG(husart, USART_CLEAR_TCF);
@@ -1409,18 +1414,21 @@ HAL_StatusTypeDef HAL_USART_Receive_DMA(USART_HandleTypeDef *husart, uint8_t *pR
     husart->ErrorCode = HAL_USART_ERROR_NONE;
     husart->State = HAL_USART_STATE_BUSY_RX;
 
-    /* Set the USART DMA Rx transfer complete callback */
-    husart->hdmarx->XferCpltCallback = USART_DMAReceiveCplt;
+    if (husart->hdmarx != NULL)
+    {
+      /* Set the USART DMA Rx transfer complete callback */
+      husart->hdmarx->XferCpltCallback = USART_DMAReceiveCplt;
 
-    /* Set the USART DMA Half transfer complete callback */
-    husart->hdmarx->XferHalfCpltCallback = USART_DMARxHalfCplt;
+      /* Set the USART DMA Half transfer complete callback */
+      husart->hdmarx->XferHalfCpltCallback = USART_DMARxHalfCplt;
 
-    /* Set the USART DMA Rx transfer error callback */
-    husart->hdmarx->XferErrorCallback = USART_DMAError;
+      /* Set the USART DMA Rx transfer error callback */
+      husart->hdmarx->XferErrorCallback = USART_DMAError;
 
-    /* Enable the USART receive DMA channel */
-    tmp = (uint32_t *)&pRxData;
-    HAL_DMA_Start_IT(husart->hdmarx, (uint32_t)&husart->Instance->RDR, *(uint32_t *)tmp, Size);
+      /* Enable the USART receive DMA channel */
+      tmp = (uint32_t *)&pRxData;
+      HAL_DMA_Start_IT(husart->hdmarx, (uint32_t)&husart->Instance->RDR, *(uint32_t *)tmp, Size);
+    }
 
     if (husart->SlaveMode == USART_SLAVEMODE_DISABLE)
     {
@@ -1429,10 +1437,13 @@ HAL_StatusTypeDef HAL_USART_Receive_DMA(USART_HandleTypeDef *husart, uint8_t *pR
       this mode isn't a simplex receive mode but a full-duplex receive mode */
 
       /* Set the USART DMA Tx Complete and Error callback to Null */
-      husart->hdmatx->XferErrorCallback = NULL;
-      husart->hdmatx->XferHalfCpltCallback = NULL;
-      husart->hdmatx->XferCpltCallback = NULL;
-      HAL_DMA_Start_IT(husart->hdmatx, *(uint32_t *)tmp, (uint32_t)&husart->Instance->TDR, Size);
+      if (husart->hdmatx != NULL)
+      {
+        husart->hdmatx->XferErrorCallback = NULL;
+        husart->hdmatx->XferHalfCpltCallback = NULL;
+        husart->hdmatx->XferCpltCallback = NULL;
+        HAL_DMA_Start_IT(husart->hdmatx, *(uint32_t *)tmp, (uint32_t)&husart->Instance->TDR, Size);
+      }
     }
 
     /* Process Unlocked */
@@ -1491,32 +1502,34 @@ HAL_StatusTypeDef HAL_USART_TransmitReceive_DMA(USART_HandleTypeDef *husart, uin
     husart->ErrorCode = HAL_USART_ERROR_NONE;
     husart->State = HAL_USART_STATE_BUSY_TX_RX;
 
-    /* Set the USART DMA Rx transfer complete callback */
-    husart->hdmarx->XferCpltCallback = USART_DMAReceiveCplt;
+    if ((husart->hdmarx != NULL) && (husart->hdmatx != NULL))
+    {
+      /* Set the USART DMA Rx transfer complete callback */
+      husart->hdmarx->XferCpltCallback = USART_DMAReceiveCplt;
 
-    /* Set the USART DMA Half transfer complete callback */
-    husart->hdmarx->XferHalfCpltCallback = USART_DMARxHalfCplt;
+      /* Set the USART DMA Half transfer complete callback */
+      husart->hdmarx->XferHalfCpltCallback = USART_DMARxHalfCplt;
 
-    /* Set the USART DMA Tx transfer complete callback */
-    husart->hdmatx->XferCpltCallback = USART_DMATransmitCplt;
+      /* Set the USART DMA Tx transfer complete callback */
+      husart->hdmatx->XferCpltCallback = USART_DMATransmitCplt;
 
-    /* Set the USART DMA Half transfer complete callback */
-    husart->hdmatx->XferHalfCpltCallback = USART_DMATxHalfCplt;
+      /* Set the USART DMA Half transfer complete callback */
+      husart->hdmatx->XferHalfCpltCallback = USART_DMATxHalfCplt;
 
-    /* Set the USART DMA Tx transfer error callback */
-    husart->hdmatx->XferErrorCallback = USART_DMAError;
+      /* Set the USART DMA Tx transfer error callback */
+      husart->hdmatx->XferErrorCallback = USART_DMAError;
 
-    /* Set the USART DMA Rx transfer error callback */
-    husart->hdmarx->XferErrorCallback = USART_DMAError;
+      /* Set the USART DMA Rx transfer error callback */
+      husart->hdmarx->XferErrorCallback = USART_DMAError;
 
-    /* Enable the USART receive DMA channel */
-    tmp = (uint32_t *)&pRxData;
-    HAL_DMA_Start_IT(husart->hdmarx, (uint32_t)&husart->Instance->RDR, *(uint32_t *)tmp, Size);
+      /* Enable the USART receive DMA channel */
+      tmp = (uint32_t *)&pRxData;
+      HAL_DMA_Start_IT(husart->hdmarx, (uint32_t)&husart->Instance->RDR, *(uint32_t *)tmp, Size);
 
-    /* Enable the USART transmit DMA channel */
-    tmp = (uint32_t *)&pTxData;
-    HAL_DMA_Start_IT(husart->hdmatx, *(uint32_t *)tmp, (uint32_t)&husart->Instance->TDR, Size);
-
+      /* Enable the USART transmit DMA channel */
+      tmp = (uint32_t *)&pTxData;
+      HAL_DMA_Start_IT(husart->hdmatx, *(uint32_t *)tmp, (uint32_t)&husart->Instance->TDR, Size);
+    }
     /* Process Unlocked */
     __HAL_UNLOCK(husart);
 
@@ -2681,34 +2694,34 @@ static HAL_StatusTypeDef USART_SetConfig(USART_HandleTypeDef *husart)
   switch (clocksource)
   {
     case USART_CLOCKSOURCE_D2PCLK1:
-      usartdiv = (uint16_t)(USART_DIV_SAMPLING8(HAL_RCC_GetPCLK1Freq(), husart->Init.BaudRate, husart->Init.ClockPrescaler));
+      usartdiv = (uint32_t)(USART_DIV_SAMPLING8(HAL_RCC_GetPCLK1Freq(), husart->Init.BaudRate, husart->Init.ClockPrescaler));
       break;
     case USART_CLOCKSOURCE_D2PCLK2:
-      usartdiv = (uint16_t)(USART_DIV_SAMPLING8(HAL_RCC_GetPCLK2Freq(), husart->Init.BaudRate, husart->Init.ClockPrescaler));
+      usartdiv = (uint32_t)(USART_DIV_SAMPLING8(HAL_RCC_GetPCLK2Freq(), husart->Init.BaudRate, husart->Init.ClockPrescaler));
       break;
     case USART_CLOCKSOURCE_PLL2:
       HAL_RCCEx_GetPLL2ClockFreq(&pll2_clocks);
-      usartdiv = (uint16_t)(USART_DIV_SAMPLING8(pll2_clocks.PLL2_Q_Frequency, husart->Init.BaudRate, husart->Init.ClockPrescaler));
+      usartdiv = (uint32_t)(USART_DIV_SAMPLING8(pll2_clocks.PLL2_Q_Frequency, husart->Init.BaudRate, husart->Init.ClockPrescaler));
       break;
     case USART_CLOCKSOURCE_PLL3:
       HAL_RCCEx_GetPLL3ClockFreq(&pll3_clocks);
-      usartdiv = (uint16_t)(USART_DIV_SAMPLING8(pll3_clocks.PLL3_Q_Frequency, husart->Init.BaudRate, husart->Init.ClockPrescaler));
+      usartdiv = (uint32_t)(USART_DIV_SAMPLING8(pll3_clocks.PLL3_Q_Frequency, husart->Init.BaudRate, husart->Init.ClockPrescaler));
       break;
     case USART_CLOCKSOURCE_HSI:
       if (__HAL_RCC_GET_FLAG(RCC_FLAG_HSIDIV) != 0U)
       {
-        usartdiv = (uint16_t)(USART_DIV_SAMPLING8((HSI_VALUE >> (__HAL_RCC_GET_HSI_DIVIDER()>> 3)), husart->Init.BaudRate, husart->Init.ClockPrescaler));
+        usartdiv = (uint32_t)(USART_DIV_SAMPLING8((HSI_VALUE >> (__HAL_RCC_GET_HSI_DIVIDER() >> 3U)), husart->Init.BaudRate, husart->Init.ClockPrescaler));
       }
       else
       {
-        usartdiv = (uint16_t)(USART_DIV_SAMPLING8(HSI_VALUE, husart->Init.BaudRate, husart->Init.ClockPrescaler));
+        usartdiv = (uint32_t)(USART_DIV_SAMPLING8(HSI_VALUE, husart->Init.BaudRate, husart->Init.ClockPrescaler));
       }
       break;
     case USART_CLOCKSOURCE_CSI:
-      usartdiv = (uint16_t)(USART_DIV_SAMPLING8(CSI_VALUE, husart->Init.BaudRate, husart->Init.ClockPrescaler));
+      usartdiv = (uint32_t)(USART_DIV_SAMPLING8(CSI_VALUE, husart->Init.BaudRate, husart->Init.ClockPrescaler));
       break;
     case USART_CLOCKSOURCE_LSE:
-      usartdiv = (uint16_t)(USART_DIV_SAMPLING8(LSE_VALUE, husart->Init.BaudRate, husart->Init.ClockPrescaler));
+      usartdiv = (uint32_t)(USART_DIV_SAMPLING8(LSE_VALUE, husart->Init.BaudRate, husart->Init.ClockPrescaler));
       break;
     case USART_CLOCKSOURCE_UNDEFINED:
     default:

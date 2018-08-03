@@ -6,7 +6,7 @@
   ******************************************************************************
   * @attention
   *
-  * <h2><center>&copy; COPYRIGHT(c) 2017 STMicroelectronics</center></h2>
+  * <h2><center>&copy; COPYRIGHT(c) 2018 STMicroelectronics</center></h2>
   *
   * Redistribution and use in source and binary forms, with or without modification,
   * are permitted provided that the following conditions are met:
@@ -47,6 +47,8 @@
 /** @addtogroup STM32H7xx_HAL_Driver
   * @{
   */
+
+#if defined (RNG)
 
 /** @defgroup RNG RNG
   * @brief RNG HAL module driver
@@ -94,9 +96,7 @@ typedef enum
 typedef struct  __RNG_HandleTypeDef
 {
   RNG_TypeDef                 *Instance;    /*!< Register base address   */
-
   RNG_InitTypeDef             Init;         /*!< RNG configuration parameters */
-
   HAL_LockTypeDef             Lock;         /*!< RNG locking object      */
 
   __IO HAL_RNG_StateTypeDef   State;        /*!< RNG communication state */
@@ -172,9 +172,8 @@ typedef  void (*pRNG_ReadyDataCallbackTypeDef)(RNG_HandleTypeDef *hrng, uint32_t
 /** @defgroup RNG_Exported_Constants_Group3 RNG Clock Error Detection
   * @{
   */
-#define RNG_CED_ENABLE         ((uint32_t)0x00000000U) /*!< Clock error detection Enabled*/
-#define RNG_CED_DISABLE         RNG_CR_CED  /*!< Clock error detection Disabled*/
-
+#define RNG_CED_ENABLE          0x00000000U /*!< Clock error detection Enabled  */
+#define RNG_CED_DISABLE         RNG_CR_CED  /*!< Clock error detection Disabled */
 /**
   * @}
   */
@@ -182,11 +181,12 @@ typedef  void (*pRNG_ReadyDataCallbackTypeDef)(RNG_HandleTypeDef *hrng, uint32_t
 /** @defgroup RNG_Error_Definition   RNG Error Definition
   * @{
   */
-#define  HAL_RNG_ERROR_NONE             ((uint32_t)0x00000000U)    /*!< No error             */
-#define  HAL_RNG_ERROR_TIMEOUT          ((uint32_t)0x00000001U)    /*!< Timeout error        */
+#define  HAL_RNG_ERROR_NONE             0x00000000U    /*!< No error             */
 #if (USE_HAL_RNG_REGISTER_CALLBACKS == 1)
-#define  HAL_RNG_ERROR_INVALID_CALLBACK ((uint32_t)0x00000001U)    /*!< Invalid Callback error  */
+#define  HAL_RNG_ERROR_INVALID_CALLBACK 0x00000001U    /*!< Invalid Callback error  */
 #endif /* USE_HAL_RNG_REGISTER_CALLBACKS */
+#define  HAL_RNG_ERROR_TIMEOUT          0x00000002U    /*!< Timeout error        */
+
 /**
   * @}
   */
@@ -321,7 +321,6 @@ HAL_StatusTypeDef HAL_RNG_UnRegisterReadyDataCallback(RNG_HandleTypeDef *hrng);
 /** @defgroup RNG_Exported_Functions_Group2 Peripheral Control functions
   * @{
   */
-
 HAL_StatusTypeDef HAL_RNG_GenerateRandomNumber(RNG_HandleTypeDef *hrng, uint32_t *random32bit);
 HAL_StatusTypeDef HAL_RNG_GenerateRandomNumber_IT(RNG_HandleTypeDef *hrng);
 uint32_t HAL_RNG_ReadLastRandomNumber(RNG_HandleTypeDef *hrng);
@@ -364,7 +363,6 @@ uint32_t             HAL_RNG_GetError(RNG_HandleTypeDef *hrng);
   */
 #define IS_RNG_CED(__MODE__)   (((__MODE__) == RNG_CED_ENABLE) || \
                                 ((__MODE__) == RNG_CED_DISABLE))
-
 /**
   * @}
   */
@@ -372,6 +370,8 @@ uint32_t             HAL_RNG_GetError(RNG_HandleTypeDef *hrng);
 /**
   * @}
   */
+  
+#endif /* RNG */
 
 /**
   * @}

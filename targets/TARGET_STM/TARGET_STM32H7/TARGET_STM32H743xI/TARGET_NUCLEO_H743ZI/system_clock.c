@@ -66,7 +66,7 @@ uint8_t SetSysClock_PLL_HSI(void);
 void SetSysClock(void)
 {
 #if ((CLOCK_SOURCE) & USE_PLL_HSE_EXTC)
-    /* 1- Try to start with HSE and external clock */
+    /* 1- Try to start with HSE and external clock (MCO from STLink PCB part) */
     if (SetSysClock_PLL_HSE(1) == 0)
 #endif
     {
@@ -87,9 +87,8 @@ void SetSysClock(void)
         }
     }
 
-    // Output clock on MCO2 pin(PC9) for debugging purpose
-    // Can be visualized on CN8 connector pin 4
-    //HAL_RCC_MCOConfig(RCC_MCO2, RCC_MCO2SOURCE_SYSCLK, RCC_MCODIV_4); // 400 MHz / 4 = 100 MHz
+    // Output clock on MCO2 (PC_9) pin for debug purpose
+    HAL_RCC_MCOConfig(RCC_MCO2, RCC_MCO2SOURCE_SYSCLK, RCC_MCODIV_4); // 400 MHz / 4 = 100 MHz
 }
 
 #if ( ((CLOCK_SOURCE) & USE_PLL_HSE_XTAL) || ((CLOCK_SOURCE) & USE_PLL_HSE_EXTC) )
@@ -98,73 +97,88 @@ void SetSysClock(void)
 /******************************************************************************/
 uint8_t SetSysClock_PLL_HSE(uint8_t bypass)
 {
-    RCC_ClkInitTypeDef RCC_ClkInitStruct;
-    RCC_OscInitTypeDef RCC_OscInitStruct;
-    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct;
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_PeriphCLKInitTypeDef PeriphClkInitStruct = {0};
 
-		/*!< Supply configuration update enable */
-	MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
+    /*!< Supply configuration update enable */
+    HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
+    /* The voltage scaling allows optimizing the power consumption when the device is 
+    clocked below the maximum system frequency, to update the voltage scaling value 
+    regarding system frequency refer to product datasheet.  */
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+    while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
-	/* The voltage scaling allows optimizing the power consumption when the device is 
-	 clocked below the maximum system frequency, to update the voltage scaling value 
-	 regarding system frequency refer to product datasheet.  */
-	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+    // NEEDED ???
+    /* Select CSI as system clock source to allow modification of the PLL configuration */
+    //RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK;
+    //RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_CSI;
+    //if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK) {
+    //    return 0; // FAIL
+    //}
 
-	while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) 
-	{
-	}
-
-	/* Enable HSE Oscillator and activate PLL with HSE as source */
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-	if (bypass)
-	{
-		RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
-	}
-	else
-	{
-		RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-	}
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI48|RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
-  RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 1;
-  RCC_OscInitStruct.PLL.PLLN = 100;
-  RCC_OscInitStruct.PLL.PLLP = 2;
-  RCC_OscInitStruct.PLL.PLLQ = 4;
-  RCC_OscInitStruct.PLL.PLLR = 2;
-  RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_3;
-  RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-  RCC_OscInitStruct.PLL.PLLFRACN = 0;
-
+    /* Enable HSE Oscillator and activate PLL with HSE as source */
+    //RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_HSI48;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_CSI;
+    if (bypass) {
+        RCC_OscInitStruct.HSEState = RCC_HSE_BYPASS;
+    }
+    else {
+        RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    }
+    RCC_OscInitStruct.HSEState = RCC_HSI_OFF;
+    RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
+    //RCC_OscInitStruct.HSI48State = RCC_HSI48_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = 4;
+    RCC_OscInitStruct.PLL.PLLN = 400;
+    RCC_OscInitStruct.PLL.PLLFRACN = 0;
+    RCC_OscInitStruct.PLL.PLLP = 2;
+    RCC_OscInitStruct.PLL.PLLR = 2;
+    RCC_OscInitStruct.PLL.PLLQ = 4;
+    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         return 0; // FAIL
     }
 
-	/* Select PLL as system clock source and configure bus clocks dividers */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2
-                              |RCC_CLOCKTYPE_D3PCLK1|RCC_CLOCKTYPE_D1PCLK1;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
-  RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
-  RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK) {
+    /* Select PLL as system clock source and configure bus clocks dividers */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK |
+                                  RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2 |
+                                  RCC_CLOCKTYPE_D1PCLK1 | RCC_CLOCKTYPE_D3PCLK1;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
+    RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+    RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK) {
         return 0; // FAIL
     }
 
-  PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3|RCC_PERIPHCLK_USB;
-  PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
-  PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
-  if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK)
-  {
+    //PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3 | RCC_PERIPHCLK_USB;
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_USART3;
+    PeriphClkInitStruct.Usart234578ClockSelection = RCC_USART234578CLKSOURCE_D2PCLK1;
+    //PeriphClkInitStruct.UsbClockSelection = RCC_USBCLKSOURCE_HSI48;
+    if (HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct) != HAL_OK) {
         return 0; // FAIL
-  }
+    }
 
+    /* Disable CSI Oscillator */
+    //RCC_OscInitStruct.OscillatorType  = RCC_OSCILLATORTYPE_CSI;
+    //RCC_OscInitStruct.CSIState        = RCC_CSI_OFF;
+    //RCC_OscInitStruct.PLL.PLLState    = RCC_PLL_NONE;
+    //if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
+    //    return 0;
+    //}
+
+    // NEEDED ???
+    /* Enables the I/O Compensation Cell */
+    __HAL_RCC_CSI_ENABLE(); // Mandatory for I/O Compensation Cell
+    __HAL_RCC_SYSCFG_CLK_ENABLE(); // Mandatory for I/O Compensation Cell
+    HAL_EnableCompensationCell();
 
     return 1; // OK
 }
@@ -178,51 +192,43 @@ uint8_t SetSysClock_PLL_HSI(void)
 {
     RCC_ClkInitTypeDef RCC_ClkInitStruct;
     RCC_OscInitTypeDef RCC_OscInitStruct;
-//    RCC_PeriphCLKInitTypeDef RCC_PeriphClkInitStruct;
 
-	/*!< Supply configuration update enable */
-	MODIFY_REG(PWR->CR3, PWR_CR3_SCUEN, 0);
-
-	/* The voltage scaling allows optimizing the power consumption when the device is 
-	 clocked below the maximum system frequency, to update the voltage scaling value 
-	 regarding system frequency refer to product datasheet.  */
-	__HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
-
-	while ((PWR->D3CR & (PWR_D3CR_VOSRDY)) != PWR_D3CR_VOSRDY) 
-	{
-	}
+    /*!< Supply configuration update enable */
+    HAL_PWREx_ConfigSupply(PWR_LDO_SUPPLY);
+    /* The voltage scaling allows optimizing the power consumption when the device is 
+    clocked below the maximum system frequency, to update the voltage scaling value 
+    regarding system frequency refer to product datasheet.  */
+    __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
+    while(!__HAL_PWR_GET_FLAG(PWR_FLAG_VOSRDY)) {}
 
     // Enable HSI oscillator and activate PLL with HSI as source
-	RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
-	RCC_OscInitStruct.HSEState = RCC_HSE_OFF;
-	RCC_OscInitStruct.HSIState = RCC_HSI_ON;
-	RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
-	RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-	RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
-
-	RCC_OscInitStruct.PLL.PLLM = 8;
-	RCC_OscInitStruct.PLL.PLLN = 100;
-	RCC_OscInitStruct.PLL.PLLP = 2;
-	RCC_OscInitStruct.PLL.PLLQ = 2;
-	RCC_OscInitStruct.PLL.PLLR = 2;
-
-	RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
-	RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI | RCC_OSCILLATORTYPE_HSE | RCC_OSCILLATORTYPE_CSI;
+    RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+    RCC_OscInitStruct.HSEState = RCC_HSE_OFF;
+    RCC_OscInitStruct.CSIState = RCC_CSI_OFF;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+    RCC_OscInitStruct.PLL.PLLM = 8;
+    RCC_OscInitStruct.PLL.PLLN = 100;
+    RCC_OscInitStruct.PLL.PLLP = 2;
+    RCC_OscInitStruct.PLL.PLLQ = 2;
+    RCC_OscInitStruct.PLL.PLLR = 2;
+    RCC_OscInitStruct.PLL.PLLVCOSEL = RCC_PLL1VCOWIDE;
+    RCC_OscInitStruct.PLL.PLLRGE = RCC_PLL1VCIRANGE_2;
     if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) {
         return 0; // FAIL
     }
 
-	/* Select PLL as system clock source and configure  bus clocks dividers */
-	RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_D1PCLK1 | RCC_CLOCKTYPE_PCLK1 | \
-								 RCC_CLOCKTYPE_PCLK2  | RCC_CLOCKTYPE_D3PCLK1);
-
-	RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-	RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
-	RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
-	RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;  
-	RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2; 
-	RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2; 
-	RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2; 
+    /* Select PLL as system clock source and configure  bus clocks dividers */
+    RCC_ClkInitStruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_D1PCLK1 | RCC_CLOCKTYPE_PCLK1 | \
+                                 RCC_CLOCKTYPE_PCLK2  | RCC_CLOCKTYPE_D3PCLK1);
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.SYSCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_HCLK_DIV2;
+    RCC_ClkInitStruct.APB3CLKDivider = RCC_APB3_DIV2;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_APB1_DIV2;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_APB2_DIV2;
+    RCC_ClkInitStruct.APB4CLKDivider = RCC_APB4_DIV2;
     if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK) {
         return 0; // FAIL
     }

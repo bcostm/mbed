@@ -34,12 +34,11 @@
   *
   ******************************************************************************
   */
-
 /* Includes ------------------------------------------------------------------*/
 #include "stm32h7xx_ll_rcc.h"
 #include "stm32h7xx_ll_bus.h"
 
-#if defined(USE_FULL_LL_DRIVER) // MBED patch
+#if defined(USE_FULL_LL_DRIVER)
 
 #ifdef  USE_FULL_ASSERT
   #include "stm32_assert.h"

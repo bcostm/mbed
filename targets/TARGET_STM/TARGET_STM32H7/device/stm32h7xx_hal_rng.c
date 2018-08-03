@@ -115,14 +115,14 @@
   * @{
   */
 
+#if defined (RNG)
+
 /** @addtogroup RNG
   * @brief RNG HAL module driver.
   * @{
   */
 
 #ifdef HAL_RNG_MODULE_ENABLED
-
-
 
 /* Private types -------------------------------------------------------------*/
 /* Private defines -----------------------------------------------------------*/
@@ -239,9 +239,11 @@ HAL_StatusTypeDef HAL_RNG_DeInit(RNG_HandleTypeDef *hrng)
   {
     return HAL_ERROR;
   }
-  /* Disable the RNG Peripheral and Clear Clock Error Detection bit */
-  CLEAR_BIT(hrng->Instance->CR, RNG_CR_IE | RNG_CR_RNGEN |RNG_CR_CED);
-  
+  /* Clear Clock Error Detection bit */
+  CLEAR_BIT(hrng->Instance->CR, RNG_CR_CED);
+  /* Disable the RNG Peripheral */
+  CLEAR_BIT(hrng->Instance->CR, RNG_CR_IE | RNG_CR_RNGEN);
+    
   /* Clear RNG interrupt status flags */
   CLEAR_BIT(hrng->Instance->SR, RNG_SR_CEIS | RNG_SR_SEIS);
 
@@ -637,7 +639,6 @@ HAL_StatusTypeDef HAL_RNG_GenerateRandomNumber_IT(RNG_HandleTypeDef *hrng)
 
   return status;
 }
-
 /**
   * @brief  Handles RNG interrupt request.
   * @note   In the case of a clock error, the RNG is no more able to generate
@@ -817,6 +818,8 @@ uint32_t HAL_RNG_GetError(RNG_HandleTypeDef *hrng)
 /**
   * @}
   */
+
+#endif /* RNG */
 
 /**
   * @}

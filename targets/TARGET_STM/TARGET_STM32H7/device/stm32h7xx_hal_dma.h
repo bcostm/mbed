@@ -440,9 +440,9 @@ typedef struct __DMA_HandleTypeDef
   * @brief    DMA peripheral data size
   * @{
   */
-#define DMA_PDATAALIGN_BYTE          ((uint32_t)0x00000000U)        /*!< Peripheral data alignment: Byte     */
-#define DMA_PDATAALIGN_HALFWORD      ((uint32_t)DMA_SxCR_PSIZE_0)  /*!< Peripheral data alignment: HalfWord */
-#define DMA_PDATAALIGN_WORD          ((uint32_t)DMA_SxCR_PSIZE_1)  /*!< Peripheral data alignment: Word     */
+#define DMA_PDATAALIGN_BYTE          ((uint32_t)0x00000000U)       /*!< Peripheral data alignment: Byte      */
+#define DMA_PDATAALIGN_HALFWORD      ((uint32_t)DMA_SxCR_PSIZE_0)  /*!< Peripheral data alignment: HalfWord  */
+#define DMA_PDATAALIGN_WORD          ((uint32_t)DMA_SxCR_PSIZE_1)  /*!< Peripheral data alignment: Word      */
 /**
   * @}
   */
@@ -451,7 +451,7 @@ typedef struct __DMA_HandleTypeDef
   * @brief    DMA memory data size
   * @{
   */
-#define DMA_MDATAALIGN_BYTE          ((uint32_t)0x00000000U)        /*!< Memory data alignment: Byte     */
+#define DMA_MDATAALIGN_BYTE          ((uint32_t)0x00000000U)       /*!< Memory data alignment: Byte     */
 #define DMA_MDATAALIGN_HALFWORD      ((uint32_t)DMA_SxCR_MSIZE_0)  /*!< Memory data alignment: HalfWord */
 #define DMA_MDATAALIGN_WORD          ((uint32_t)DMA_SxCR_MSIZE_1)  /*!< Memory data alignment: Word     */
 /**
@@ -462,9 +462,11 @@ typedef struct __DMA_HandleTypeDef
   * @brief    DMA mode
   * @{
   */
-#define DMA_NORMAL         ((uint32_t)0x00000000U)       /*!< Normal mode                  */
-#define DMA_CIRCULAR       ((uint32_t)DMA_SxCR_CIRC)    /*!< Circular mode                */
-#define DMA_PFCTRL         ((uint32_t)DMA_SxCR_PFCTRL)  /*!< Peripheral flow control mode */
+#define DMA_NORMAL              ((uint32_t)0x00000000U)                  /*!< Normal mode                                    */
+#define DMA_CIRCULAR            ((uint32_t)DMA_SxCR_CIRC)                /*!< Circular mode                                  */
+#define DMA_PFCTRL              ((uint32_t)DMA_SxCR_PFCTRL)              /*!< Peripheral flow control mode                   */
+#define DMA_DOUBLE_BUFFER_M0    ((uint32_t)DMA_SxCR_DBM)                 /*!< Double buffer mode with first target memory M0 */
+#define DMA_DOUBLE_BUFFER_M1    ((uint32_t)(DMA_SxCR_DBM | DMA_SxCR_CT)) /*!< Double buffer mode with first target memory M1 */
 /**
   * @}
   */
@@ -473,7 +475,7 @@ typedef struct __DMA_HandleTypeDef
   * @brief    DMA priority levels
   * @{
   */
-#define DMA_PRIORITY_LOW             ((uint32_t)0x00000000U)     /*!< Priority level: Low       */
+#define DMA_PRIORITY_LOW             ((uint32_t)0x00000000U)    /*!< Priority level: Low       */
 #define DMA_PRIORITY_MEDIUM          ((uint32_t)DMA_SxCR_PL_0)  /*!< Priority level: Medium    */
 #define DMA_PRIORITY_HIGH            ((uint32_t)DMA_SxCR_PL_1)  /*!< Priority level: High      */
 #define DMA_PRIORITY_VERY_HIGH       ((uint32_t)DMA_SxCR_PL)    /*!< Priority level: Very High */
@@ -1062,9 +1064,11 @@ uint32_t             HAL_DMA_GetError(DMA_HandleTypeDef *hdma);
                                        ((SIZE) == DMA_MDATAALIGN_HALFWORD) || \
                                        ((SIZE) == DMA_MDATAALIGN_WORD ))
 
-#define IS_DMA_MODE(MODE) (((MODE) == DMA_NORMAL )  || \
-                           ((MODE) == DMA_CIRCULAR) || \
-                           ((MODE) == DMA_PFCTRL))
+#define IS_DMA_MODE(MODE) (((MODE) == DMA_NORMAL )           || \
+                           ((MODE) == DMA_CIRCULAR)          || \
+                           ((MODE) == DMA_PFCTRL)            || \
+                           ((MODE) == DMA_DOUBLE_BUFFER_M0)  || \
+                           ((MODE) == DMA_DOUBLE_BUFFER_M1))
 
 #define IS_DMA_PRIORITY(PRIORITY) (((PRIORITY) == DMA_PRIORITY_LOW )   || \
                                    ((PRIORITY) == DMA_PRIORITY_MEDIUM) || \
