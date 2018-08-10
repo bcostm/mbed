@@ -1554,11 +1554,16 @@
             "lowpowertimer_lptim": {
                 "help": "This target supports LPTIM. Set value 1 to use LPTIM for LOWPOWERTIMER, or 0 to use RTC wakeup timer",
                 "value": 0
+            },
+            "hse_value": {
+                "help": "HSE default value is 25MHz is HAL",
+                "value": "8000000",
+                "macro_name": "HSE_VALUE"
             }
         },
         "supported_form_factors": ["ARDUINO"],
         "detect_code": ["0813"],
-        "device_has_add": ["LOWPOWERTIMER", "TRNG", "FLASH"],
+        "device_has_add": ["TRNG"],
         "release_versions": ["2", "5"],
         "device_name": "STM32H743ZI"
     },
