@@ -1557,10 +1557,8 @@
             }
         },
         "supported_form_factors": ["ARDUINO"],
-        "macros_add": ["USBHOST_OTHER"],
         "detect_code": ["0813"],
         "device_has_add": ["LOWPOWERTIMER", "TRNG", "FLASH"],
-        "device_has_remove": ["SPI","SPISLAVE","SPI_ASYNCH"],
         "release_versions": ["2", "5"],
         "device_name": "STM32H743ZI"
     },

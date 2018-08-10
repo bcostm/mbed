@@ -32,14 +32,14 @@
 
 #include "serial_api_hal.h"
 
-#define UART_NUM (8)
+#define UART_NUM (9)
 uint32_t serial_irq_ids[UART_NUM] = {0};
 UART_HandleTypeDef uart_handlers[UART_NUM];
 
 static uart_irq_handler irq_handler;
 
 // Defined in serial_api.c
-inline int8_t get_uart_index(UARTName uart_name);
+extern int8_t get_uart_index(UARTName uart_name);
 
 /******************************************************************************
  * INTERRUPTS HANDLING
@@ -504,8 +504,8 @@ uint8_t serial_tx_active(serial_t *obj)
     
     struct serial_s *obj_s = SERIAL_S(obj);
     UART_HandleTypeDef *huart = &uart_handlers[obj_s->index];
-    
-    return ((HAL_UART_GetState(huart) == HAL_UART_STATE_BUSY_TX) ? 1 : 0);
+
+    return (((HAL_UART_GetState(huart) & HAL_UART_STATE_BUSY_TX) == HAL_UART_STATE_BUSY_TX) ? 1 : 0);
 }
 
 /**
@@ -520,17 +520,19 @@ uint8_t serial_rx_active(serial_t *obj)
     
     struct serial_s *obj_s = SERIAL_S(obj);
     UART_HandleTypeDef *huart = &uart_handlers[obj_s->index];
-    
-    return ((HAL_UART_GetState(huart) == HAL_UART_STATE_BUSY_RX) ? 1 : 0);
+
+    return (((HAL_UART_GetState(huart) & HAL_UART_STATE_BUSY_RX) == HAL_UART_STATE_BUSY_RX) ? 1 : 0);
 }
 
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart) {
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
+{
     if (__HAL_UART_GET_FLAG(huart, UART_FLAG_TC) != RESET) {
         __HAL_UART_CLEAR_IT(huart, UART_CLEAR_TCF);
     }
 }
 
-void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart) {
+void HAL_UART_ErrorCallback(UART_HandleTypeDef *huart)
+{
     if (__HAL_UART_GET_FLAG(huart, UART_FLAG_PE) != RESET) {
         __HAL_UART_CLEAR_IT(huart, UART_CLEAR_PEF);
     }

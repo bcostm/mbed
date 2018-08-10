@@ -17,7 +17,7 @@
 #define MBED_CAN_DEVICE_H
 
 #include "cmsis.h"
-#include "stm32h7xx_hal.h"
+#include "stm32h7xx.h"
 
 #ifdef __cplusplus
 extern "C" {

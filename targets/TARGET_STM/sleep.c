@@ -57,8 +57,6 @@ static void wait_loop(uint32_t timeout)
 static void ForcePeriphOutofDeepSleep(void)
 {
     uint32_t pFLatency = 0;
-#ifndef TARGET_STM32H7
-#endif
     RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
 #if (TARGET_STM32L4 || TARGET_STM32L1) /* MSI used for L4 */

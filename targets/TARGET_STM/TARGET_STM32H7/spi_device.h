@@ -30,6 +30,6 @@
 #ifndef MBED_SPI_DEVICE_H
 #define MBED_SPI_DEVICE_H
 
-// #include "stm32h7xx_ll_spi.h"
+#include "stm32h7xx_ll_spi.h"
 
 #endif

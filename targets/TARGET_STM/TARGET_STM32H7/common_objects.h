@@ -140,6 +140,13 @@ struct can_s {
 };
 #endif
 
+/* rtc_api.c */
+#define __HAL_RCC_PWR_CLK_ENABLE()
+
+/* serial_api.c */
+#define RCC_LPUART1CLKSOURCE_PCLK1  RCC_LPUART1CLKSOURCE_PLL2
+#define RCC_LPUART1CLKSOURCE_SYSCLK RCC_LPUART1CLKSOURCE_D3PCLK1
+
 #ifdef __cplusplus
 }
 #endif

@@ -55,9 +55,7 @@ void rtc_init(void)
     RTC_inited = 1;
 
     // Enable access to Backup domain
-#ifndef TARGET_STM32H7
     __HAL_RCC_PWR_CLK_ENABLE();
-#endif
     HAL_PWR_EnableBkUpAccess();
 
 #if MBED_CONF_TARGET_LSE_AVAILABLE
