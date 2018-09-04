@@ -67,18 +67,28 @@ void analogin_init(analogin_t *obj, PinName pin)
 
     // Configure ADC object structures
     obj->handle.State = HAL_ADC_STATE_RESET;
-    obj->handle.Init.ClockPrescaler        = ADC_CLOCK_SYNC_PCLK_DIV4;
-    obj->handle.Init.Resolution            = ADC_RESOLUTION_12B;
-    obj->handle.Init.ScanConvMode          = DISABLE;
-    obj->handle.Init.ContinuousConvMode    = DISABLE;
-    obj->handle.Init.DiscontinuousConvMode = DISABLE;
-    obj->handle.Init.NbrOfDiscConversion   = 0;
-    obj->handle.Init.ExternalTrigConvEdge  = ADC_EXTERNALTRIGCONVEDGE_NONE;
+    obj->handle.Init.ClockPrescaler           = ADC_CLOCK_SYNC_PCLK_DIV4;
+    obj->handle.Init.Resolution               = ADC_RESOLUTION_16B;
+    obj->handle.Init.ScanConvMode             = DISABLE;
+    obj->handle.Init.ContinuousConvMode       = DISABLE;
+    obj->handle.Init.DiscontinuousConvMode    = DISABLE;
+    obj->handle.Init.NbrOfDiscConversion      = 0;
+    obj->handle.Init.ExternalTrigConvEdge     = ADC_EXTERNALTRIGCONVEDGE_NONE;
     obj->handle.Init.ExternalTrigConv         = ADC_EXTERNALTRIG_T1_CC1;
     obj->handle.Init.LeftBitShift             = 0;
     obj->handle.Init.NbrOfConversion          = 1;
     obj->handle.Init.ConversionDataManagement = ADC_CONVERSIONDATA_DR;
     obj->handle.Init.EOCSelection             = DISABLE;
+    obj->handle.Init.LowPowerAutoWait         = DISABLE;
+    obj->handle.Init.Overrun                  = ADC_OVR_DATA_OVERWRITTEN;
+    obj->handle.Init.OversamplingMode         = DISABLE;
+
+    RCC_PeriphCLKInitTypeDef  PeriphClkInitStruct;
+    PeriphClkInitStruct.PeriphClockSelection = RCC_PERIPHCLK_ADC;
+    PeriphClkInitStruct.AdcClockSelection    = RCC_ADCCLKSOURCE_CLKP;
+    PeriphClkInitStruct.PLL2.PLL2P           = 4;
+    HAL_RCCEx_PeriphCLKConfig(&PeriphClkInitStruct);
+    __HAL_RCC_ADC_CONFIG(RCC_ADCCLKSOURCE_CLKP);
 
 #if defined(ADC1)
     if ((ADCName)obj->handle.Instance == ADC_1) {
@@ -99,6 +109,8 @@ void analogin_init(analogin_t *obj, PinName pin)
     if (HAL_ADC_Init(&obj->handle) != HAL_OK) {
         error("Cannot initialize ADC");
     }
+
+    HAL_ADCEx_Calibration_Start(&obj->handle, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
 }
 
 uint16_t adc_read(analogin_t *obj)
@@ -106,9 +118,11 @@ uint16_t adc_read(analogin_t *obj)
     ADC_ChannelConfTypeDef sConfig = {0};
 
     // Configure ADC channel
-    sConfig.Rank         = 1;
-    sConfig.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+    sConfig.Rank         = ADC_REGULAR_RANK_1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_64CYCLES_5;
     sConfig.Offset       = 0;
+    sConfig.SingleDiff   = ADC_SINGLE_ENDED;
+    sConfig.OffsetNumber = ADC_OFFSET_NONE;
 
     switch (obj->channel) {
         case 0:
