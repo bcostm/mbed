@@ -115,6 +115,7 @@ struct analogin_s {
     ADC_HandleTypeDef handle;
     PinName pin;
     uint8_t channel;
+    uint8_t differential;
 };
 
 #define GPIO_IP_WITHOUT_BRR

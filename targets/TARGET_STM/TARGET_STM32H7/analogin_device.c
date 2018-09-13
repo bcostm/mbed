@@ -61,6 +61,7 @@ void analogin_init(analogin_t *obj, PinName pin)
     MBED_ASSERT(function != (uint32_t)NC);
 
     obj->channel = STM_PIN_CHANNEL(function);
+    obj->differential = STM_PIN_INVERTED(function);
 
     // Save pin number for the read function
     obj->pin = pin;
@@ -110,7 +111,12 @@ void analogin_init(analogin_t *obj, PinName pin)
         error("Cannot initialize ADC");
     }
 
-    HAL_ADCEx_Calibration_Start(&obj->handle, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
+    // Calibration
+    if (obj->differential) {
+        HAL_ADCEx_Calibration_Start(&obj->handle, ADC_CALIB_OFFSET, ADC_DIFFERENTIAL_ENDED);
+    } else {
+        HAL_ADCEx_Calibration_Start(&obj->handle, ADC_CALIB_OFFSET, ADC_SINGLE_ENDED);
+    }
 }
 
 uint16_t adc_read(analogin_t *obj)
@@ -121,8 +127,14 @@ uint16_t adc_read(analogin_t *obj)
     sConfig.Rank         = ADC_REGULAR_RANK_1;
     sConfig.SamplingTime = ADC_SAMPLETIME_64CYCLES_5;
     sConfig.Offset       = 0;
-    sConfig.SingleDiff   = ADC_SINGLE_ENDED;
-    sConfig.OffsetNumber = ADC_OFFSET_NONE;
+    if (obj->differential) {
+        sConfig.SingleDiff = ADC_DIFFERENTIAL_ENDED;
+    } else {
+        sConfig.SingleDiff = ADC_SINGLE_ENDED;
+    }
+    sConfig.OffsetNumber           = ADC_OFFSET_NONE;
+    sConfig.OffsetRightShift       = DISABLE;
+    sConfig.OffsetSignedSaturation = DISABLE;
 
     switch (obj->channel) {
         case 0:
