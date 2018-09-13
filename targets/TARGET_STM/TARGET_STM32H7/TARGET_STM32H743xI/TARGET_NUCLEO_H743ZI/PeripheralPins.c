@@ -51,7 +51,7 @@
 
 
 //*** ADC ***
-// Note: ADCn_INNx channels are used in Differential mode. See the Reference Manual for more information on how to tuse them.
+// Note: ADCn_INNx channels are used in Differential mode. See the Reference Manual for more information on how to use them.
 MBED_WEAK const PinMap PinMap_ADC[] = {
     {PA_0,       ADC_1, STM_PIN_DATA_EXT(STM_MODE_ANALOG, GPIO_NOPULL, 0, 16, 0)}, // ADC1_INP16
     {PA_1,       ADC_1, STM_PIN_DATA_EXT(STM_MODE_ANALOG, GPIO_NOPULL, 0, 17, 0)}, // ADC1_INP17 // Connected to RMII_REF_CLK
