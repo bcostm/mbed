@@ -311,7 +311,7 @@ void spi_format(spi_t *obj, int bits, int mode, int slave)
  */
 extern int spi_get_clock_freq(spi_t *obj);
 
-static const uint16_t baudrate_prescaler_table[] =  {SPI_BAUDRATEPRESCALER_2,
+static const uint32_t baudrate_prescaler_table[] =  {SPI_BAUDRATEPRESCALER_2,
                                                      SPI_BAUDRATEPRESCALER_4,
                                                      SPI_BAUDRATEPRESCALER_8,
                                                      SPI_BAUDRATEPRESCALER_16,
