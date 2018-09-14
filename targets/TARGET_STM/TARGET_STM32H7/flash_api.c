@@ -120,7 +120,7 @@ int32_t flash_program_page(flash_t *obj, uint32_t address, const uint8_t *data,
 
     StartAddress = address;
     while ((address < (StartAddress + size)) && (status == 0)) {
-        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, address, ((uint64_t*)data)) == HAL_OK) {
+        if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_FLASHWORD, address, (uint32_t)data) == HAL_OK) {
             address = address + 32;
             data = data + 32;
         } else {

@@ -1563,7 +1563,7 @@
         },
         "supported_form_factors": ["ARDUINO"],
         "detect_code": ["0813"],
-        "device_has_add": ["TRNG", "ANALOGOUT", "CRC"],
+        "device_has_add": ["TRNG", "ANALOGOUT", "CRC", "FLASH"],
         "release_versions": ["2", "5"],
         "device_name": "STM32H743ZI"
     },
