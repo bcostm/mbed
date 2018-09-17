@@ -62,6 +62,7 @@
   */
 
 #include "stm32h7xx.h"
+#include "nvic_addr.h" /* MBED patch for Bootloader */
 
 #if !defined  (HSE_VALUE)
 #define HSE_VALUE    ((uint32_t)25000000) /*!< Value of the External oscillator in Hz */
@@ -224,7 +225,7 @@ void SystemInit (void)
 #ifdef VECT_TAB_SRAM
   SCB->VTOR = D1_AXISRAM_BASE  | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal D1 AXI-RAM */
 #else
-  SCB->VTOR = FLASH_BANK1_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH */
+  SCB->VTOR = NVIC_FLASH_VECTOR_ADDRESS; /* Vector Table Relocation in Internal FLASH */ /* MBED patch for Bootloader */
 #endif
 
 #endif /*DUAL_CORE && CORE_CM4*/
