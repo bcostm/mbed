@@ -37,6 +37,7 @@
 #include "pinmap.h"
 #include "PeripheralPins.h"
 #include "mbed_error.h"
+#include "spi_device.h"
 
 #if DEVICE_SPI_ASYNCH
     #define SPI_S(obj)    (( struct spi_s *)(&(obj->spi)))
@@ -55,20 +56,23 @@ int spi_get_clock_freq(spi_t *obj) {
 	/* Get source clock depending on SPI instance */
     switch ((int)spiobj->spi) {
         case SPI_1:
+        case SPI_2:
+        case SPI_3:
+            spi_hz = LL_RCC_GetSPIClockFreq(LL_RCC_SPI123_CLKSOURCE);
+            break;
 		case SPI_4:
 		case SPI_5:
+            spi_hz = LL_RCC_GetSPIClockFreq(LL_RCC_SPI45_CLKSOURCE);
+            break;
 		case SPI_6:	
-			/* SPI_1, SPI_4, SPI_5 and SPI_6. Source CLK is PCKL2 */
-			spi_hz = HAL_RCC_GetPCLK2Freq();
-			break;
-		case SPI_2:
-		case SPI_3:
-			/* SPI_2 and SPI_3. Source CLK is PCKL1 */
-			spi_hz = HAL_RCC_GetPCLK1Freq();
-			break;
+            spi_hz = LL_RCC_GetSPIClockFreq(LL_RCC_SPI6_CLKSOURCE);
+            break;
 		default:
 			error("CLK: SPI instance not set");
             break;
+    }
+    if (spi_hz == LL_RCC_PERIPH_FREQUENCY_NO) {
+        error("spi_hz not found\n");
     }
     return spi_hz;
 }
