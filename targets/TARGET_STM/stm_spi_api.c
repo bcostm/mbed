@@ -187,6 +187,11 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName sclk, PinName ssel
     handle->Init.FirstBit          = SPI_FIRSTBIT_MSB;
     handle->Init.TIMode            = SPI_TIMODE_DISABLE;
 
+#if TARGET_STM32H7
+    handle->Init.NSSPMode          = SPI_NSS_PULSE_DISABLE;
+    handle->Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
+#endif
+
     init_spi(obj);
 }
 
@@ -416,7 +421,7 @@ int spi_master_write(spi_t *obj, int value)
 
     /*  Here we're using LL which means direct registers access
      *  There is no error management, so we may end up looping
-     *  infinitely here in case of faulty device for insatnce,
+     *  infinitely here in case of faulty device for instance,
      *  but this will increase performances significantly
      */
 
