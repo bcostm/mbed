@@ -190,6 +190,7 @@ void spi_init(spi_t *obj, PinName mosi, PinName miso, PinName sclk, PinName ssel
 #if TARGET_STM32H7
     handle->Init.NSSPMode          = SPI_NSS_PULSE_DISABLE;
     handle->Init.MasterKeepIOState = SPI_MASTER_KEEP_IO_STATE_ENABLE;
+    handle->Init.FifoThreshold     = SPI_FIFO_THRESHOLD_01DATA;
 #endif
 
     init_spi(obj);
@@ -402,14 +403,38 @@ int spi_master_write(spi_t *obj, int value)
 #if TARGET_STM32H7
     else {
         int retval = 0;
+#if 0
         if (HAL_SPI_TransmitReceive(handle, (uint8_t *)&value, (uint8_t *)&retval, 1, TIMEOUT_1_BYTE) != HAL_OK) {
             error("spi transmit receive error\n");
         }
+#endif
+
+        /* Master transfer start */
+        LL_SPI_StartMasterTransfer(SPI_INST(obj));
+
+        /* Wait for TXP flag, no timeout */
+        while (!LL_SPI_IsActiveFlag_TXP(SPI_INST(obj)));
+
+        /* Write data to transmit */
+        if (handle->Init.DataSize == SPI_DATASIZE_16BIT) {
+            LL_SPI_TransmitData16(SPI_INST(obj), (uint16_t)value);
+        } else {
+            LL_SPI_TransmitData8(SPI_INST(obj), (uint8_t)value);
+        }
+
+        /* Wait RXP or end of Transfer */
+        while (!LL_SPI_IsActiveFlag_RXP(SPI_INST(obj)));
+
+        /* Read received data */
+        if (handle->Init.DataSize == SPI_DATASIZE_16BIT) {
+            retval = LL_SPI_ReceiveData16(SPI_INST(obj));
+        } else {
+            retval = LL_SPI_ReceiveData8(SPI_INST(obj));
+        }
+
         return retval;
     }
 #else
-
-
 #if defined(LL_SPI_RX_FIFO_TH_HALF)
     /*  Configure the default data size */
     if (handle->Init.DataSize == SPI_DATASIZE_16BIT) {
