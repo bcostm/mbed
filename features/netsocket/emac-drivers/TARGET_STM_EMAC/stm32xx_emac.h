@@ -176,4 +176,4 @@ private:
     int phy_task_handle; /**< Handle for phy task event */
 };
 
-#endif /* K64F_EMAC_H_ */
+#endif /* STM32_EMAC_H_ */
