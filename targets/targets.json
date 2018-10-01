@@ -1563,10 +1563,13 @@
         },
         "supported_form_factors": ["ARDUINO"],
         "detect_code": ["0813"],
-        "device_has_add": ["TRNG", "ANALOGOUT", "CRC", "FLASH"],
+        "device_has_add": ["TRNG", "ANALOGOUT", "CRC", "FLASH", "EMAC"],
         "release_versions": ["2", "5"],
         "device_name": "STM32H743ZI",
-        "bootloader_supported": true
+        "bootloader_supported": true,
+        "overrides": {
+            "network-default-interface-type": "ETHERNET"
+        }
     },
     "NUCLEO_L011K4": {
         "inherits": ["FAMILY_STM32"],
