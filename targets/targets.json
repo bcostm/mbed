@@ -1539,7 +1539,7 @@
     "NUCLEO_H743ZI": {
         "inherits": ["FAMILY_STM32"],
         "core": "Cortex-M7F",
-        "extra_labels_add": ["STM32H7", "STM32H743", "STM32H743xI", "STM32H743ZI"],
+        "extra_labels_add": ["STM32H7", "STM32H743", "STM32H743xI", "STM32H743ZI", "STM_EMAC"],
         "config": {
             "d11_configuration": {
                 "help": "Value: PA_7 for the default board configuration, PB_5 in case of solder bridge update (SB121 off/ SB122 on)",

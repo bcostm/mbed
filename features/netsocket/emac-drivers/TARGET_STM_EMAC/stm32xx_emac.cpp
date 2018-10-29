@@ -458,6 +458,8 @@ void mbed_default_mac_address(char *mac)
     uint32_t word0 = *(uint32_t *)0x1FFF7A10;
 #elif defined (TARGET_STM32F7)
     uint32_t word0 = *(uint32_t *)0x1FF0F420;
+#elif defined (TARGET_STM32H7)
+    uint32_t word0 = *(uint32_t *)0x1FF1E800;
 #else
 #error MAC address can not be derived from target unique Id
 #endif

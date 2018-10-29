@@ -18,43 +18,48 @@
 
 void _eth_config_mac(ETH_HandleTypeDef *heth)
 {
-    ETH_MACInitTypeDef macconf = {
+    // TODO: Check the TBC fields if they are correct or not...
+    ETH_MACConfigTypeDef macconf = {
+        .SourceAddrControl = ETH_SOURCEADDRESS_DISABLE, // TBC
+        .ChecksumOffload = ETH_CHECKSUMOFFLAOD_ENABLE,
+        .InterPacketGapVal = ETH_INTERPACKETGAP_64BIT, // TBC
+        .GiantPacketSizeLimitControl = 0, // TBC
+        .Support2KPacket = 0, // TBC
+        .CRCStripTypePacket = 0, // TBC
+        .AutomaticPadCRCStrip = ETH_AUTOMATICPADCRCSTRIP_DISABLE,
         .Watchdog = ETH_WATCHDOG_ENABLE,
         .Jabber = ETH_JABBER_ENABLE,
-        .InterFrameGap = ETH_INTERFRAMEGAP_96BIT,
-        .CarrierSense = ETH_CARRIERSENCE_ENABLE,
-        .ReceiveOwn = ETH_RECEIVEOWN_ENABLE,
+        .JumboPacket = 0, // TBC
+        .Speed = ETH_SPEED_100M, // TBC
+        .DuplexMode = ETH_FULLDUPLEX_MODE, // TBC
         .LoopbackMode = ETH_LOOPBACKMODE_DISABLE,
-        .ChecksumOffload = ETH_CHECKSUMOFFLAOD_ENABLE,
+        .CarrierSenseBeforeTransmit = , // TBC
+        .ReceiveOwn = ETH_RECEIVEOWN_ENABLE,
+        .CarrierSenseDuringTransmit = 0, // TBC
         .RetryTransmission = ETH_RETRYTRANSMISSION_DISABLE,
-        .AutomaticPadCRCStrip = ETH_AUTOMATICPADCRCSTRIP_DISABLE,
         .BackOffLimit = ETH_BACKOFFLIMIT_10,
         .DeferralCheck = ETH_DEFFERRALCHECK_DISABLE,
-        .ReceiveAll = ETH_RECEIVEAll_DISABLE,
-        .SourceAddrFilter = ETH_SOURCEADDRFILTER_DISABLE,
-        .PassControlFrames = ETH_PASSCONTROLFRAMES_BLOCKALL,
-        .BroadcastFramesReception = ETH_BROADCASTFRAMESRECEPTION_ENABLE,
-        .DestinationAddrFilter = ETH_DESTINATIONADDRFILTER_NORMAL,
-        .PromiscuousMode = ETH_PROMISCUOUS_MODE_DISABLE,
-        .MulticastFramesFilter = ETH_MULTICASTFRAMESFILTER_NONE, // Disable multicast filter
-        .UnicastFramesFilter = ETH_UNICASTFRAMESFILTER_PERFECT,
-        .HashTableHigh = 0x0,
-        .HashTableLow = 0x0,
-        .PauseTime = 0x0,
+        .PreambleLength = ETH_PREAMBLELENGTH_5, // TBC
+        .UnicastSlowProtocolPacketDetect = 0, // TBC
+        .SlowProtocolDetect = 0, // TBC
+        .CRCCheckingRxPackets = 0, // TBC
+        .GiantPacketSizeLimit = 0x3FFF, // TBC
+        .ExtendedInterPacketGap = 0, // TBC
+        .ExtendedInterPacketGapVal = 0, // TBC
+        .ProgrammableWatchdog = 0, // TBC
+        .WatchdogTimeout = ETH_WATCHDOGTIMEOUT_8KB, // TBC
+        .PauseTime = 0,
         .ZeroQuantaPause = ETH_ZEROQUANTAPAUSE_DISABLE,
         .PauseLowThreshold = ETH_PAUSELOWTHRESHOLD_MINUS4,
-        .UnicastPauseFrameDetect = ETH_UNICASTPAUSEFRAMEDETECT_DISABLE,
-        .ReceiveFlowControl = ETH_RECEIVEFLOWCONTROL_DISABLE,
         .TransmitFlowControl = ETH_TRANSMITFLOWCONTROL_DISABLE,
-        .VLANTagComparison = ETH_VLANTAGCOMPARISON_16BIT,
-        .VLANTagIdentifier = 0x0
+        .UnicastPausePacketDetect = 0, // TBC
+        .ReceiveFlowControl = ETH_RECEIVEFLOWCONTROL_DISABLE,
+        .TransmitQueueMode = ETH_TRANSMITTHRESHOLD_128, // TBC
+        .ReceiveQueueMode = ETH_RECEIVETHRESHOLD8_32, // TBC
+        .DropTCPIPChecksumErrorPacket = 0, // TBC
+        .ForwardRxErrorPacket = 0, // TBC
+        .ForwardRxUndersizedGoodPacket = 0 // TBC
     };
 
-    if (heth->Init.ChecksumMode == ETH_CHECKSUM_BY_HARDWARE) {
-        macconf.ChecksumOffload = ETH_CHECKSUMOFFLAOD_ENABLE;
-    } else {
-        macconf.ChecksumOffload = ETH_CHECKSUMOFFLAOD_DISABLE;
-    }
-
-    (void) HAL_ETH_ConfigMAC(heth, &macconf);
+    (void) HAL_ETH_SetMACConfig(heth, &macconf);
 }
